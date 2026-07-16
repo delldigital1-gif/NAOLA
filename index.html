@@ -5,6 +5,7 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NAOLA Digital RH — SIRH Multi-pays</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{
   --navy:#0D1B2A;--blue:#1A56DB;--blue-m:#2563EB;--blue-l:#EFF6FF;--blue-mid:#DBEAFE;
@@ -959,142 +960,122 @@ const DCOLS=['#1A56DB','#059669','#7C3AED','#D97706','#DC2626','#0891B2','#BE185
 function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
 
 // ══════════════════════════════════════
-// DB
+// DB — Supabase (remplace l'ancien localStorage)
 // ══════════════════════════════════════
-const SK='naola_rh_v2';
-function ldb(){try{return JSON.parse(localStorage.getItem(SK))||{};}catch(e){return{};}}
-function sdb(db){localStorage.setItem(SK,JSON.stringify(db));}
+const SUPABASE_URL='https://hadpvpvztlkpjzixvotd.supabase.co';
+const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZHB2cHZ6dGxrcGp6aXh2b3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxOTk0NDcsImV4cCI6MjA5OTc3NTQ0N30.3HTSvzcXQW7tzfzgP5gIEvJxn0En4CV-bfM7HEBvZtg';
+const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
 
-function initDB(){
-  const db=ldb();
-  if(!db.sa)db.sa={email:'admin@naola.tg',pw:'naola123'};
-  if(!db.cos)db.cos={};
-  if(!db.cos['demo-tg']){
-    db.cos['demo-tg']={
-      id:'demo-tg',name:'TechTogo SARL',sector:'Technologie',pays:'TG',
-      adminEmail:'demo@techtogo.tg',pw:'demo123',adminName:'Amara Mensah',
-      trialStart:new Date(Date.now()-4*864e5).toISOString(),plan:'trial',
-      depts:[...DEPTS],
-      employees:[
-        {id:1,mat:'EMP-001',prenom:'Kofi',nom:'Mensah',sx:'M',ddn:'1985-05-10',nat:'Togolaise',sitMat:'Marié(e)',enf:2,cni:'TG-001',email:'k.mensah@tt.tg',tel:'+228 90 12 34 56',adr:'Tokoin, Lomé',poste:'Directeur Commercial',dept:'Commercial',cat:'Cadre',ct:'CDI',emb:'2021-03-15',sal:450000,cnss:'CNSS-001',statut:'Actif'},
-        {id:2,mat:'EMP-002',prenom:'Aïsha',nom:'Diallo',sx:'F',ddn:'1990-08-22',nat:'Togolaise',sitMat:'Célibataire',enf:0,cni:'TG-002',email:'a.diallo@tt.tg',tel:'+228 91 23 45 67',adr:'Bè, Lomé',poste:'Comptable Senior',dept:'Finance',cat:'Agent de maîtrise',ct:'CDI',emb:'2020-07-01',sal:320000,cnss:'CNSS-002',statut:'Actif'},
-        {id:3,mat:'EMP-003',prenom:'Yao',nom:'Koffi',sx:'M',ddn:'1993-12-05',nat:'Togolaise',sitMat:'Célibataire',enf:0,cni:'TG-003',email:'y.koffi@tt.tg',tel:'+228 92 34 56 78',adr:'Adidogomé, Lomé',poste:'Développeur Backend',dept:'Technique',cat:'Cadre',ct:'CDI',emb:'2022-01-10',sal:380000,cnss:'CNSS-003',statut:'Actif'},
-        {id:4,mat:'EMP-004',prenom:'Fatou',nom:'Coulibaly',sx:'F',ddn:'1982-03-17',nat:'Togolaise',sitMat:'Marié(e)',enf:3,cni:'TG-004',email:'f.coulibaly@tt.tg',tel:'+228 93 45 67 89',adr:'Nyékonakpoè, Lomé',poste:'Responsable RH',dept:'RH',cat:'Cadre',ct:'CDI',emb:'2019-11-20',sal:395000,cnss:'CNSS-004',statut:'Actif'},
-        {id:5,mat:'EMP-005',prenom:'Kojo',nom:'Asante',sx:'M',ddn:'1997-06-30',nat:'Togolaise',sitMat:'Célibataire',enf:0,cni:'TG-005',email:'k.asante@tt.tg',tel:'+228 94 56 78 90',adr:'Agoè, Lomé',poste:'Commercial Junior',dept:'Commercial',cat:'Employé',ct:'CDI',emb:'2023-06-05',sal:195000,cnss:'CNSS-005',statut:'Actif'},
-        {id:6,mat:'EMP-006',prenom:'Ama',nom:'Owusu',sx:'F',ddn:'1978-01-12',nat:'Togolaise',sitMat:'Marié(e)',enf:2,cni:'TG-006',email:'a.owusu@tt.tg',tel:'+228 95 67 89 01',adr:'Tokoin, Lomé',poste:'Directrice Générale',dept:'Direction',cat:'Cadre supérieur',ct:'CDI',emb:'2018-05-01',sal:750000,cnss:'CNSS-006',statut:'Actif'},
-      ],
-      contrats:[
-        {id:1,empId:1,type:'CDI',start:'2021-03-15',end:null,essai:'3 mois',sal:450000,lieu:'Lomé',cat:'Cadre',statut:'Actif'},
-        {id:2,empId:2,type:'CDI',start:'2020-07-01',end:null,essai:'3 mois',sal:320000,lieu:'Lomé',cat:'Agent de maîtrise',statut:'Actif'},
-      ],
-      conges:[
-        {id:1,empId:1,type:'Congé annuel payé',start:'2026-07-10',end:'2026-07-25',motif:'Vacances',statut:'En attente',days:15,createdAt:'2026-06-15'},
-        {id:2,empId:2,type:'Congé annuel payé',start:'2026-07-01',end:'2026-07-08',motif:'Repos',statut:'En attente',days:7,createdAt:'2026-06-18'},
-        {id:3,empId:3,type:'Congé maladie',start:'2026-06-20',end:'2026-06-25',motif:'Ordonnance',statut:'Approuvé',days:5,createdAt:'2026-06-19'},
-      ],
-      absences:[
-        {id:1,empId:2,type:'Maladie ordinaire',start:'2026-05-10',end:'2026-05-12',just:'Oui',paie:'Rémunérée',com:'Certificat médical fourni',statut:'Validée'},
-        {id:2,empId:5,type:'Absence injustifiée',start:'2026-06-03',end:'2026-06-03',just:'Non',paie:'Non rémunérée',com:'Pas de justificatif',statut:'Validée'},
-      ],
-      discipline:[
-        {id:1,empId:5,type:'Avertissement écrit / Blâme',dateFaits:'2026-06-04',dateConv:'2026-06-06',faits:'Absence injustifiée sans prévenir',decision:'Blâme notifié par écrit',createdAt:'2026-06-07'},
-      ],
-      ruptures:[],
-      evaluations:[
-        {id:1,empId:1,period:'T1 2026',perf:5,comm:4,init:5,ponct:4,comment:'Excellent trimestre, leadership commercial remarquable.',createdAt:'2026-04-01'},
-        {id:2,empId:3,period:'T1 2026',perf:4,comm:3,init:4,ponct:5,comment:'Très bon travail technique. Communication à améliorer.',createdAt:'2026-04-02'},
-      ],
-      offers:[
-        {id:1,title:'Développeur Full Stack React/Node',dept:'Technique',contract:'CDI',location:'Lomé',salary:350000,desc:'3+ ans requis.',statut:'Ouverte',createdAt:'2026-06-01'},
-        {id:2,title:'Commercial Junior',dept:'Commercial',contract:'CDI',location:'Lomé',salary:180000,desc:'Première expérience appréciée.',statut:'Ouverte',createdAt:'2026-06-10'},
-      ],
-      candidates:[
-        {id:1,prenom:'Edem',nom:'Agbeko',email:'e.agbeko@gmail.com',tel:'+228 91 11 22 33',offerId:1,note:'Profil solide, 4 ans React',statut:'Entretien',createdAt:'2026-06-05'},
-        {id:2,prenom:'Sékou',nom:'Traoré',email:'s.traore@gmail.com',tel:'+228 93 33 44 55',offerId:2,note:'Motivé, bonne présentation',statut:'Candidature reçue',createdAt:'2026-06-12'},
-      ],
-      nEmpId:7,nCtId:3,nCgId:4,nAbId:3,nDcId:2,nEvalId:3,nOfId:3,nCandId:3,nRpId:1
-    };
-  }
-  if(!db.cos['demo-ci']){
-    db.cos['demo-ci']={
-      id:'demo-ci',name:'Alpha Consulting CI',sector:'Services',pays:'CI',
-      adminEmail:'admin@alpha.ci',pw:'alpha123',adminName:'Mariama Bah',
-      trialStart:new Date(Date.now()-25*864e5).toISOString(),plan:'Business',
-      depts:['Conseil','Finance','Direction'],
-      employees:[{id:1,mat:'EMP-001',prenom:'Mariama',nom:'Bah',sx:'F',ddn:'1979-03-20',nat:'Ivoirienne',sitMat:'Marié(e)',enf:2,cni:'CI-001',email:'m.bah@alpha.ci',tel:'+225 01 01 01 01',adr:'Cocody, Abidjan',poste:'DG',dept:'Direction',cat:'Cadre supérieur',ct:'CDI',emb:'2020-01-01',sal:650000,cnss:'CNPS-001',statut:'Actif'}],
-      contrats:[],conges:[],absences:[],discipline:[],ruptures:[],evaluations:[],offers:[],candidates:[],
-      nEmpId:2,nCtId:1,nCgId:1,nAbId:1,nDcId:1,nEvalId:1,nOfId:1,nCandId:1,nRpId:1
-    };
-  }
-  if(!db.cabinets)db.cabinets={};
-  // Seed demo cabinet
-  if(!db.cabinets['demo-cab']){
-    db.cabinets['demo-cab']={
-      id:'demo-cab',name:'Cabinet RH Excellence',pays:'TG',
-      adminEmail:'demo@cabinet.tg',pw:'cabinet123',adminName:'Adjoa Seyram',
-      trialStart:new Date(Date.now()-2*864e5).toISOString(),plan:'trial',
-      modules:{rh:true,placement:true},
-      clients:[
-        {id:'cli-1',name:'Agro-Togo SARL',sector:'Agriculture',pays:'TG',contact:'Kofi Atta',email:'dg@agrotogo.tg',tel:'+228 90 00 00 01',addedAt:'2026-05-01',
-          employees:[
-            {id:1,mat:'EMP-001',prenom:'Kofi',nom:'Atta',sx:'M',ddn:'1980-01-01',nat:'Togolaise',sitMat:'Marié(e)',enf:2,cni:'TG-A01',email:'k.atta@agrotogo.tg',tel:'+228 90 00 00 01',adr:'Lomé',poste:'Directeur Général',dept:'Direction',cat:'Cadre supérieur',ct:'CDI',emb:'2018-01-01',sal:600000,cnss:'CNSS-A01',statut:'Actif'},
-            {id:2,mat:'EMP-002',prenom:'Ama',nom:'Koffi',sx:'F',ddn:'1990-06-15',nat:'Togolaise',sitMat:'Célibataire',enf:0,cni:'TG-A02',email:'a.koffi@agrotogo.tg',tel:'+228 90 00 00 02',adr:'Lomé',poste:'Comptable',dept:'Finance',cat:'Employé',ct:'CDI',emb:'2021-03-01',sal:220000,cnss:'CNSS-A02',statut:'Actif'},
-            {id:3,mat:'EMP-003',prenom:'Yves',nom:'Mensah',sx:'M',ddn:'1988-11-20',nat:'Togolaise',sitMat:'Marié(e)',enf:1,cni:'TG-A03',email:'y.mensah@agrotogo.tg',tel:'+228 90 00 00 03',adr:'Lomé',poste:'Responsable Commercial',dept:'Commercial',cat:'Agent de maîtrise',ct:'CDI',emb:'2020-07-01',sal:290000,cnss:'CNSS-A03',statut:'Actif'},
-          ],
-          conges:[{id:1,empId:1,type:'Congé annuel payé',start:'2026-07-01',end:'2026-07-15',motif:'Vacances',statut:'En attente',days:14,createdAt:'2026-06-20'}],
-          absences:[],discipline:[],ruptures:[],contrats:[],evaluations:[],offers:[],candidates:[],
-          depts:['Commercial','Finance','Direction','Production'],
-          nEmpId:4,nCtId:1,nCgId:2,nAbId:1,nDcId:1,nEvalId:1,nOfId:1,nCandId:1,nRpId:1},
-        {id:'cli-2',name:'BatiConstruct CI',sector:'BTP',pays:'CI',contact:'Mariama Koné',email:'rh@baticonstruct.ci',tel:'+225 07 00 00 01',addedAt:'2026-05-15',
-          employees:[
-            {id:1,mat:'EMP-001',prenom:'Mariama',nom:'Koné',sx:'F',ddn:'1985-03-10',nat:'Ivoirienne',sitMat:'Marié(e)',enf:3,cni:'CI-B01',email:'m.kone@baticonstruct.ci',tel:'+225 07 00 00 01',adr:'Abidjan',poste:'DRH',dept:'RH',cat:'Cadre',ct:'CDI',emb:'2019-06-01',sal:480000,cnss:'CNPS-B01',statut:'Actif'},
-            {id:2,mat:'EMP-002',prenom:'Ibrahim',nom:'Coulibaly',sx:'M',ddn:'1992-09-25',nat:'Ivoirienne',sitMat:'Célibataire',enf:0,cni:'CI-B02',email:'i.coulibaly@baticonstruct.ci',tel:'+225 07 00 00 02',adr:'Abidjan',poste:'Chef de chantier',dept:'Technique',cat:'Agent de maîtrise',ct:'CDI',emb:'2022-01-15',sal:310000,cnss:'CNPS-B02',statut:'Actif'},
-          ],
-          conges:[{id:1,empId:2,type:'Congé annuel payé',start:'2026-08-01',end:'2026-08-10',motif:'Vacances',statut:'En attente',days:9,createdAt:'2026-06-25'}],
-          absences:[],discipline:[],ruptures:[],contrats:[],evaluations:[],offers:[],candidates:[],
-          depts:['RH','Technique','Finance','Direction'],
-          nEmpId:3,nCtId:1,nCgId:2,nAbId:1,nDcId:1,nEvalId:1,nOfId:1,nCandId:1,nRpId:1},
-      ],
-      nClientId:3
-    };
-  }
-  sdb(db); return db;
+// Le panneau superadmin (statistiques cross-cabinets) n'est pas migré :
+// une vue cross-tenant nécessiterait la clé service_role, qui ne doit
+// jamais être exposée côté client. Reste un login local factice, sans
+// données réelles.
+const SA_LOGIN={email:'admin@naola.tg',pw:'naola123'};
+
+// ---- Mapping DB (snake_case) <-> JS (camelCase historique) ----
+function empFromRow(r){return{id:r.id,mat:r.mat,prenom:r.prenom,nom:r.nom,sx:r.sexe,ddn:r.date_naissance,nat:r.nationalite,sitMat:r.situation_matrimoniale,enf:r.nb_enfants,cni:r.cni,email:r.email,tel:r.tel,adr:r.adresse,poste:r.poste,dept:r.dept,cat:r.categorie,ct:r.type_contrat,emb:r.date_embauche,sal:r.salaire,cnss:r.cnss,statut:r.statut};}
+function empToRow(e,companyId){return{company_id:companyId,mat:e.mat,prenom:e.prenom,nom:e.nom,sexe:e.sx,date_naissance:e.ddn||null,nationalite:e.nat,situation_matrimoniale:e.sitMat,nb_enfants:e.enf||0,cni:e.cni,email:e.email,tel:e.tel,adresse:e.adr,poste:e.poste,dept:e.dept,categorie:e.cat,type_contrat:e.ct,date_embauche:e.emb||null,salaire:e.sal||0,cnss:e.cnss,statut:e.statut||'Actif'};}
+function ctFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,start:r.start_date,end:r.end_date,essai:r.essai,sal:r.salaire,lieu:r.lieu,cat:r.categorie,statut:r.statut};}
+function cgFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,start:r.start_date,end:r.end_date,motif:r.motif,statut:r.statut,days:r.days,createdAt:r.created_at?.slice(0,10)};}
+function abFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,start:r.start_date,end:r.end_date,just:r.justifiee,paie:r.impact_paie,com:r.commentaire,statut:r.statut};}
+function dcFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,dateFaits:r.date_faits,dateConv:r.date_convocation,faits:r.faits,decision:r.decision,createdAt:r.created_at?.slice(0,10)};}
+function rpFromRow(r){return{id:r.id,empId:r.employee_id,motif:r.motif,date:r.date,preavis:r.preavis,indem:r.indemnite,obs:r.observations,createdAt:r.created_at?.slice(0,10)};}
+function evFromRow(r){return{id:r.id,empId:r.employee_id,period:r.period,perf:r.perf,comm:r.comm,init:r.init,ponct:r.ponct,comment:r.comment,createdAt:r.created_at?.slice(0,10)};}
+function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10)};}
+function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10)};}
+function msFromRow(r){return{id:r.id,name:r.name,clientFinal:r.client_final,address:r.address,agentsNeeded:r.agents_needed,status:r.status,startDate:r.start_date};}
+function dpFromRow(r){return{id:r.id,missionId:r.mission_id,empId:r.employee_id,startDate:r.start_date,endDate:r.end_date,status:r.status};}
+
+// ---- Charge une entreprise/client avec TOUTES ses données liées (hydrate) ----
+async function loadCompanyFull(companyId){
+  const [company,employees,contracts,conges,absences,discipline,ruptures,evaluations,offers,candidates,missions,deployments]=await Promise.all([
+    sb.from('companies').select('*').eq('id',companyId).single(),
+    sb.from('employees').select('*').eq('company_id',companyId).order('created_at'),
+    sb.from('contracts').select('*').eq('company_id',companyId),
+    sb.from('conges').select('*').eq('company_id',companyId).order('created_at',{ascending:false}),
+    sb.from('absences').select('*').eq('company_id',companyId),
+    sb.from('discipline').select('*').eq('company_id',companyId),
+    sb.from('ruptures').select('*').eq('company_id',companyId),
+    sb.from('evaluations').select('*').eq('company_id',companyId),
+    sb.from('offers').select('*').eq('company_id',companyId),
+    sb.from('candidates').select('*').eq('company_id',companyId),
+    sb.from('missions').select('*').eq('company_id',companyId),
+    sb.from('deployments').select('*').eq('company_id',companyId),
+  ]);
+  if(company.error||!company.data)return null;
+  const c=company.data;
+  return{
+    id:c.id,name:c.name,sector:c.sector,pays:c.pays,adminName:c.admin_name,adminEmail:c.contact_email,
+    contact:c.contact_name,email:c.contact_email,tel:c.contact_tel,
+    plan:c.plan,trialStart:c.trial_start,depts:(c.depts&&c.depts.length?c.depts:[...DEPTS]),
+    addedAt:c.created_at?.slice(0,10),
+    employees:(employees.data||[]).map(empFromRow),
+    contrats:(contracts.data||[]).map(ctFromRow),
+    conges:(conges.data||[]).map(cgFromRow),
+    absences:(absences.data||[]).map(abFromRow),
+    discipline:(discipline.data||[]).map(dcFromRow),
+    ruptures:(ruptures.data||[]).map(rpFromRow),
+    evaluations:(evaluations.data||[]).map(evFromRow),
+    offers:(offers.data||[]).map(ofFromRow),
+    candidates:(candidates.data||[]).map(caFromRow),
+    missions:(missions.data||[]).map(msFromRow),
+    deployments:(deployments.data||[]).map(dpFromRow),
+  };
 }
 
 // ══════════════════════════════════════
-// SESSION
+// SESSION — CURRENT_CO/CURRENT_CAB sont des caches en mémoire,
+// hydratés une fois depuis Supabase à la connexion/navigation, puis
+// mutés en place à chaque opération pour un rendu synchrone immédiat.
+// La persistance réelle se fait dans chaque fonction de sauvegarde via
+// des appels Supabase ciblés (voir sco() ci-dessous, devenu un no-op).
 // ══════════════════════════════════════
-let CU=null,selPlanName='Starter';
-function gdb(){return ldb();}
+let CU=null,selPlanName='Starter',CURRENT_CO=null,CURRENT_CAB=null;
 function gco(){
   if(CU?.t==='cab')return activeCabClient||null;
   if(!CU||CU.t!=='co')return null;
-  return ldb().cos[CU.id]||null;
+  return CURRENT_CO;
 }
-function sco(co){
-  if(CU?.t==='cab'){if(activeCabClient)saveCabClient(activeCabClient.id);return;}
-  const db=gdb();db.cos[co.id]=co;sdb(db);
-}
+function sco(){/* no-op : chaque fonction persiste elle-même via Supabase */}
 
 // ══════════════════════════════════════
-// AUTH
+// AUTH — Supabase Auth réel
 // ══════════════════════════════════════
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
-function doLogin(){
+// Supabase exige par défaut la confirmation d'email avant qu'une session
+// n'existe : à l'inscription, si aucune session n'est retournée, la ligne
+// companies/cabinets ne peut pas encore être créée (RLS exige auth.uid()).
+// On mémorise temporairement les infos saisies pour les appliquer à la
+// première connexion réussie après confirmation.
+function stashPending(kind,email,data){localStorage.setItem('naola_pending_'+kind+'_'+email,JSON.stringify(data));}
+function popPending(kind,email){const k='naola_pending_'+kind+'_'+email;const v=localStorage.getItem(k);if(v)localStorage.removeItem(k);return v?JSON.parse(v):null;}
+
+async function doLogin(){
   const email=document.getElementById('l-email').value.trim().toLowerCase();
   const pw=document.getElementById('l-pw').value;
-  const db=gdb();
-  if(email===db.sa.email&&pw===db.sa.pw){CU={t:'super'};show('s-super');saGo('sa-dash');return;}
-  const co=Object.values(db.cos).find(c=>c.adminEmail.toLowerCase()===email&&c.pw===pw);
-  if(co){CU={t:'co',id:co.id};initShell(co);show('s-app');go('p-dash');return;}
-  toast('Email ou mot de passe incorrect.','err');
+  if(email===SA_LOGIN.email&&pw===SA_LOGIN.pw){CU={t:'super'};show('s-super');saGo('sa-dash');return;}
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error||!data.session){toast('Email ou mot de passe incorrect.','err');return;}
+  let{data:company}=await sb.from('companies').select('id').eq('owner_auth_id',data.user.id).maybeSingle();
+  if(!company){
+    const pending=popPending('co',email);
+    if(pending){
+      const{data:created,error:e2}=await sb.from('companies').insert({owner_auth_id:data.user.id,...pending}).select('id').single();
+      if(e2){toast('Erreur de création du compte : '+e2.message,'err');return;}
+      company=created;
+    }
+  }
+  if(!company){toast('Ce compte n\'est pas un compte entreprise directe.','err');await sb.auth.signOut();return;}
+  CURRENT_CO=await loadCompanyFull(company.id);
+  if(!CURRENT_CO){toast('Erreur de chargement du compte.','err');return;}
+  CU={t:'co',id:company.id};initShell(CURRENT_CO);show('s-app');go('p-dash');
 }
-function demo(t){
+async function demo(t){
   if(t==='super'){document.getElementById('l-email').value='admin@naola.tg';document.getElementById('l-pw').value='naola123';}
   else{document.getElementById('l-email').value='demo@techtogo.tg';document.getElementById('l-pw').value='demo123';}
-  doLogin();
+  await doLogin();
 }
-function doRegister(){
+async function doRegister(){
   const p=document.getElementById('r-prenom').value.trim();
   const n=document.getElementById('r-nom').value.trim();
   const nm=document.getElementById('r-co').value.trim();
@@ -1104,14 +1085,17 @@ function doRegister(){
   const pw=document.getElementById('r-pw').value;
   if(!p||!n||!nm||!email||!pw){toast('Tous les champs sont requis.','err');return;}
   if(pw.length<6){toast('Mot de passe : 6 caractères minimum.','err');return;}
-  const db=gdb();
-  if(Object.values(db.cos).find(c=>c.adminEmail.toLowerCase()===email)){toast('Email déjà utilisé.','err');return;}
-  const id='co-'+Date.now();
-  const co={id,name:nm,sector,pays,adminEmail:email,pw,adminName:`${p} ${n}`,trialStart:new Date().toISOString(),plan:'trial',depts:[...DEPTS],employees:[],contrats:[],conges:[],absences:[],discipline:[],ruptures:[],evaluations:[],offers:[],candidates:[],nEmpId:1,nCtId:1,nCgId:1,nAbId:1,nDcId:1,nEvalId:1,nOfId:1,nCandId:1,nRpId:1};
-  db.cos[id]=co;sdb(db);CU={t:'co',id};initShell(co);show('s-app');go('p-dash');
+  const{data,error}=await sb.auth.signUp({email,password:pw});
+  if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
+  const pendingRow={name:nm,sector,pays,admin_name:`${p} ${n}`,contact_email:email};
+  if(!data.session){stashPending('co',email,pendingRow);toast('Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous.','info');show('s-login');return;}
+  const{data:company,error:e2}=await sb.from('companies').insert({owner_auth_id:data.user.id,...pendingRow}).select().single();
+  if(e2){toast('Erreur de création du compte : '+e2.message,'err');return;}
+  CURRENT_CO=await loadCompanyFull(company.id);
+  CU={t:'co',id:company.id};initShell(CURRENT_CO);show('s-app');go('p-dash');
   toast(`Bienvenue ${p} ! Votre essai de 14 jours a démarré.`,'info');
 }
-function doLogout(){CU=null;show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+async function doLogout(){CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;await sb.auth.signOut();show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
 
 // ══════════════════════════════════════
 // SHELL
@@ -1285,8 +1269,8 @@ function pDash(host,co){
   <div class="card"><div class="card-hd"><div><p class="card-title">Demandes de congé récentes</p><p class="card-sub">${pend} en attente</p></div><button class="btn bo bsm" onclick="go('p-conges')">Voir tout</button></div>
     <div class="tw"><table id="dash-cg"></table></div>
   </div>`;
-  const rec=co.conges.slice().sort((a,b)=>b.id-a.id).slice(0,5);
-  document.getElementById('dash-cg').innerHTML=`<thead><tr><th>Employé</th><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th><th></th></tr></thead><tbody>${rec.map(c=>{const e=co.employees.find(x=>x.id===c.empId);if(!e)return'';const idx=co.employees.indexOf(e);return`<tr><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.dept}</div></div></div></td><td style="font-size:12px">${c.type}</td><td>${fd(c.start)} → ${fd(c.end)}</td><td class="fw7">${c.days}j</td><td>${bCg(c.statut)}</td><td>${c.statut==='En attente'?`<div style="display:flex;gap:5px"><button class="btn bs bxs" onclick="updCg(${c.id},'Approuvé')"><i class="ti ti-check"></i></button><button class="btn bd bxs" onclick="updCg(${c.id},'Refusé')"><i class="ti ti-x"></i></button></div>`:''}</td></tr>`;}).join('')}</tbody>`;
+  const rec=co.conges.slice().sort((a,b)=>new Date(b.createdAt||0)-new Date(a.createdAt||0)).slice(0,5);
+  document.getElementById('dash-cg').innerHTML=`<thead><tr><th>Employé</th><th>Type</th><th>Période</th><th>Jours</th><th>Statut</th><th></th></tr></thead><tbody>${rec.map(c=>{const e=co.employees.find(x=>x.id===c.empId);if(!e)return'';const idx=co.employees.indexOf(e);return`<tr><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.dept}</div></div></div></td><td style="font-size:12px">${c.type}</td><td>${fd(c.start)} → ${fd(c.end)}</td><td class="fw7">${c.days}j</td><td>${bCg(c.statut)}</td><td>${c.statut==='En attente'?`<div style="display:flex;gap:5px"><button class="btn bs bxs" onclick="updCg('${c.id}','Approuvé')"><i class="ti ti-check"></i></button><button class="btn bd bxs" onclick="updCg('${c.id}','Refusé')"><i class="ti ti-x"></i></button></div>`:''}</td></tr>`;}).join('')}</tbody>`;
 }
 
 // ══════════════════════════════════════
@@ -1303,15 +1287,15 @@ function rEmp(){
   const df=document.getElementById('edf')?.value||'';
   const sf=document.getElementById('esf')?.value||'';
   const f=co.employees.filter(e=>(`${e.prenom} ${e.nom} ${e.poste} ${e.mat}`).toLowerCase().includes(q)&&(!df||e.dept===df)&&(!sf||e.statut===sf));
-  document.getElementById('emp-tbl').innerHTML=`<thead><tr><th>Matricule</th><th>Employé</th><th>Poste</th><th>Catégorie</th><th>Contrat</th><th>Ancienneté</th><th>Salaire brut</th><th>Statut</th><th></th></tr></thead><tbody>${f.length===0?`<tr><td colspan="9"><div class="empty"><i class="ti ti-users"></i><p>Aucun employé trouvé</p></div></td></tr>`:f.map(e=>{const idx=co.employees.indexOf(e);const a=anc(e.emb);return`<tr><td><span class="badge bs2">${e.mat}</span></td><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td><td>${e.poste}</td><td><span class="badge bb2">${e.cat}</span></td><td>${e.ct}</td><td>${a}an${a>1?'s':''}</td><td class="fw7">${fm(e.sal)}</td><td>${bEmp(e.statut)}</td><td><div style="display:flex;gap:4px"><button class="btn bg bxs" onclick="showDetail(${e.id})"><i class="ti ti-eye"></i></button><button class="btn bd bxs" onclick="delEmp(${e.id})"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('')}</tbody>`;
+  document.getElementById('emp-tbl').innerHTML=`<thead><tr><th>Matricule</th><th>Employé</th><th>Poste</th><th>Catégorie</th><th>Contrat</th><th>Ancienneté</th><th>Salaire brut</th><th>Statut</th><th></th></tr></thead><tbody>${f.length===0?`<tr><td colspan="9"><div class="empty"><i class="ti ti-users"></i><p>Aucun employé trouvé</p></div></td></tr>`:f.map(e=>{const idx=co.employees.indexOf(e);const a=anc(e.emb);return`<tr><td><span class="badge bs2">${e.mat}</span></td><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.email}</div></div></div></td><td>${e.poste}</td><td><span class="badge bb2">${e.cat}</span></td><td>${e.ct}</td><td>${a}an${a>1?'s':''}</td><td class="fw7">${fm(e.sal)}</td><td>${bEmp(e.statut)}</td><td><div style="display:flex;gap:4px"><button class="btn bg bxs" onclick="showDetail('${e.id}')"><i class="ti ti-eye"></i></button><button class="btn bd bxs" onclick="delEmp('${e.id}')"><i class="ti ti-trash"></i></button></div></td></tr>`;}).join('')}</tbody>`;
 }
 function openEmpModal(){
   const co=gco();if(!co)return;
-  document.getElementById('m-emp-t').textContent='Ajouter un employé';
+  document.getElementById('m-emp-t').textContent=CU?.t==='cab'?`Ajouter un employé — ${co.name}`:'Ajouter un employé';
   document.getElementById('ep-dept').innerHTML=(co.depts||DEPTS).map(d=>`<option>${d}</option>`).join('');
   openModal('m-emp');
 }
-function saveEmp(){
+async function saveEmp(){
   const co=gco();if(!co)return;
   const p=document.getElementById('ep-p').value.trim();
   const n=document.getElementById('ep-n').value.trim();
@@ -1321,14 +1305,23 @@ function saveEmp(){
   const emb=document.getElementById('ep-emb').value;
   const sal=document.getElementById('ep-sal').value;
   if(!p||!n||!po||!dept||!em||!emb){toast('Champs obligatoires manquants.','err');return;}
-  const db=gdb();const c=db.cos[CU.id];
-  const mat=`EMP-${String(c.nEmpId).padStart(3,'0')}`;
-  c.employees.push({id:c.nEmpId++,mat,prenom:p,nom:n,sx:document.getElementById('ep-sx').value,ddn:document.getElementById('ep-ddn').value,nat:document.getElementById('ep-nat').value||'Togolaise',sitMat:document.getElementById('ep-mat').value,enf:Number(document.getElementById('ep-enf').value)||0,cni:document.getElementById('ep-cni').value,email:em,tel:document.getElementById('ep-tel').value,adr:document.getElementById('ep-adr').value,poste:po,dept,cat:document.getElementById('ep-cat').value,ct:document.getElementById('ep-ct').value,emb,sal:Number(sal)||0,cnss:document.getElementById('ep-cnss').value||`CNSS-${c.nEmpId}`,statut:'Actif'});
-  sco(c);closeModal('m-emp');toast(`${p} ${n} ajouté avec succès.`);
+  const mat=`EMP-${String(co.employees.length+1).padStart(3,'0')}`;
+  const emp={mat,prenom:p,nom:n,sx:document.getElementById('ep-sx').value,ddn:document.getElementById('ep-ddn').value,nat:document.getElementById('ep-nat').value||'Togolaise',sitMat:document.getElementById('ep-mat').value,enf:Number(document.getElementById('ep-enf').value)||0,cni:document.getElementById('ep-cni').value,email:em,tel:document.getElementById('ep-tel').value,adr:document.getElementById('ep-adr').value,poste:po,dept,cat:document.getElementById('ep-cat').value,ct:document.getElementById('ep-ct').value,emb,sal:Number(sal)||0,cnss:document.getElementById('ep-cnss').value||`CNSS-${co.employees.length+1}`,statut:'Actif'};
+  const{data,error}=await sb.from('employees').insert(empToRow(emp,co.id)).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.employees.push(empFromRow(data));
+  closeModal('m-emp');toast(`${p} ${n} ajouté avec succès.`);
   ['ep-p','ep-n','ep-poste','ep-email','ep-tel','ep-adr','ep-sal','ep-cnss','ep-cni','ep-ddn','ep-nat','ep-emb'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(document.getElementById('emp-tbl'))rEmp();
 }
-function delEmp(id){if(!confirm('Supprimer cet employé ?'))return;const db=gdb();const c=db.cos[CU.id];c.employees=c.employees.filter(e=>e.id!==id);sco(c);rEmp();toast('Employé supprimé.');}
+async function delEmp(id){
+  if(!confirm('Supprimer cet employé ?'))return;
+  const co=gco();if(!co)return;
+  const{error}=await sb.from('employees').delete().eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.employees=co.employees.filter(e=>e.id!==id);
+  rEmp();toast('Employé supprimé.');
+}
 function showDetail(id){
   const co=gco();if(!co)return;
   const e=co.employees.find(x=>x.id===id);if(!e)return;
@@ -1378,14 +1371,17 @@ function openContratModal(){
   document.getElementById('ct-emp').innerHTML=co.employees.filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
   openModal('m-contrat');
 }
-function saveContrat(){
+async function saveContrat(){
   const co=gco();if(!co)return;
-  const empId=Number(document.getElementById('ct-emp').value);
+  const empId=document.getElementById('ct-emp').value;
   const start=document.getElementById('ct-start').value;
   if(!empId||!start){toast('Champs requis manquants.','err');return;}
-  const db=gdb();const c=db.cos[CU.id];
-  c.contrats.push({id:c.nCtId++,empId,type:document.getElementById('ct-type').value,start,end:document.getElementById('ct-end').value||null,essai:document.getElementById('ct-essai').value,sal:Number(document.getElementById('ct-sal').value)||0,lieu:document.getElementById('ct-lieu').value,cat:document.getElementById('ct-cat').value,statut:'Actif'});
-  sco(c);closeModal('m-contrat');toast('Contrat créé.');go('p-contrats');
+  const row={company_id:co.id,employee_id:empId,type:document.getElementById('ct-type').value,start_date:start,end_date:document.getElementById('ct-end').value||null,essai:document.getElementById('ct-essai').value,salaire:Number(document.getElementById('ct-sal').value)||0,lieu:document.getElementById('ct-lieu').value,categorie:document.getElementById('ct-cat').value,statut:'Actif'};
+  const{data,error}=await sb.from('contracts').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.contrats.push(ctFromRow(data));
+  closeModal('m-contrat');toast('Contrat créé.');
+  if(CU?.t==='cab')cabCoGo('p-contrats');else go('p-contrats');
 }
 
 // ══════════════════════════════════════
@@ -1423,29 +1419,34 @@ function rCg(){
   const co=gco();if(!co)return;
   const sf=document.getElementById('cgf')?.value||'';
   const f=co.conges.filter(c=>!sf||c.statut===sf);
-  document.getElementById('cg-tbl').innerHTML=`<thead><tr><th>Employé</th><th>Type</th><th>Début</th><th>Fin</th><th>Jours</th><th>Motif</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="8"><div class="empty"><i class="ti ti-beach"></i><p>Aucune demande de congé</p></div></td></tr>`:f.map(c=>{const e=co.employees.find(x=>x.id===c.empId);if(!e)return'';const idx=co.employees.indexOf(e);return`<tr><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.dept}</div></div></div></td><td style="font-size:12px">${c.type}</td><td>${fd(c.start)}</td><td>${fd(c.end)}</td><td class="fw7">${c.days}j</td><td style="font-size:12px;color:var(--text3)">${c.motif||'—'}</td><td>${bCg(c.statut)}</td><td>${c.statut==='En attente'?`<div style="display:flex;gap:5px"><button class="btn bs bxs" onclick="updCg(${c.id},'Approuvé')"><i class="ti ti-check"></i> Approuver</button><button class="btn bd bxs" onclick="updCg(${c.id},'Refusé')"><i class="ti ti-x"></i></button></div>`:'<span style="font-size:11px;color:var(--text3)">Traité</span>'}</td></tr>`;}).join('')}</tbody>`;
+  document.getElementById('cg-tbl').innerHTML=`<thead><tr><th>Employé</th><th>Type</th><th>Début</th><th>Fin</th><th>Jours</th><th>Motif</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="8"><div class="empty"><i class="ti ti-beach"></i><p>Aucune demande de congé</p></div></td></tr>`:f.map(c=>{const e=co.employees.find(x=>x.id===c.empId);if(!e)return'';const idx=co.employees.indexOf(e);return`<tr><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.dept}</div></div></div></td><td style="font-size:12px">${c.type}</td><td>${fd(c.start)}</td><td>${fd(c.end)}</td><td class="fw7">${c.days}j</td><td style="font-size:12px;color:var(--text3)">${c.motif||'—'}</td><td>${bCg(c.statut)}</td><td>${c.statut==='En attente'?`<div style="display:flex;gap:5px"><button class="btn bs bxs" onclick="updCg('${c.id}','Approuvé')"><i class="ti ti-check"></i> Approuver</button><button class="btn bd bxs" onclick="updCg('${c.id}','Refusé')"><i class="ti ti-x"></i></button></div>`:'<span style="font-size:11px;color:var(--text3)">Traité</span>'}</td></tr>`;}).join('')}</tbody>`;
 }
 function openCongeModal(){
   const co=gco();if(!co)return;
   document.getElementById('cg-emp').innerHTML=co.employees.filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
   openModal('m-conge');
 }
-function saveConge(){
+async function saveConge(){
   const co=gco();if(!co)return;
-  const empId=Number(document.getElementById('cg-emp').value);
+  const empId=document.getElementById('cg-emp').value;
   const start=document.getElementById('cg-start').value;
   const end=document.getElementById('cg-end').value;
   if(!empId||!start||!end){toast('Champs requis manquants.','err');return;}
   if(new Date(end)<new Date(start)){toast('Date de fin avant date de début.','err');return;}
-  const db=gdb();const c=db.cos[CU.id];
-  c.conges.push({id:c.nCgId++,empId,type:document.getElementById('cg-type').value,start,end,motif:document.getElementById('cg-motif').value,statut:'En attente',days:ddays(start,end),createdAt:new Date().toISOString().split('T')[0]});
-  sco(c);closeModal('m-conge');toast('Demande soumise.');
+  const row={company_id:co.id,employee_id:empId,type:document.getElementById('cg-type').value,start_date:start,end_date:end,motif:document.getElementById('cg-motif').value,statut:'En attente',days:ddays(start,end)};
+  const{data,error}=await sb.from('conges').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.conges.unshift(cgFromRow(data));
+  closeModal('m-conge');toast('Demande soumise.');
   ['cg-start','cg-end','cg-motif'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(document.getElementById('cg-tbl'))rCg();updBadges();
 }
-function updCg(id,status){
-  const db=gdb();const c=db.cos[CU.id];const cg=c.conges.find(x=>x.id===id);if(cg)cg.statut=status;sco(c);
-  if(document.getElementById('cg-tbl'))rCg();if(document.getElementById('dash-cg'))pDash(document.getElementById('page-host'),gco());
+async function updCg(id,status){
+  const co=gco();if(!co)return;
+  const{error}=await sb.from('conges').update({statut:status}).eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  const cg=co.conges.find(x=>x.id===id);if(cg)cg.statut=status;
+  if(document.getElementById('cg-tbl'))rCg();if(document.getElementById('dash-cg')&&CU?.t==='co')pDash(document.getElementById('page-host'),gco());
   updBadges();toast(`Congé ${status.toLowerCase()}.`);
 }
 // ══════════════════════════════════════
@@ -1464,14 +1465,16 @@ function openAbsModal(){
   document.getElementById('ab-emp').innerHTML=co.employees.filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
   openModal('m-absence');
 }
-function saveAbsence(){
+async function saveAbsence(){
   const co=gco();if(!co)return;
-  const empId=Number(document.getElementById('ab-emp').value);
+  const empId=document.getElementById('ab-emp').value;
   const start=document.getElementById('ab-start').value;
   if(!empId||!start){toast('Champs requis manquants.','err');return;}
-  const db=gdb();const c=db.cos[CU.id];
-  c.absences.push({id:c.nAbId++,empId,type:document.getElementById('ab-type').value,start,end:document.getElementById('ab-end').value||null,just:document.getElementById('ab-just').value,paie:document.getElementById('ab-paie').value,com:document.getElementById('ab-com').value,statut:'Validée'});
-  sco(c);closeModal('m-absence');toast('Absence enregistrée.');
+  const row={company_id:co.id,employee_id:empId,type:document.getElementById('ab-type').value,start_date:start,end_date:document.getElementById('ab-end').value||null,justifiee:document.getElementById('ab-just').value,impact_paie:document.getElementById('ab-paie').value,commentaire:document.getElementById('ab-com').value,statut:'Validée'};
+  const{data,error}=await sb.from('absences').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.absences.push(abFromRow(data));
+  closeModal('m-absence');toast('Absence enregistrée.');
   ['ab-start','ab-end','ab-com'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(document.getElementById('ab-tbl'))rAb();
 }
@@ -1492,14 +1495,16 @@ function openDiscModal(){
   document.getElementById('dc-emp').innerHTML=co.employees.filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
   openModal('m-disc');
 }
-function saveDisc(){
+async function saveDisc(){
   const co=gco();if(!co)return;
-  const empId=Number(document.getElementById('dc-emp').value);
+  const empId=document.getElementById('dc-emp').value;
   const faits=document.getElementById('dc-faits').value.trim();
   if(!empId||!faits){toast('Champs requis manquants.','err');return;}
-  const db=gdb();const c=db.cos[CU.id];
-  c.discipline.push({id:c.nDcId++,empId,type:document.getElementById('dc-type').value,dateFaits:document.getElementById('dc-faits-date').value,dateConv:document.getElementById('dc-conv-date').value,faits,decision:document.getElementById('dc-decision').value,createdAt:new Date().toISOString().split('T')[0]});
-  sco(c);closeModal('m-disc');toast('Procédure enregistrée.');
+  const row={company_id:co.id,employee_id:empId,type:document.getElementById('dc-type').value,date_faits:document.getElementById('dc-faits-date').value||null,date_convocation:document.getElementById('dc-conv-date').value||null,faits,decision:document.getElementById('dc-decision').value};
+  const{data,error}=await sb.from('discipline').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.discipline.push(dcFromRow(data));
+  closeModal('m-disc');toast('Procédure enregistrée.');
   ['dc-faits-date','dc-conv-date','dc-faits','dc-decision'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(document.getElementById('dc-tbl'))rDc();
 }
@@ -1523,7 +1528,7 @@ function openRuptureModal(){
 }
 function calcIndem(){
   const co=gco();if(!co)return;
-  const empId=Number(document.getElementById('rp-emp')?.value);
+  const empId=document.getElementById('rp-emp')?.value;
   const motif=document.getElementById('rp-motif')?.value||'';
   const e=co.employees.find(x=>x.id===empId);
   const el=document.getElementById('indem-result');if(!el)return;
@@ -1532,19 +1537,24 @@ function calcIndem(){
   if(!res.due){el.innerHTML=`<p style="color:var(--amber);font-weight:600"><i class="ti ti-info-circle"></i> Indemnité non due : ${res.raison}</p>`;return;}
   el.innerHTML=`<p style="font-weight:700;margin-bottom:.5rem">Calcul selon barème ${lg.pays}</p>${res.detail.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0"><span>${d.split('=')[0]}</span><span class="fw7">${(d.split('=')[1]||'').trim()}</span></div>`).join('')}<div style="border-top:1.5px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:800"><span>Total indemnité</span><span style="color:var(--green)">${fm(res.total)}</span></div><p style="font-size:11px;color:var(--text3);margin-top:5px">${res.a} an(s) · ${fm(res.salM)}/mois · ${lg.code}</p>`;
 }
-function saveRupture(){
+async function saveRupture(){
   const co=gco();if(!co)return;
-  const empId=Number(document.getElementById('rp-emp').value);
+  const empId=document.getElementById('rp-emp').value;
   const motif=document.getElementById('rp-motif').value;
   const date=document.getElementById('rp-date').value;
   if(!empId||!date){toast('Champs requis manquants.','err');return;}
   const e=co.employees.find(x=>x.id===empId);if(!e)return;
   const res=calcIndemLic(co,e,motif);
-  const db=gdb();const c=db.cos[CU.id];
-  c.ruptures.push({id:c.nRpId++,empId,motif,date,preavis:document.getElementById('rp-preavis').value,indem:res.due?res.total:0,obs:document.getElementById('rp-obs').value,createdAt:new Date().toISOString().split('T')[0]});
-  const emp=c.employees.find(x=>x.id===empId);if(emp)emp.statut='Inactif';
-  sco(c);closeModal('m-rupture');toast('Rupture enregistrée. Employé marqué inactif.');
-  document.getElementById('rp-obs').value='';go('p-rupture');
+  const row={company_id:co.id,employee_id:empId,motif,date,preavis:document.getElementById('rp-preavis').value,indemnite:res.due?res.total:0,observations:document.getElementById('rp-obs').value};
+  const{data,error}=await sb.from('ruptures').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  const{error:e2}=await sb.from('employees').update({statut:'Inactif'}).eq('id',empId);
+  if(e2){toast('Erreur : '+e2.message,'err');return;}
+  co.ruptures.push(rpFromRow(data));
+  e.statut='Inactif';
+  closeModal('m-rupture');toast('Rupture enregistrée. Employé marqué inactif.');
+  document.getElementById('rp-obs').value='';
+  if(CU?.t==='cab')cabCoGo('p-rupture');else go('p-rupture');
 }
 
 // ══════════════════════════════════════
@@ -1630,25 +1640,27 @@ function rPipe(){
   const board=document.getElementById('pipe-board');if(!board)return;
   board.innerHTML=stages.map((st,si)=>{
     const cands=(co.candidates||[]).filter(c=>c.statut===st);
-    return`<div class="pcol" style="border-top-color:${cols[si]}"><div class="pcol-hd"><span class="pcol-title">${labels[si]}</span><span class="pcnt">${cands.length}</span></div>${cands.length===0?`<p style="font-size:11.5px;color:var(--text3);text-align:center;padding:.5rem">Aucun</p>`:cands.map(c=>{const off=(co.offers||[]).find(o=>o.id===c.offerId);return`<div class="cc"><p style="font-size:12.5px;font-weight:700">${c.prenom} ${c.nom}</p><p style="font-size:11.5px;color:var(--text3)">${off?off.title:'—'}</p>${c.note?`<p style="font-size:11px;color:var(--text2);margin-top:4px">${c.note}</p>`:''}${st!=='Recruté'&&st!=='Refusé'?`<div style="display:flex;gap:4px;margin-top:8px">${si<2?`<button class="btn bs bxs" onclick="mvCand(${c.id},'${stages[si+1]}')"><i class="ti ti-arrow-right"></i></button>`:''}<button class="btn bd bxs" onclick="mvCand(${c.id},'Refusé')"><i class="ti ti-x"></i></button></div>`:''}</div>`;}).join('')}</div>`;
+    return`<div class="pcol" style="border-top-color:${cols[si]}"><div class="pcol-hd"><span class="pcol-title">${labels[si]}</span><span class="pcnt">${cands.length}</span></div>${cands.length===0?`<p style="font-size:11.5px;color:var(--text3);text-align:center;padding:.5rem">Aucun</p>`:cands.map(c=>{const off=(co.offers||[]).find(o=>o.id===c.offerId);return`<div class="cc"><p style="font-size:12.5px;font-weight:700">${c.prenom} ${c.nom}</p><p style="font-size:11.5px;color:var(--text3)">${off?off.title:'—'}</p>${c.note?`<p style="font-size:11px;color:var(--text2);margin-top:4px">${c.note}</p>`:''}${st!=='Recruté'&&st!=='Refusé'?`<div style="display:flex;gap:4px;margin-top:8px">${si<2?`<button class="btn bs bxs" onclick="mvCand('${c.id}','${stages[si+1]}')"><i class="ti ti-arrow-right"></i></button>`:''}<button class="btn bd bxs" onclick="mvCand('${c.id}','Refusé')"><i class="ti ti-x"></i></button></div>`:''}</div>`;}).join('')}</div>`;
   }).join('');
 }
 function rOffers(){
   const co=gco();if(!co)return;
   const el=document.getElementById('offers-list');if(!el)return;
-  el.innerHTML=(co.offers||[]).length===0?`<div class="empty"><i class="ti ti-briefcase"></i><p>Aucune offre créée</p></div>`:(co.offers||[]).map(o=>{const n=(co.candidates||[]).filter(c=>c.offerId===o.id).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><p style="font-size:13.5px;font-weight:700">${o.title}</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${o.dept} · ${o.contract} · ${fm(o.salary)} · ${n} candidat(s)</p></div><div style="display:flex;gap:6px"><span class="badge ${o.statut==='Ouverte'?'bg2':'bs2'}">${o.statut}</span><button class="btn bd bxs" onclick="delOffer(${o.id})"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
+  el.innerHTML=(co.offers||[]).length===0?`<div class="empty"><i class="ti ti-briefcase"></i><p>Aucune offre créée</p></div>`:(co.offers||[]).map(o=>{const n=(co.candidates||[]).filter(c=>c.offerId===o.id).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><p style="font-size:13.5px;font-weight:700">${o.title}</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${o.dept} · ${o.contract} · ${fm(o.salary)} · ${n} candidat(s)</p></div><div style="display:flex;gap:6px"><span class="badge ${o.statut==='Ouverte'?'bg2':'bs2'}">${o.statut}</span><button class="btn bd bxs" onclick="delOffer('${o.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
 }
-function openOfferModal(){
+async function openOfferModal(){
   const co=gco();if(!co)return;
   const t=prompt('Intitulé du poste :');if(!t)return;
   const d=prompt('Département :');if(!d)return;
   const s=prompt('Salaire proposé (FCFA) :')||'0';
-  const c=gco();if(!c)return;
-  if(!c.offers)c.offers=[];if(!c.nOfId)c.nOfId=1;
-  c.offers.push({id:c.nOfId++,title:t,dept:d,contract:'CDI',location:'Lomé',salary:Number(s),desc:'',statut:'Ouverte',createdAt:new Date().toISOString().split('T')[0]});
-  sco(c);rOffers();rPipe();toast('Offre publiée.');
+  const row={company_id:co.id,title:t,dept:d,contract:'CDI',location:'Lomé',salary:Number(s),description:'',statut:'Ouverte'};
+  const{data,error}=await sb.from('offers').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  if(!co.offers)co.offers=[];
+  co.offers.push(ofFromRow(data));
+  rOffers();rPipe();toast('Offre publiée.');
 }
-function openCandModal(){
+async function openCandModal(){
   const co=gco();if(!co)return;
   const opens=(co.offers||[]).filter(o=>o.statut==='Ouverte');
   if(opens.length===0){toast('Créez d\'abord une offre ouverte.','err');return;}
@@ -1656,25 +1668,40 @@ function openCandModal(){
   const parts=nom.trim().split(' ');const prenom=parts[0];const n2=parts.slice(1).join(' ')||'—';
   const email=prompt('Email :');if(!email)return;
   const note=prompt('Notes :')||'';
-  const c=gco();if(!c)return;
-  if(!c.candidates)c.candidates=[];if(!c.nCandId)c.nCandId=1;
-  c.candidates.push({id:c.nCandId++,prenom,nom:n2,email,tel:'',offerId:opens[0].id,note,statut:'Candidature reçue',createdAt:new Date().toISOString().split('T')[0]});
-  sco(c);rPipe();rOffers();toast('Candidat ajouté.');
+  const row={company_id:co.id,offer_id:opens[0].id,prenom,nom:n2,email,tel:'',note,statut:'Candidature reçue'};
+  const{data,error}=await sb.from('candidates').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  if(!co.candidates)co.candidates=[];
+  co.candidates.push(caFromRow(data));
+  rPipe();rOffers();toast('Candidat ajouté.');
 }
-function mvCand(id,stage){
-  const c=gco();if(!c)return;
-  const ca=c.candidates.find(x=>x.id===id);if(ca)ca.statut=stage;sco(c);rPipe();rOffers();toast(`→ ${stage}.`);
-  if(stage==='Recruté'){setTimeout(()=>{if(confirm('Ajouter comme employé ?')){
-    const c2=gco();if(!c2)return;
-    const off=(c2.offers||[]).find(o=>o.id===ca.offerId);
-    if(!c2.nEmpId)c2.nEmpId=1;
-    c2.employees.push({id:c2.nEmpId++,mat:`EMP-${String(c2.nEmpId).padStart(3,'0')}`,prenom:ca.prenom,nom:ca.nom,sx:'—',ddn:'',nat:'—',sitMat:'Célibataire',enf:0,cni:'',email:ca.email,tel:'',adr:'',poste:off?off.title:'Nouveau poste',dept:off?off.dept:'Commercial',cat:'Employé',ct:'CDI',emb:new Date().toISOString().split('T')[0],sal:off?off.salary:0,cnss:`CNSS-${c2.nEmpId}`,statut:'Actif'});
-    sco(c2);toast('Employé créé !');
-    if(CU?.t==='cab'){if(document.getElementById('emp-tbl'))pEmpForCab(document.getElementById('cab-page-host'),c2);}
+async function mvCand(id,stage){
+  const co=gco();if(!co)return;
+  const{error}=await sb.from('candidates').update({statut:stage}).eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  const ca=co.candidates.find(x=>x.id===id);if(ca)ca.statut=stage;
+  rPipe();rOffers();toast(`→ ${stage}.`);
+  if(stage==='Recruté'){setTimeout(async()=>{if(confirm('Ajouter comme employé ?')){
+    const co2=gco();if(!co2)return;
+    const off=(co2.offers||[]).find(o=>o.id===ca.offerId);
+    const emp={mat:`EMP-${String(co2.employees.length+1).padStart(3,'0')}`,prenom:ca.prenom,nom:ca.nom,sx:'—',ddn:'',nat:'—',sitMat:'Célibataire',enf:0,cni:'',email:ca.email,tel:'',adr:'',poste:off?off.title:'Nouveau poste',dept:off?off.dept:'Commercial',cat:'Employé',ct:'CDI',emb:new Date().toISOString().split('T')[0],sal:off?off.salary:0,cnss:`CNSS-${co2.employees.length+1}`,statut:'Actif'};
+    const{data,error:e2}=await sb.from('employees').insert(empToRow(emp,co2.id)).select().single();
+    if(e2){toast('Erreur : '+e2.message,'err');return;}
+    co2.employees.push(empFromRow(data));
+    toast('Employé créé !');
+    if(CU?.t==='cab'){if(document.getElementById('emp-tbl'))rEmp();}
     else if(document.getElementById('emp-tbl'))rEmp();
   }},300);}
 }
-function delOffer(id){if(!confirm('Supprimer cette offre ?'))return;const c=gco();if(!c)return;c.offers=c.offers.filter(o=>o.id!==id);c.candidates=c.candidates.filter(ca=>ca.offerId!==id);sco(c);rOffers();rPipe();}
+async function delOffer(id){
+  if(!confirm('Supprimer cette offre ?'))return;
+  const co=gco();if(!co)return;
+  const{error}=await sb.from('offers').delete().eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.offers=co.offers.filter(o=>o.id!==id);
+  co.candidates=co.candidates.filter(ca=>ca.offerId!==id);
+  rOffers();rPipe();
+}
 
 // ══════════════════════════════════════
 // PLACEMENT & SÉCURITÉ — MISSIONS & SITES
@@ -1698,7 +1725,7 @@ function rMissions(){
   const co=gco();if(!co)return;
   const el=document.getElementById('ms-tbl');if(!el)return;
   const f=co.missions||[];
-  el.innerHTML=`<thead><tr><th>Site / Mission</th><th>Client final</th><th>Adresse</th><th>Agents requis</th><th>Statut</th><th>Début</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="7"><div class="empty"><i class="ti ti-map-pin"></i><p>Aucune mission</p></div></td></tr>`:f.map(m=>`<tr><td class="fw7">${m.name}</td><td style="font-size:12px">${m.clientFinal||'—'}</td><td style="font-size:12px">${m.address||'—'}</td><td>${m.agentsNeeded||0}</td><td>${bMs(m.status)}</td><td>${fd(m.startDate)}</td><td><div style="display:flex;gap:5px">${m.status!=='Terminée'?`<button class="btn bs bxs" onclick="endMission(${m.id})"><i class="ti ti-check"></i></button>`:''}<button class="btn bd bxs" onclick="delMission(${m.id})"><i class="ti ti-trash"></i></button></div></td></tr>`).join('')}</tbody>`;
+  el.innerHTML=`<thead><tr><th>Site / Mission</th><th>Client final</th><th>Adresse</th><th>Agents requis</th><th>Statut</th><th>Début</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="7"><div class="empty"><i class="ti ti-map-pin"></i><p>Aucune mission</p></div></td></tr>`:f.map(m=>`<tr><td class="fw7">${m.name}</td><td style="font-size:12px">${m.clientFinal||'—'}</td><td style="font-size:12px">${m.address||'—'}</td><td>${m.agentsNeeded||0}</td><td>${bMs(m.status)}</td><td>${fd(m.startDate)}</td><td><div style="display:flex;gap:5px">${m.status!=='Terminée'?`<button class="btn bs bxs" onclick="endMission('${m.id}')"><i class="ti ti-check"></i></button>`:''}<button class="btn bd bxs" onclick="delMission('${m.id}')"><i class="ti ti-trash"></i></button></div></td></tr>`).join('')}</tbody>`;
 }
 function openMissionModal(){
   document.getElementById('ms-name').value='';document.getElementById('ms-client').value='';
@@ -1706,23 +1733,34 @@ function openMissionModal(){
   document.getElementById('ms-start').value='';
   openModal('m-mission');
 }
-function saveMission(){
+async function saveMission(){
   const co=gco();if(!co)return;
   const name=document.getElementById('ms-name').value.trim();
   const start=document.getElementById('ms-start').value;
   if(!name||!start){toast('Nom du site et date de début requis.','err');return;}
-  if(!co.missions)co.missions=[];if(!co.nMsId)co.nMsId=1;
-  co.missions.push({id:co.nMsId++,name,clientFinal:document.getElementById('ms-client').value.trim(),address:document.getElementById('ms-address').value.trim(),agentsNeeded:Number(document.getElementById('ms-agents').value)||0,status:'À venir',startDate:start});
-  sco(co);closeModal('m-mission');toast('Mission créée.');
+  const row={company_id:co.id,name,client_final:document.getElementById('ms-client').value.trim(),address:document.getElementById('ms-address').value.trim(),agents_needed:Number(document.getElementById('ms-agents').value)||0,status:'À venir',start_date:start};
+  const{data,error}=await sb.from('missions').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  if(!co.missions)co.missions=[];
+  co.missions.push(msFromRow(data));
+  closeModal('m-mission');toast('Mission créée.');
   rMissions();
 }
-function endMission(id){const co=gco();if(!co)return;const m=co.missions.find(x=>x.id===id);if(m)m.status='Terminée';sco(co);rMissions();toast('Mission terminée.');}
-function delMission(id){
+async function endMission(id){
+  const co=gco();if(!co)return;
+  const{error}=await sb.from('missions').update({status:'Terminée'}).eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  const m=co.missions.find(x=>x.id===id);if(m)m.status='Terminée';
+  rMissions();toast('Mission terminée.');
+}
+async function delMission(id){
   if(!confirm('Supprimer cette mission ? Les déploiements associés seront aussi supprimés.'))return;
   const co=gco();if(!co)return;
+  const{error}=await sb.from('missions').delete().eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
   co.missions=co.missions.filter(m=>m.id!==id);
   co.deployments=(co.deployments||[]).filter(d=>d.missionId!==id);
-  sco(co);rMissions();
+  rMissions();
 }
 
 // ══════════════════════════════════════
@@ -1748,7 +1786,7 @@ function rDeploiements(){
   const co=gco();if(!co)return;
   const el=document.getElementById('dp-tbl');if(!el)return;
   const f=co.deployments||[];
-  el.innerHTML=`<thead><tr><th>Agent</th><th>Mission / Site</th><th>Début</th><th>Fin</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="6"><div class="empty"><i class="ti ti-shield"></i><p>Aucun déploiement</p></div></td></tr>`:f.map(d=>{const e=(co.employees||[]).find(x=>x.id===d.empId);const m=(co.missions||[]).find(x=>x.id===d.missionId);return`<tr><td class="fw7">${e?`${e.prenom} ${e.nom}`:'—'}</td><td style="font-size:12px">${m?m.name:'—'}</td><td>${fd(d.startDate)}</td><td>${d.endDate?fd(d.endDate):'En cours'}</td><td>${bDp(d.status)}</td><td>${d.status==='Actif'?`<button class="btn bd bxs" onclick="endDeploiement(${d.id})"><i class="ti ti-door-exit"></i></button>`:''}</td></tr>`;}).join('')}</tbody>`;
+  el.innerHTML=`<thead><tr><th>Agent</th><th>Mission / Site</th><th>Début</th><th>Fin</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="6"><div class="empty"><i class="ti ti-shield"></i><p>Aucun déploiement</p></div></td></tr>`:f.map(d=>{const e=(co.employees||[]).find(x=>x.id===d.empId);const m=(co.missions||[]).find(x=>x.id===d.missionId);return`<tr><td class="fw7">${e?`${e.prenom} ${e.nom}`:'—'}</td><td style="font-size:12px">${m?m.name:'—'}</td><td>${fd(d.startDate)}</td><td>${d.endDate?fd(d.endDate):'En cours'}</td><td>${bDp(d.status)}</td><td>${d.status==='Actif'?`<button class="btn bd bxs" onclick="endDeploiement('${d.id}')"><i class="ti ti-door-exit"></i></button>`:''}</td></tr>`;}).join('')}</tbody>`;
 }
 function openDeploiementModal(){
   const co=gco();if(!co)return;
@@ -1762,23 +1800,33 @@ function openDeploiementModal(){
   document.getElementById('dp-start').value='';
   openModal('m-deploiement');
 }
-function saveDeploiement(){
+async function saveDeploiement(){
   const co=gco();if(!co)return;
-  const missionId=Number(document.getElementById('dp-mission').value);
-  const empId=Number(document.getElementById('dp-emp').value);
+  const missionId=document.getElementById('dp-mission').value;
+  const empId=document.getElementById('dp-emp').value;
   const start=document.getElementById('dp-start').value;
   if(!missionId||!empId||!start){toast('Champs requis.','err');return;}
-  if(!co.deployments)co.deployments=[];if(!co.nDpId)co.nDpId=1;
-  co.deployments.push({id:co.nDpId++,missionId,empId,startDate:start,endDate:null,status:'Actif'});
-  const m=co.missions.find(x=>x.id===missionId);if(m&&m.status==='À venir')m.status='En cours';
-  sco(co);closeModal('m-deploiement');toast('Agent déployé.');
+  const row={company_id:co.id,mission_id:missionId,employee_id:empId,start_date:start,status:'Actif'};
+  const{data,error}=await sb.from('deployments').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  const m=co.missions.find(x=>x.id===missionId);
+  if(m&&m.status==='À venir'){
+    const{error:e2}=await sb.from('missions').update({status:'En cours'}).eq('id',missionId);
+    if(!e2)m.status='En cours';
+  }
+  if(!co.deployments)co.deployments=[];
+  co.deployments.push(dpFromRow(data));
+  closeModal('m-deploiement');toast('Agent déployé.');
   rDeploiements();
 }
-function endDeploiement(id){
+async function endDeploiement(id){
   const co=gco();if(!co)return;
+  const endDate=new Date().toISOString().split('T')[0];
+  const{error}=await sb.from('deployments').update({status:'Terminé',end_date:endDate}).eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
   const d=co.deployments.find(x=>x.id===id);
-  if(d){d.status='Terminé';d.endDate=new Date().toISOString().split('T')[0];}
-  sco(co);rDeploiements();toast('Déploiement terminé.');
+  if(d){d.status='Terminé';d.endDate=endDate;}
+  rDeploiements();toast('Déploiement terminé.');
 }
 
 // ══════════════════════════════════════
@@ -1805,10 +1853,10 @@ function rEval(){
     const e=co.employees.find(x=>x.id===ev.empId);if(!e)return'';
     const idx=co.employees.indexOf(e);
     const ov=((ev.perf+ev.comm+ev.init+ev.ponct)/4).toFixed(1);
-    return`<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11.5px;color:var(--text3)">${ev.period}</div></div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px;font-weight:800;color:var(--amber)">${ov}</span><span style="font-size:12px;color:var(--text3)">/5</span><button class="btn bd bxs" onclick="delEval(${ev.id})"><i class="ti ti-trash"></i></button></div></div><div class="two-col" style="gap:6px">${[['Performance',ev.perf],['Communication',ev.comm],['Initiative',ev.init],['Ponctualité',ev.ponct]].map(([l,v])=>`<div><p style="font-size:11px;color:var(--text3);margin-bottom:3px">${l}</p><div style="display:flex;align-items:center;gap:6px"><div class="pb" style="flex:1"><div class="pf" style="width:${v*20}%;background:var(--amber)"></div></div><span style="font-size:11.5px;font-weight:700">${v}/5</span></div></div>`).join('')}</div>${ev.comment?`<p style="font-size:12.5px;color:var(--text2);margin-top:8px;font-style:italic">"${ev.comment}"</p>`:''}</div>`;
+    return`<div style="padding:12px 0;border-bottom:1px solid var(--border)"><div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:8px"><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11.5px;color:var(--text3)">${ev.period}</div></div></div><div style="display:flex;align-items:center;gap:8px"><span style="font-size:22px;font-weight:800;color:var(--amber)">${ov}</span><span style="font-size:12px;color:var(--text3)">/5</span><button class="btn bd bxs" onclick="delEval('${ev.id}')"><i class="ti ti-trash"></i></button></div></div><div class="two-col" style="gap:6px">${[['Performance',ev.perf],['Communication',ev.comm],['Initiative',ev.init],['Ponctualité',ev.ponct]].map(([l,v])=>`<div><p style="font-size:11px;color:var(--text3);margin-bottom:3px">${l}</p><div style="display:flex;align-items:center;gap:6px"><div class="pb" style="flex:1"><div class="pf" style="width:${v*20}%;background:var(--amber)"></div></div><span style="font-size:11.5px;font-weight:700">${v}/5</span></div></div>`).join('')}</div>${ev.comment?`<p style="font-size:12.5px;color:var(--text2);margin-top:8px;font-style:italic">"${ev.comment}"</p>`:''}</div>`;
   }).join('');
 }
-function openEvalModal(){
+async function openEvalModal(){
   const co=gco();if(!co)return;
   const nom=prompt('Nom de l\'employé à évaluer :');if(!nom)return;
   const e=co.employees.find(x=>(`${x.prenom} ${x.nom}`).toLowerCase().includes(nom.toLowerCase()));
@@ -1820,11 +1868,20 @@ function openEvalModal(){
   if([p2,c2,i,po].some(v=>v<1||v>5)){toast('Notes entre 1 et 5.','err');return;}
   const comment=prompt('Commentaire :')||'';
   const period=prompt('Période (ex: T2 2026) :')||'T2 2026';
-  const db=gdb();const c=db.cos[CU.id];if(!c.evaluations)c.evaluations=[];if(!c.nEvalId)c.nEvalId=1;
-  c.evaluations.push({id:c.nEvalId++,empId:e.id,period,perf:p2,comm:c2,init:i,ponct:po,comment,createdAt:new Date().toISOString().split('T')[0]});
-  sco(c);rEval();toast('Évaluation enregistrée.');
+  const row={company_id:co.id,employee_id:e.id,period,perf:p2,comm:c2,init:i,ponct:po,comment};
+  const{data,error}=await sb.from('evaluations').insert(row).select().single();
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  if(!co.evaluations)co.evaluations=[];
+  co.evaluations.push(evFromRow(data));
+  rEval();toast('Évaluation enregistrée.');
 }
-function delEval(id){const db=gdb();const c=db.cos[CU.id];c.evaluations=(c.evaluations||[]).filter(e=>e.id!==id);sco(c);rEval();}
+async function delEval(id){
+  const co=gco();if(!co)return;
+  const{error}=await sb.from('evaluations').delete().eq('id',id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  co.evaluations=(co.evaluations||[]).filter(e=>e.id!==id);
+  rEval();
+}
 
 // ══════════════════════════════════════
 // PAGE DOCUMENTS
@@ -1919,10 +1976,12 @@ function pSettings(host,co){
     </div>
   </div>`;
 }
-function chgPw(){
+async function chgPw(){
   const pw=document.getElementById('new-pw')?.value;
   if(!pw||pw.length<6){toast('Min. 6 caractères.','err');return;}
-  const db=gdb();const c=db.cos[CU.id];c.pw=pw;sco(c);toast('Mot de passe mis à jour.');
+  const{error}=await sb.auth.updateUser({password:pw});
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  toast('Mot de passe mis à jour.');
 }
 
 // ══════════════════════════════════════
@@ -1943,7 +2002,9 @@ function saGo(pid){
   else if(pid==='sa-revenue')saRevenue(host);
 }
 function saDash(host){
-  const db=gdb();const cos=Object.values(db.cos);
+  // Panneau superadmin non migré : une vue cross-tenant nécessiterait la
+  // clé service_role, jamais exposée côté client. Voir mémoire du projet.
+  const cos=[];
   const trials=cos.filter(c=>c.plan==='trial').length;
   const paid=cos.filter(c=>c.plan!=='trial').length;
   const rev=cos.filter(c=>c.plan==='Starter').length*15000+cos.filter(c=>c.plan==='Business').length*35000;
@@ -1997,9 +2058,11 @@ document.addEventListener('click',function(e){const p=document.getElementById('n
 // PRICING
 // ══════════════════════════════════════
 function selPlan(name,el){selPlanName=name;document.querySelectorAll('.doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
-function subscribe(){
-  if(!CU||CU.t!=='co')return;
-  const db=gdb();const c=db.cos[CU.id];c.plan=selPlanName;sco(c);
+async function subscribe(){
+  if(!CU||CU.t!=='co'||!CURRENT_CO)return;
+  const{error}=await sb.from('companies').update({plan:selPlanName}).eq('id',CU.id);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  CURRENT_CO.plan=selPlanName;
   document.getElementById('trial-bar').classList.add('hidden');
   closeModal('m-pricing');toast(`Abonnement ${selPlanName} activé !`);
 }
@@ -2052,35 +2115,62 @@ let activeCabClient=null; // client object currently being managed
 
 function getCab(){
   if(!CU||CU.t!=='cab')return null;
-  return ldb().cabinets?.[CU.id]||null;
+  return CURRENT_CAB;
 }
-function saveCab(cab){
-  const db=gdb();
-  if(!db.cabinets)db.cabinets={};
-  db.cabinets[cab.id]=cab;
-  sdb(db);
+async function loadCabClients(cabinetId){
+  const{data}=await sb.from('companies').select('id,name,sector,pays,contact_name,contact_email,contact_tel,created_at').eq('cabinet_id',cabinetId).order('created_at');
+  const clients=(data||[]).map(r=>({id:r.id,name:r.name,sector:r.sector,pays:r.pays,contact:r.contact_name,email:r.contact_email,tel:r.contact_tel,addedAt:r.created_at?.slice(0,10)}));
+  if(clients.length===0)return clients;
+  const ids=clients.map(c=>c.id);
+  const[empCounts,pendCounts]=await Promise.all([
+    sb.from('employees').select('company_id').in('company_id',ids).eq('statut','Actif'),
+    sb.from('conges').select('company_id').in('company_id',ids).eq('statut','En attente'),
+  ]);
+  const countBy=(rows)=>{const m={};(rows||[]).forEach(r=>{m[r.company_id]=(m[r.company_id]||0)+1;});return m;};
+  const empByCo=countBy(empCounts.data),pendByCo=countBy(pendCounts.data);
+  clients.forEach(c=>{c.employees={length:empByCo[c.id]||0};c.conges={filter:()=>({length:pendByCo[c.id]||0})};});
+  return clients;
+}
+async function loadCabinetShell(cabinetId){
+  const{data:cab}=await sb.from('cabinets').select('*').eq('id',cabinetId).single();
+  if(!cab)return null;
+  const clients=await loadCabClients(cabinetId);
+  return{id:cab.id,name:cab.name,pays:cab.pays,adminName:cab.admin_name,adminEmail:cab.admin_email,plan:cab.plan,trialStart:cab.trial_start,modules:cab.modules,clients};
+}
+async function saveCab(cab){
+  await sb.from('cabinets').update({name:cab.name,pays:cab.pays,plan:cab.plan,modules:cab.modules}).eq('id',cab.id);
 }
 
-function doCabLogin(){
+async function doCabLogin(){
   const email=document.getElementById('cl-email').value.trim().toLowerCase();
   const pw=document.getElementById('cl-pw').value;
-  const db=gdb();
-  const cab=Object.values(db.cabinets||{}).find(c=>c.adminEmail.toLowerCase()===email&&c.pw===pw);
-  if(!cab){toast('Email ou mot de passe incorrect.','err');return;}
-  CU={t:'cab',id:cab.id};
+  const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
+  if(error||!data.session){toast('Email ou mot de passe incorrect.','err');return;}
+  let{data:cabRow}=await sb.from('cabinets').select('id').eq('admin_auth_id',data.user.id).maybeSingle();
+  if(!cabRow){
+    const pending=popPending('cab',email);
+    if(pending){
+      const{data:created,error:e2}=await sb.from('cabinets').insert({admin_auth_id:data.user.id,...pending}).select('id').single();
+      if(e2){toast('Erreur de création du cabinet : '+e2.message,'err');return;}
+      cabRow=created;
+    }
+  }
+  if(!cabRow){toast('Ce compte n\'est pas un compte cabinet.','err');await sb.auth.signOut();return;}
+  CURRENT_CAB=await loadCabinetShell(cabRow.id);
+  CU={t:'cab',id:cabRow.id};
   activeCabClient=null;
-  initCabShell(cab);
+  initCabShell(CURRENT_CAB);
   show('s-cabinet');
   cabGo('cab-dash');
 }
 
-function demoCab(){
+async function demoCab(){
   document.getElementById('cl-email').value='demo@cabinet.tg';
   document.getElementById('cl-pw').value='cabinet123';
-  doCabLogin();
+  await doCabLogin();
 }
 
-function doCabRegister(){
+async function doCabRegister(){
   const prenom=document.getElementById('cr-prenom').value.trim();
   const nom=document.getElementById('cr-nom').value.trim();
   const name=document.getElementById('cr-name').value.trim();
@@ -2090,15 +2180,16 @@ function doCabRegister(){
   const pw=document.getElementById('cr-pw').value;
   if(!prenom||!nom||!name||!email||!pw){toast('Tous les champs sont requis.','err');return;}
   if(pw.length<6){toast('Mot de passe : 6 caractères minimum.','err');return;}
-  const db=gdb();
-  if(!db.cabinets)db.cabinets={};
-  if(Object.values(db.cabinets).find(c=>c.adminEmail.toLowerCase()===email)){toast('Email déjà utilisé.','err');return;}
-  const id='cab-'+Date.now();
+  const{data,error}=await sb.auth.signUp({email,password:pw});
+  if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
   const modules={rh:type==='rh'||type==='both',placement:type==='placement'||type==='both'};
-  const cab={id,name,pays,adminEmail:email,pw,adminName:`${prenom} ${nom}`,trialStart:new Date().toISOString(),plan:'trial',clients:[],nClientId:1,modules};
-  db.cabinets[id]=cab;sdb(db);
-  CU={t:'cab',id};activeCabClient=null;
-  initCabShell(cab);show('s-cabinet');cabGo('cab-dash');
+  const pendingRow={name,pays,admin_name:`${prenom} ${nom}`,admin_email:email,modules};
+  if(!data.session){stashPending('cab',email,pendingRow);toast('Cabinet créé. Vérifiez votre email pour confirmer, puis connectez-vous.','info');show('s-cabinet-login');return;}
+  const{data:cabRow,error:e2}=await sb.from('cabinets').insert({admin_auth_id:data.user.id,...pendingRow}).select().single();
+  if(e2){toast('Erreur de création du cabinet : '+e2.message,'err');return;}
+  CURRENT_CAB=await loadCabinetShell(cabRow.id);
+  CU={t:'cab',id:cabRow.id};activeCabClient=null;
+  initCabShell(CURRENT_CAB);show('s-cabinet');cabGo('cab-dash');
   toast(`Bienvenue ${prenom} ! Votre cabinet est prêt.`,'info');
 }
 
@@ -2167,23 +2258,22 @@ function cabCoGo(appPage){
   const co=activeCabClient;
   const tbr=document.getElementById('cab-tb-right');tbr.innerHTML='';
   if(appPage==='p-emp'){
-    // override gco() temporarily by swapping context
-    pEmpForCab(host,co);
-    tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openEmpModalForCab()"><i class="ti ti-user-plus"></i> Ajouter</button>`;
+    pEmp(host,co);
+    tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openEmpModal()"><i class="ti ti-user-plus"></i> Ajouter</button>`;
   }
-  else if(appPage==='p-conges'){rCgForCab(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openCongeModalForCab()"><i class="ti ti-plus"></i> Nouvelle demande</button>`;}
-  else if(appPage==='p-absences'){pAbsForCab(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openAbsModalForCab()"><i class="ti ti-plus"></i> Enregistrer</button>`;}
+  else if(appPage==='p-conges'){pConges(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openCongeModal()"><i class="ti ti-plus"></i> Nouvelle demande</button>`;}
+  else if(appPage==='p-absences'){pAbsences(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openAbsModal()"><i class="ti ti-plus"></i> Enregistrer</button>`;}
   else if(appPage==='p-paie')pPaieForCab(host,co);
   else if(appPage==='p-docs')pDocsForCab(host,co);
-  else if(appPage==='p-rupture'){pRupturesForCab(host,co);tbr.innerHTML=`<button class="btn bd bsm" onclick="openRuptureModalForCab()"><i class="ti ti-door-exit"></i> Nouvelle rupture</button>`;}
+  else if(appPage==='p-rupture'){pRuptures(host,co);tbr.innerHTML=`<button class="btn bd bsm" onclick="openRuptureModal()"><i class="ti ti-door-exit"></i> Nouvelle rupture</button>`;}
   else if(appPage==='p-recruit'){pRecruit(host,co);tbr.innerHTML=`<button class="btn bo bsm" onclick="openCandModal()"><i class="ti ti-user-plus"></i> Candidat</button><button class="btn bp bsm" onclick="openOfferModal()"><i class="ti ti-plus"></i> Offre</button>`;}
   else if(appPage==='p-missions'){pMissions(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openModal('m-mission')"><i class="ti ti-plus"></i> Nouvelle mission</button>`;}
   else if(appPage==='p-deploiements'){pDeploiements(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openDeploiementModal()"><i class="ti ti-plus"></i> Déployer un agent</button>`;}
 }
 
-function openClientSpace(clientId){
+async function openClientSpace(clientId){
   const cab=getCab();if(!cab)return;
-  activeCabClient=cab.clients.find(c=>c.id===clientId);
+  activeCabClient=await loadCompanyFull(clientId);
   if(!activeCabClient)return;
   // Show client nav items
   document.getElementById('cab-co-nav').style.display='flex';
@@ -2201,14 +2291,6 @@ function applyCabModuleVisibility(cab){
   document.querySelectorAll('.cab-module-placement').forEach(el=>{
     el.style.display=modules.placement?(el.tagName==='P'?'block':'flex'):'none';
   });
-}
-
-function saveCabClient(clientId){
-  if(!activeCabClient||!CU||CU.t!=='cab')return;
-  const db=gdb();const cab=db.cabinets[CU.id];
-  const idx=cab.clients.findIndex(c=>c.id===clientId);
-  if(idx>=0)cab.clients[idx]=activeCabClient;
-  saveCab(cab);
 }
 
 // ══════════════════════════════════════
@@ -2315,7 +2397,7 @@ function toggleCabModule(key,enabled){
 // ══════════════════════════════════════
 // CABINET — GESTION CLIENTS (CRUD)
 // ══════════════════════════════════════
-function addClient(){
+async function addClient(){
   const name=document.getElementById('ac-name').value.trim();
   const sector=document.getElementById('ac-sector').value;
   const pays=document.getElementById('ac-pays').value;
@@ -2323,12 +2405,14 @@ function addClient(){
   const tel=document.getElementById('ac-tel').value.trim();
   const contact=document.getElementById('ac-contact').value.trim();
   if(!name){toast('Le nom de l\'entreprise est requis.','err');return;}
-  const db=gdb();const cab=db.cabinets[CU.id];
-  const id=`cli-${cab.nClientId++}`;
-  cab.clients.push({id,name,sector,pays,email,tel,contact,addedAt:new Date().toISOString().split('T')[0],employees:[],conges:[],absences:[],discipline:[],ruptures:[],contrats:[],evaluations:[],offers:[],candidates:[],depts:[...DEPTS],nEmpId:1,nCtId:1,nCgId:1,nAbId:1,nDcId:1,nEvalId:1,nOfId:1,nCandId:1,nRpId:1});
-  saveCab(cab);closeModal('m-add-client');
+  const cab=getCab();if(!cab)return;
+  const row={cabinet_id:cab.id,name,sector,pays,contact_email:email,contact_tel:tel,contact_name:contact};
+  const{error}=await sb.from('companies').insert(row);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  closeModal('m-add-client');
   ['ac-name','ac-email','ac-tel','ac-contact'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  initCabShell(cab);toast(`"${name}" ajouté comme client.`);
+  CURRENT_CAB=await loadCabinetShell(cab.id);
+  initCabShell(CURRENT_CAB);toast(`"${name}" ajouté comme client.`);
   cabGo('cab-clients');
 }
 
@@ -2337,144 +2421,29 @@ function addClient(){
 // Ces fonctions adaptent les pages existantes pour fonctionner
 // sur activeCabClient au lieu du compte connecté directement
 // ══════════════════════════════════════
-function pEmpForCab(host,co){
-  host.innerHTML=`<div class="sb"><div class="sw"><i class="ti ti-search"></i><input id="eq" placeholder="Rechercher..." oninput="rEmpCab()"/></div><select class="flt" id="edf" onchange="rEmpCab()"><option value="">Tous les dép.</option>${(co.depts||DEPTS).map(d=>`<option>${d}</option>`).join('')}</select></div><div class="card"><div class="tw"><table id="emp-tbl"></table></div></div>`;
-  rEmpCab();
-}
-function rEmpCab(){
-  const co=activeCabClient;if(!co)return;
-  const q=(document.getElementById('eq')?.value||'').toLowerCase();
-  const df=document.getElementById('edf')?.value||'';
-  const f=co.employees.filter(e=>(`${e.prenom} ${e.nom} ${e.poste}`).toLowerCase().includes(q)&&(!df||e.dept===df));
-  document.getElementById('emp-tbl').innerHTML=`<thead><tr><th>Matricule</th><th>Employé</th><th>Poste</th><th>Catégorie</th><th>Ancienneté</th><th>Salaire brut</th><th>Statut</th><th></th></tr></thead><tbody>${f.length===0?`<tr><td colspan="8"><div class="empty"><i class="ti ti-users"></i><p>Aucun employé</p></div></td></tr>`:f.map((e,idx)=>{const a=anc(e.emb);return`<tr><td><span class="badge bs2">${e.mat}</span></td><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div class="fw7">${e.prenom} ${e.nom}</div></div></td><td>${e.poste}</td><td><span class="badge bb2">${e.cat}</span></td><td>${a}an${a>1?'s':''}</td><td class="fw7">${fm(e.sal)}</td><td>${bEmp(e.statut)}</td><td><button class="btn bd bxs" onclick="delEmpCab(${e.id})"><i class="ti ti-trash"></i></button></td></tr>`;}).join('')}</tbody>`;
-}
-function openEmpModalForCab(){
-  document.getElementById('m-emp-t').textContent=`Ajouter un employé — ${activeCabClient?.name}`;
-  document.getElementById('ep-dept').innerHTML=(activeCabClient?.depts||DEPTS).map(d=>`<option>${d}</option>`).join('');
-  openModal('m-emp');
-}
-// Override saveEmp to work on cab client
-const _origSaveEmp=saveEmp;
-function saveEmp(){
-  if(CU?.t==='cab'&&activeCabClient){saveEmpCab();return;}
-  _origSaveEmp();
-}
-function saveEmpCab(){
-  const co=activeCabClient;if(!co)return;
-  const p=document.getElementById('ep-p').value.trim();
-  const n=document.getElementById('ep-n').value.trim();
-  const po=document.getElementById('ep-poste').value.trim();
-  const dept=document.getElementById('ep-dept').value;
-  const em=document.getElementById('ep-email').value.trim();
-  const emb=document.getElementById('ep-emb').value;
-  const sal=document.getElementById('ep-sal').value;
-  if(!p||!n||!po||!dept||!em||!emb){toast('Champs obligatoires manquants.','err');return;}
-  const mat=`EMP-${String(co.nEmpId).padStart(3,'0')}`;
-  co.employees.push({id:co.nEmpId++,mat,prenom:p,nom:n,sx:document.getElementById('ep-sx').value,ddn:document.getElementById('ep-ddn').value,nat:document.getElementById('ep-nat').value||'—',sitMat:document.getElementById('ep-mat').value,enf:Number(document.getElementById('ep-enf').value)||0,cni:document.getElementById('ep-cni').value,email:em,tel:document.getElementById('ep-tel').value,adr:document.getElementById('ep-adr').value,poste:po,dept,cat:document.getElementById('ep-cat').value,ct:document.getElementById('ep-ct').value,emb,sal:Number(sal)||0,cnss:`CNSS-${co.nEmpId}`,statut:'Actif'});
-  saveCabClient(co.id);closeModal('m-emp');toast(`${p} ${n} ajouté.`);
-  ['ep-p','ep-n','ep-poste','ep-email','ep-tel','ep-adr','ep-sal','ep-emb'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
-  if(document.getElementById('emp-tbl'))rEmpCab();
-}
-function delEmpCab(id){if(!confirm('Supprimer ?'))return;activeCabClient.employees=activeCabClient.employees.filter(e=>e.id!==id);saveCabClient(activeCabClient.id);rEmpCab();toast('Supprimé.');}
-
-function rCgForCab(host,co){
-  host.innerHTML=`<div class="card"><div class="tw"><table id="cg-tbl"></table></div></div>`;
-  const f=co.conges||[];
-  document.getElementById('cg-tbl').innerHTML=`<thead><tr><th>Employé</th><th>Type</th><th>Début</th><th>Fin</th><th>Jours</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="7"><div class="empty"><i class="ti ti-beach"></i><p>Aucun congé</p></div></td></tr>`:f.map(c=>{const e=co.employees.find(x=>x.id===c.empId);if(!e)return'';const idx=co.employees.indexOf(e);return`<tr><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div class="fw7">${e.prenom} ${e.nom}</div></div></td><td style="font-size:12px">${c.type}</td><td>${fd(c.start)}</td><td>${fd(c.end)}</td><td>${c.days}j</td><td>${bCg(c.statut)}</td><td>${c.statut==='En attente'?`<div style="display:flex;gap:5px"><button class="btn bs bxs" onclick="updCgCab(${c.id},'Approuvé')"><i class="ti ti-check"></i></button><button class="btn bd bxs" onclick="updCgCab(${c.id},'Refusé')"><i class="ti ti-x"></i></button></div>`:''}</td></tr>`;}).join('')}</tbody>`;
-}
-function updCgCab(id,status){const cg=activeCabClient.conges.find(x=>x.id===id);if(cg)cg.statut=status;saveCabClient(activeCabClient.id);rCgForCab(document.getElementById('cab-page-host'),activeCabClient);toast(`Congé ${status.toLowerCase()}.`);}
-function openCongeModalForCab(){document.getElementById('cg-emp').innerHTML=(activeCabClient.employees||[]).filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');openModal('m-conge');}
-const _origSaveCg=saveConge;
-function saveConge(){if(CU?.t==='cab'&&activeCabClient){saveCgCab();return;}_origSaveCg();}
-function saveCgCab(){
-  const co=activeCabClient;if(!co)return;
-  const empId=Number(document.getElementById('cg-emp').value);
-  const start=document.getElementById('cg-start').value;const end=document.getElementById('cg-end').value;
-  if(!empId||!start||!end){toast('Champs requis.','err');return;}
-  if(!co.conges)co.conges=[];
-  co.conges.push({id:co.nCgId++,empId,type:document.getElementById('cg-type').value,start,end,motif:document.getElementById('cg-motif').value,statut:'En attente',days:ddays(start,end),createdAt:new Date().toISOString().split('T')[0]});
-  saveCabClient(co.id);closeModal('m-conge');toast('Demande soumise.');
-  rCgForCab(document.getElementById('cab-page-host'),co);
-}
-function pAbsForCab(host,co){
-  host.innerHTML=`<div class="card"><div class="tw"><table id="ab-tbl"></table></div></div>`;
-  rAb();
-  // patch rAb to use activeCabClient
-  const f=co.absences||[];
-  document.getElementById('ab-tbl').innerHTML=`<thead><tr><th>Employé</th><th>Type</th><th>Début</th><th>Fin</th><th>Justifiée</th><th>Paie</th><th>Statut</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="7"><div class="empty"><i class="ti ti-calendar-x"></i><p>Aucune absence</p></div></td></tr>`:f.map(ab=>{const e=co.employees.find(x=>x.id===ab.empId);if(!e)return'';return`<tr><td class="fw7">${e.prenom} ${e.nom}</td><td style="font-size:12px">${ab.type}</td><td>${fd(ab.start)}</td><td>${fd(ab.end)||'En cours'}</td><td><span class="badge ${ab.just==='Oui'?'bg2':'br2'}">${ab.just}</span></td><td><span class="badge ${ab.paie==='Rémunérée'?'bg2':'br2'}">${ab.paie}</span></td><td><span class="badge bs2">${ab.statut}</span></td></tr>`;}).join('')}</tbody>`;
-}
-function openAbsModalForCab(){document.getElementById('ab-emp').innerHTML=(activeCabClient.employees||[]).filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');openModal('m-absence');}
-const _origSaveAbs=saveAbsence;
-function saveAbsence(){if(CU?.t==='cab'&&activeCabClient){saveAbsCab();return;}_origSaveAbs();}
-function saveAbsCab(){
-  const co=activeCabClient;if(!co)return;
-  const empId=Number(document.getElementById('ab-emp').value);
-  const start=document.getElementById('ab-start').value;
-  if(!empId||!start){toast('Champs requis.','err');return;}
-  if(!co.absences)co.absences=[];
-  co.absences.push({id:co.nAbId++,empId,type:document.getElementById('ab-type').value,start,end:document.getElementById('ab-end').value||null,just:document.getElementById('ab-just').value,paie:document.getElementById('ab-paie').value,com:document.getElementById('ab-com').value,statut:'Validée'});
-  saveCabClient(co.id);closeModal('m-absence');toast('Absence enregistrée.');
-  pAbsForCab(document.getElementById('cab-page-host'),co);
-}
-function pPaieForCab(host,co){pPaie(host,co);}
-function pDocsForCab(host,co){
-  // Override gco() for genDoc: we'll pass co directly
-  pDocs(host,co);
-  // genDoc uses prompt-based lookup so it will work if we fake gco
-  // Store cab client as temp context
-  window._cabCoContext=co;
-}
-function pRupturesForCab(host,co){
-  host.innerHTML=`<div class="card"><div class="tw"><table id="rp-tbl"></table></div></div>`;
-  rRp();
-  const f=co.ruptures||[];
-  document.getElementById('rp-tbl').innerHTML=`<thead><tr><th>Employé</th><th>Motif</th><th>Date sortie</th><th>Indemnité</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="4"><div class="empty"><i class="ti ti-door-exit"></i><p>Aucune rupture</p></div></td></tr>`:f.map(r=>{const e=co.employees.find(x=>x.id===r.empId)||{prenom:'—',nom:''};return`<tr><td class="fw7">${e.prenom} ${e.nom}</td><td><span class="badge br2">${r.motif}</span></td><td>${fd(r.date)}</td><td>${fm(r.indem||0)}</td></tr>`;}).join('')}</tbody>`;
-}
-function openRuptureModalForCab(){document.getElementById('rp-emp').innerHTML=(activeCabClient.employees||[]).filter(e=>e.statut==='Actif').map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');document.getElementById('rp-date').value=new Date().toISOString().split('T')[0];calcIndemCab();openModal('m-rupture');}
-function calcIndemCab(){
-  const co=activeCabClient;if(!co)return;
-  const empId=Number(document.getElementById('rp-emp')?.value);
-  const motif=document.getElementById('rp-motif')?.value||'';
-  const e=co.employees.find(x=>x.id===empId);
-  const el=document.getElementById('indem-result');if(!el)return;
-  if(!e){el.innerHTML='<p style="color:var(--text3)">Sélectionnez un employé.</p>';return;}
-  const res=calcIndemLic(co,e,motif);const lg=lgl(co);
-  if(!res.due){el.innerHTML=`<p style="color:var(--amber);font-weight:600">Indemnité non due : ${res.raison}</p>`;return;}
-  el.innerHTML=`<p style="font-weight:700;margin-bottom:.5rem">Barème ${lg.pays}</p>${res.detail.map(d=>`<div style="display:flex;justify-content:space-between;font-size:12.5px;padding:3px 0"><span>${d.split('=')[0]}</span><span class="fw7">${(d.split('=')[1]||'').trim()}</span></div>`).join('')}<div style="border-top:1.5px solid var(--border);margin-top:8px;padding-top:8px;display:flex;justify-content:space-between;font-size:14px;font-weight:800"><span>Total indemnité</span><span style="color:var(--green)">${fm(res.total)}</span></div>`;
-}
-const _origCalcIndem=calcIndem;
-function calcIndem(){if(CU?.t==='cab'&&activeCabClient){calcIndemCab();return;}_origCalcIndem();}
-const _origSaveRp=saveRupture;
-function saveRupture(){if(CU?.t==='cab'&&activeCabClient){saveRpCab();return;}_origSaveRp();}
-function saveRpCab(){
-  const co=activeCabClient;if(!co)return;
-  const empId=Number(document.getElementById('rp-emp').value);
-  const motif=document.getElementById('rp-motif').value;
-  const date=document.getElementById('rp-date').value;
-  if(!empId||!date){toast('Champs requis.','err');return;}
-  const e=co.employees.find(x=>x.id===empId);if(!e)return;
-  const res=calcIndemLic(co,e,motif);
-  if(!co.ruptures)co.ruptures=[];
-  co.ruptures.push({id:co.nRpId++,empId,motif,date,preavis:document.getElementById('rp-preavis').value,indem:res.due?res.total:0,obs:document.getElementById('rp-obs').value,createdAt:new Date().toISOString().split('T')[0]});
-  e.statut='Inactif';saveCabClient(co.id);closeModal('m-rupture');toast('Rupture enregistrée.');
-  pRupturesForCab(document.getElementById('cab-page-host'),co);
-}
+// Les modules RH (employés, congés, absences, ruptures) sont désormais
+// unifiés avec le mode entreprise directe : pEmp/rEmp/saveEmp/delEmp,
+// pConges/rCg/saveConge/updCg, pAbsences/rAb/saveAbsence,
+// pRuptures/rRp/saveRupture/calcIndem fonctionnent dans les deux
+// contextes via gco()/sco() (voir plus haut) — plus besoin de doublons
+// "*ForCab" ni de sco() par ré-écriture complète du localStorage.
+function pDocsForCab(host,co){pDocs(host,co);}
 
 // ══════════════════════════════════════
 // CABINET — PRICING
 // ══════════════════════════════════════
 function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
 function subscribeCab(){
-  if(!CU||CU.t!=='cab')return;
-  const db=gdb();const c=db.cabinets[CU.id];c.plan=selCabPlanName;saveCab(c);
+  if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
+  CURRENT_CAB.plan=selCabPlanName;saveCab(CURRENT_CAB);
   document.getElementById('cab-trial-bar').classList.add('hidden');
   closeModal('m-cab-pricing');toast(`Abonnement Cabinet ${selCabPlanName} activé !`);
 }
 
 // ══════════════════════════════════════
-// INIT
+// INIT — la connexion se fait via les formulaires (pas de reprise de
+// session automatique au rechargement de la page pour l'instant)
 // ══════════════════════════════════════
-initDB();
 </script>
 </body>
 </html>
