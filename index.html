@@ -367,6 +367,9 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="fg"><label>Pays d'implantation *</label>
           <select id="cr-pays"><option value="TG">🇹🇬 Togo</option><option value="SN">🇸🇳 Sénégal</option><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="BJ">🇧🇯 Bénin</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option></select>
         </div>
+        <div class="fg"><label>Type d'activité *</label>
+          <select id="cr-type"><option value="rh">Cabinet RH</option><option value="placement">Agence de placement / sécurité</option><option value="both">RH + Placement &amp; Sécurité</option></select>
+        </div>
         <div class="fg"><label>Email professionnel *</label><input id="cr-email" type="email" placeholder="contact@cabinet.tg"/></div>
         <div class="fg"><label>Mot de passe *</label><input id="cr-pw" type="password" placeholder="Min. 6 caractères"/></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff" onclick="doCabRegister()"><i class="ti ti-rocket"></i> Créer mon cabinet</button>
@@ -395,12 +398,16 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <p class="s-sec">Gestion active</p>
         <div class="s-item" id="cab-co-nav" style="display:none" onclick="cabGo('cab-co-dash')"><i class="ti ti-building"></i><span id="cab-co-name">Client actif</span></div>
         <p class="s-sec" id="cab-co-modules" style="display:none">Modules client</p>
-        <div class="s-item cab-module" style="display:none" onclick="cabCoGo('p-emp')"><i class="ti ti-users"></i>Employés</div>
-        <div class="s-item cab-module" style="display:none" onclick="cabCoGo('p-conges')"><i class="ti ti-beach"></i>Congés</div>
-        <div class="s-item cab-module" style="display:none" onclick="cabCoGo('p-absences')"><i class="ti ti-calendar-x"></i>Absences</div>
-        <div class="s-item cab-module" style="display:none" onclick="cabCoGo('p-paie')"><i class="ti ti-receipt"></i>Paie</div>
-        <div class="s-item cab-module" style="display:none" onclick="cabCoGo('p-docs')"><i class="ti ti-files"></i>Documents</div>
-        <div class="s-item cab-module" style="display:none" onclick="cabCoGo('p-rupture')"><i class="ti ti-door-exit"></i>Ruptures</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-emp')"><i class="ti ti-users"></i>Employés</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-conges')"><i class="ti ti-beach"></i>Congés</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-absences')"><i class="ti ti-calendar-x"></i>Absences</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-paie')"><i class="ti ti-receipt"></i>Paie</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-docs')"><i class="ti ti-files"></i>Documents</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-rupture')"><i class="ti ti-door-exit"></i>Ruptures</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-recruit')"><i class="ti ti-user-search"></i>Recrutement</div>
+        <p class="s-sec cab-module cab-module-placement" style="display:none">Placement &amp; Sécurité</p>
+        <div class="s-item cab-module cab-module-placement" style="display:none" onclick="cabCoGo('p-missions')"><i class="ti ti-map-pin"></i>Missions &amp; Sites</div>
+        <div class="s-item cab-module cab-module-placement" style="display:none" onclick="cabCoGo('p-deploiements')"><i class="ti ti-shield"></i>Déploiements</div>
         <p class="s-sec">Admin</p>
         <div class="s-item" onclick="cabGo('cab-settings')"><i class="ti ti-settings"></i>Paramètres</div>
         <div class="s-item" onclick="show('s-landing');CU=null"><i class="ti ti-logout"></i>Déconnexion</div>
@@ -773,6 +780,41 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
   </div>
 </div>
 
+<!-- Placement & Sécurité (module optionnel cabinet) -->
+<div class="overlay hidden" id="m-mission">
+  <div class="modal">
+    <div class="modal-hd"><h3>Nouvelle mission / site</h3><button class="cx" onclick="closeModal('m-mission')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Nom du site / mission *</label><input id="ms-name" placeholder="Site Immeuble Alpha"/></div>
+      <div class="two-col">
+        <div class="fg"><label>Client final</label><input id="ms-client" placeholder="Société X SARL"/></div>
+        <div class="fg"><label>Agents requis</label><input id="ms-agents" type="number" min="1" value="1"/></div>
+      </div>
+      <div class="fg"><label>Adresse</label><input id="ms-address" placeholder="Quartier, Ville"/></div>
+      <div class="fg"><label>Date de début *</label><input id="ms-start" type="date"/></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-mission')">Annuler</button>
+      <button class="btn bp bsm" onclick="saveMission()"><i class="ti ti-check"></i> Créer</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay hidden" id="m-deploiement">
+  <div class="modal">
+    <div class="modal-hd"><h3>Déployer un agent</h3><button class="cx" onclick="closeModal('m-deploiement')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Agent *</label><select id="dp-emp"></select></div>
+      <div class="fg"><label>Mission / Site *</label><select id="dp-mission"></select></div>
+      <div class="fg"><label>Date de début *</label><input id="dp-start" type="date"/></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-deploiement')">Annuler</button>
+      <button class="btn bp bsm" onclick="saveDeploiement()"><i class="ti ti-shield-check"></i> Déployer</button>
+    </div>
+  </div>
+</div>
+
 <div class="overlay hidden" id="m-disc">
   <div class="modal">
     <div class="modal-hd"><h3>Procédure disciplinaire</h3><button class="cx" onclick="closeModal('m-disc')"><i class="ti ti-x"></i></button></div>
@@ -991,6 +1033,7 @@ function initDB(){
       id:'demo-cab',name:'Cabinet RH Excellence',pays:'TG',
       adminEmail:'demo@cabinet.tg',pw:'cabinet123',adminName:'Adjoa Seyram',
       trialStart:new Date(Date.now()-2*864e5).toISOString(),plan:'trial',
+      modules:{rh:true,placement:true},
       clients:[
         {id:'cli-1',name:'Agro-Togo SARL',sector:'Agriculture',pays:'TG',contact:'Kofi Atta',email:'dg@agrotogo.tg',tel:'+228 90 00 00 01',addedAt:'2026-05-01',
           employees:[
@@ -1023,8 +1066,15 @@ function initDB(){
 // ══════════════════════════════════════
 let CU=null,selPlanName='Starter';
 function gdb(){return ldb();}
-function gco(){if(!CU||CU.t!=='co')return null;return ldb().cos[CU.id]||null;}
-function sco(co){const db=gdb();db.cos[co.id]=co;sdb(db);}
+function gco(){
+  if(CU?.t==='cab')return activeCabClient||null;
+  if(!CU||CU.t!=='co')return null;
+  return ldb().cos[CU.id]||null;
+}
+function sco(co){
+  if(CU?.t==='cab'){if(activeCabClient)saveCabClient(activeCabClient.id);return;}
+  const db=gdb();db.cos[co.id]=co;sdb(db);
+}
 
 // ══════════════════════════════════════
 // AUTH
@@ -1164,6 +1214,8 @@ const PMETA={
   'p-paie':{h:'Paie',p:'Calcul IRPP progressif conforme CNSS — bulletins'},
   'p-decl':{h:'Déclarations sociales & fiscales',p:'CNSS, impôts, états récapitulatifs'},
   'p-recruit':{h:'Recrutement',p:'Offres d\'emploi et pipeline candidatures'},
+  'p-missions':{h:'Missions & Sites',p:'Sites clients et missions de placement/sécurité'},
+  'p-deploiements':{h:'Déploiements',p:'Agents affectés aux missions et sites'},
   'p-eval':{h:'Évaluations & Performance',p:'Suivi des objectifs et évaluations périodiques'},
   'p-docs':{h:'Documents RH',p:'Génération automatique de documents conformes'},
   'p-legal':{h:'Référentiel légal',p:'Paramètres légaux par pays'},
@@ -1591,7 +1643,7 @@ function openOfferModal(){
   const t=prompt('Intitulé du poste :');if(!t)return;
   const d=prompt('Département :');if(!d)return;
   const s=prompt('Salaire proposé (FCFA) :')||'0';
-  const db=gdb();const c=db.cos[CU.id];
+  const c=gco();if(!c)return;
   if(!c.offers)c.offers=[];if(!c.nOfId)c.nOfId=1;
   c.offers.push({id:c.nOfId++,title:t,dept:d,contract:'CDI',location:'Lomé',salary:Number(s),desc:'',statut:'Ouverte',createdAt:new Date().toISOString().split('T')[0]});
   sco(c);rOffers();rPipe();toast('Offre publiée.');
@@ -1604,16 +1656,130 @@ function openCandModal(){
   const parts=nom.trim().split(' ');const prenom=parts[0];const n2=parts.slice(1).join(' ')||'—';
   const email=prompt('Email :');if(!email)return;
   const note=prompt('Notes :')||'';
-  const db=gdb();const c=db.cos[CU.id];
+  const c=gco();if(!c)return;
   if(!c.candidates)c.candidates=[];if(!c.nCandId)c.nCandId=1;
   c.candidates.push({id:c.nCandId++,prenom,nom:n2,email,tel:'',offerId:opens[0].id,note,statut:'Candidature reçue',createdAt:new Date().toISOString().split('T')[0]});
   sco(c);rPipe();rOffers();toast('Candidat ajouté.');
 }
 function mvCand(id,stage){
-  const db=gdb();const c=db.cos[CU.id];const ca=c.candidates.find(x=>x.id===id);if(ca)ca.statut=stage;sco(c);rPipe();rOffers();toast(`→ ${stage}.`);
-  if(stage==='Recruté'){setTimeout(()=>{if(confirm('Ajouter comme employé ?')){const co=gco();const off=(co.offers||[]).find(o=>o.id===ca.offerId);const db2=gdb();const c2=db2.cos[CU.id];c2.employees.push({id:c2.nEmpId++,mat:`EMP-${String(c2.nEmpId).padStart(3,'0')}`,prenom:ca.prenom,nom:ca.nom,sx:'—',ddn:'',nat:'—',sitMat:'Célibataire',enf:0,cni:'',email:ca.email,tel:'',adr:'',poste:off?off.title:'Nouveau poste',dept:off?off.dept:'Commercial',cat:'Employé',ct:'CDI',emb:new Date().toISOString().split('T')[0],sal:off?off.salary:0,cnss:`CNSS-${c2.nEmpId}`,statut:'Actif'});sdb(db2);toast('Employé créé !');if(document.getElementById('emp-tbl'))rEmp();}},300);}
+  const c=gco();if(!c)return;
+  const ca=c.candidates.find(x=>x.id===id);if(ca)ca.statut=stage;sco(c);rPipe();rOffers();toast(`→ ${stage}.`);
+  if(stage==='Recruté'){setTimeout(()=>{if(confirm('Ajouter comme employé ?')){
+    const c2=gco();if(!c2)return;
+    const off=(c2.offers||[]).find(o=>o.id===ca.offerId);
+    if(!c2.nEmpId)c2.nEmpId=1;
+    c2.employees.push({id:c2.nEmpId++,mat:`EMP-${String(c2.nEmpId).padStart(3,'0')}`,prenom:ca.prenom,nom:ca.nom,sx:'—',ddn:'',nat:'—',sitMat:'Célibataire',enf:0,cni:'',email:ca.email,tel:'',adr:'',poste:off?off.title:'Nouveau poste',dept:off?off.dept:'Commercial',cat:'Employé',ct:'CDI',emb:new Date().toISOString().split('T')[0],sal:off?off.salary:0,cnss:`CNSS-${c2.nEmpId}`,statut:'Actif'});
+    sco(c2);toast('Employé créé !');
+    if(CU?.t==='cab'){if(document.getElementById('emp-tbl'))pEmpForCab(document.getElementById('cab-page-host'),c2);}
+    else if(document.getElementById('emp-tbl'))rEmp();
+  }},300);}
 }
-function delOffer(id){if(!confirm('Supprimer cette offre ?'))return;const db=gdb();const c=db.cos[CU.id];c.offers=c.offers.filter(o=>o.id!==id);c.candidates=c.candidates.filter(ca=>ca.offerId!==id);sco(c);rOffers();rPipe();}
+function delOffer(id){if(!confirm('Supprimer cette offre ?'))return;const c=gco();if(!c)return;c.offers=c.offers.filter(o=>o.id!==id);c.candidates=c.candidates.filter(ca=>ca.offerId!==id);sco(c);rOffers();rPipe();}
+
+// ══════════════════════════════════════
+// PLACEMENT & SÉCURITÉ — MISSIONS & SITES
+// (module optionnel, activable par cabinet — voir toggleCabModule)
+// ══════════════════════════════════════
+function bMs(s){const m={'À venir':'ba2','En cours':'bg2','Terminée':'bs2'};return`<span class="badge ${m[s]||'bs2'}">${s}</span>`;}
+function pMissions(host,co){
+  if(!co.missions)co.missions=[];
+  const active=co.missions.filter(m=>m.status!=='Terminée');
+  const agentsNeeded=active.reduce((s,m)=>s+(Number(m.agentsNeeded)||0),0);
+  host.innerHTML=`
+  <div class="kgrid g3" style="margin-bottom:1.25rem">
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Missions ouvertes</p><div class="kpi-ico ib"><i class="ti ti-map-pin"></i></div></div><p class="kpi-val">${active.length}</p></div>
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Agents requis</p><div class="kpi-ico ia"><i class="ti ti-shield"></i></div></div><p class="kpi-val">${agentsNeeded}</p></div>
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Total sites</p><div class="kpi-ico ig"><i class="ti ti-building"></i></div></div><p class="kpi-val">${co.missions.length}</p></div>
+  </div>
+  <div class="card"><div class="tw"><table id="ms-tbl"></table></div></div>`;
+  rMissions();
+}
+function rMissions(){
+  const co=gco();if(!co)return;
+  const el=document.getElementById('ms-tbl');if(!el)return;
+  const f=co.missions||[];
+  el.innerHTML=`<thead><tr><th>Site / Mission</th><th>Client final</th><th>Adresse</th><th>Agents requis</th><th>Statut</th><th>Début</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="7"><div class="empty"><i class="ti ti-map-pin"></i><p>Aucune mission</p></div></td></tr>`:f.map(m=>`<tr><td class="fw7">${m.name}</td><td style="font-size:12px">${m.clientFinal||'—'}</td><td style="font-size:12px">${m.address||'—'}</td><td>${m.agentsNeeded||0}</td><td>${bMs(m.status)}</td><td>${fd(m.startDate)}</td><td><div style="display:flex;gap:5px">${m.status!=='Terminée'?`<button class="btn bs bxs" onclick="endMission(${m.id})"><i class="ti ti-check"></i></button>`:''}<button class="btn bd bxs" onclick="delMission(${m.id})"><i class="ti ti-trash"></i></button></div></td></tr>`).join('')}</tbody>`;
+}
+function openMissionModal(){
+  document.getElementById('ms-name').value='';document.getElementById('ms-client').value='';
+  document.getElementById('ms-address').value='';document.getElementById('ms-agents').value='1';
+  document.getElementById('ms-start').value='';
+  openModal('m-mission');
+}
+function saveMission(){
+  const co=gco();if(!co)return;
+  const name=document.getElementById('ms-name').value.trim();
+  const start=document.getElementById('ms-start').value;
+  if(!name||!start){toast('Nom du site et date de début requis.','err');return;}
+  if(!co.missions)co.missions=[];if(!co.nMsId)co.nMsId=1;
+  co.missions.push({id:co.nMsId++,name,clientFinal:document.getElementById('ms-client').value.trim(),address:document.getElementById('ms-address').value.trim(),agentsNeeded:Number(document.getElementById('ms-agents').value)||0,status:'À venir',startDate:start});
+  sco(co);closeModal('m-mission');toast('Mission créée.');
+  rMissions();
+}
+function endMission(id){const co=gco();if(!co)return;const m=co.missions.find(x=>x.id===id);if(m)m.status='Terminée';sco(co);rMissions();toast('Mission terminée.');}
+function delMission(id){
+  if(!confirm('Supprimer cette mission ? Les déploiements associés seront aussi supprimés.'))return;
+  const co=gco();if(!co)return;
+  co.missions=co.missions.filter(m=>m.id!==id);
+  co.deployments=(co.deployments||[]).filter(d=>d.missionId!==id);
+  sco(co);rMissions();
+}
+
+// ══════════════════════════════════════
+// PLACEMENT & SÉCURITÉ — DÉPLOIEMENTS
+// ══════════════════════════════════════
+function bDp(s){return s==='Actif'?'<span class="badge bg2"><i class="ti ti-check" style="font-size:10px"></i>Actif</span>':'<span class="badge bs2">Terminé</span>';}
+function pDeploiements(host,co){
+  if(!co.deployments)co.deployments=[];
+  const active=co.deployments.filter(d=>d.status==='Actif');
+  const activeAgentIds=new Set(active.map(d=>d.empId));
+  const activeEmployees=(co.employees||[]).filter(e=>e.statut==='Actif');
+  const unassigned=activeEmployees.filter(e=>!activeAgentIds.has(e.id)).length;
+  host.innerHTML=`
+  <div class="kgrid g3" style="margin-bottom:1.25rem">
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Agents déployés</p><div class="kpi-ico ig"><i class="ti ti-shield-check"></i></div></div><p class="kpi-val">${activeAgentIds.size}</p></div>
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Missions couvertes</p><div class="kpi-ico ib"><i class="ti ti-map-pin"></i></div></div><p class="kpi-val">${new Set(active.map(d=>d.missionId)).size}</p></div>
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Agents non affectés</p><div class="kpi-ico ia"><i class="ti ti-user-question"></i></div></div><p class="kpi-val">${unassigned}</p></div>
+  </div>
+  <div class="card"><div class="tw"><table id="dp-tbl"></table></div></div>`;
+  rDeploiements();
+}
+function rDeploiements(){
+  const co=gco();if(!co)return;
+  const el=document.getElementById('dp-tbl');if(!el)return;
+  const f=co.deployments||[];
+  el.innerHTML=`<thead><tr><th>Agent</th><th>Mission / Site</th><th>Début</th><th>Fin</th><th>Statut</th><th>Actions</th></tr></thead><tbody>${f.length===0?`<tr><td colspan="6"><div class="empty"><i class="ti ti-shield"></i><p>Aucun déploiement</p></div></td></tr>`:f.map(d=>{const e=(co.employees||[]).find(x=>x.id===d.empId);const m=(co.missions||[]).find(x=>x.id===d.missionId);return`<tr><td class="fw7">${e?`${e.prenom} ${e.nom}`:'—'}</td><td style="font-size:12px">${m?m.name:'—'}</td><td>${fd(d.startDate)}</td><td>${d.endDate?fd(d.endDate):'En cours'}</td><td>${bDp(d.status)}</td><td>${d.status==='Actif'?`<button class="btn bd bxs" onclick="endDeploiement(${d.id})"><i class="ti ti-door-exit"></i></button>`:''}</td></tr>`;}).join('')}</tbody>`;
+}
+function openDeploiementModal(){
+  const co=gco();if(!co)return;
+  const openMissions=(co.missions||[]).filter(m=>m.status!=='Terminée');
+  if(openMissions.length===0){toast('Créez d\'abord une mission active.','err');return;}
+  const activeAgentIds=new Set((co.deployments||[]).filter(d=>d.status==='Actif').map(d=>d.empId));
+  const available=(co.employees||[]).filter(e=>e.statut==='Actif'&&!activeAgentIds.has(e.id));
+  if(available.length===0){toast('Aucun agent disponible (tous déjà déployés).','err');return;}
+  document.getElementById('dp-mission').innerHTML=openMissions.map(m=>`<option value="${m.id}">${m.name}</option>`).join('');
+  document.getElementById('dp-emp').innerHTML=available.map(e=>`<option value="${e.id}">${e.prenom} ${e.nom}</option>`).join('');
+  document.getElementById('dp-start').value='';
+  openModal('m-deploiement');
+}
+function saveDeploiement(){
+  const co=gco();if(!co)return;
+  const missionId=Number(document.getElementById('dp-mission').value);
+  const empId=Number(document.getElementById('dp-emp').value);
+  const start=document.getElementById('dp-start').value;
+  if(!missionId||!empId||!start){toast('Champs requis.','err');return;}
+  if(!co.deployments)co.deployments=[];if(!co.nDpId)co.nDpId=1;
+  co.deployments.push({id:co.nDpId++,missionId,empId,startDate:start,endDate:null,status:'Actif'});
+  const m=co.missions.find(x=>x.id===missionId);if(m&&m.status==='À venir')m.status='En cours';
+  sco(co);closeModal('m-deploiement');toast('Agent déployé.');
+  rDeploiements();
+}
+function endDeploiement(id){
+  const co=gco();if(!co)return;
+  const d=co.deployments.find(x=>x.id===id);
+  if(d){d.status='Terminé';d.endDate=new Date().toISOString().split('T')[0];}
+  sco(co);rDeploiements();toast('Déploiement terminé.');
+}
 
 // ══════════════════════════════════════
 // PAGE ÉVALUATIONS
@@ -1919,6 +2085,7 @@ function doCabRegister(){
   const nom=document.getElementById('cr-nom').value.trim();
   const name=document.getElementById('cr-name').value.trim();
   const pays=document.getElementById('cr-pays').value;
+  const type=document.getElementById('cr-type').value;
   const email=document.getElementById('cr-email').value.trim().toLowerCase();
   const pw=document.getElementById('cr-pw').value;
   if(!prenom||!nom||!name||!email||!pw){toast('Tous les champs sont requis.','err');return;}
@@ -1927,7 +2094,8 @@ function doCabRegister(){
   if(!db.cabinets)db.cabinets={};
   if(Object.values(db.cabinets).find(c=>c.adminEmail.toLowerCase()===email)){toast('Email déjà utilisé.','err');return;}
   const id='cab-'+Date.now();
-  const cab={id,name,pays,adminEmail:email,pw,adminName:`${prenom} ${nom}`,trialStart:new Date().toISOString(),plan:'trial',clients:[],nClientId:1};
+  const modules={rh:type==='rh'||type==='both',placement:type==='placement'||type==='both'};
+  const cab={id,name,pays,adminEmail:email,pw,adminName:`${prenom} ${nom}`,trialStart:new Date().toISOString(),plan:'trial',clients:[],nClientId:1,modules};
   db.cabinets[id]=cab;sdb(db);
   CU={t:'cab',id};activeCabClient=null;
   initCabShell(cab);show('s-cabinet');cabGo('cab-dash');
@@ -2008,6 +2176,9 @@ function cabCoGo(appPage){
   else if(appPage==='p-paie')pPaieForCab(host,co);
   else if(appPage==='p-docs')pDocsForCab(host,co);
   else if(appPage==='p-rupture'){pRupturesForCab(host,co);tbr.innerHTML=`<button class="btn bd bsm" onclick="openRuptureModalForCab()"><i class="ti ti-door-exit"></i> Nouvelle rupture</button>`;}
+  else if(appPage==='p-recruit'){pRecruit(host,co);tbr.innerHTML=`<button class="btn bo bsm" onclick="openCandModal()"><i class="ti ti-user-plus"></i> Candidat</button><button class="btn bp bsm" onclick="openOfferModal()"><i class="ti ti-plus"></i> Offre</button>`;}
+  else if(appPage==='p-missions'){pMissions(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openModal('m-mission')"><i class="ti ti-plus"></i> Nouvelle mission</button>`;}
+  else if(appPage==='p-deploiements'){pDeploiements(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openDeploiementModal()"><i class="ti ti-plus"></i> Déployer un agent</button>`;}
 }
 
 function openClientSpace(clientId){
@@ -2018,8 +2189,18 @@ function openClientSpace(clientId){
   document.getElementById('cab-co-nav').style.display='flex';
   document.getElementById('cab-co-name').textContent=activeCabClient.name;
   document.getElementById('cab-co-modules').style.display='block';
-  document.querySelectorAll('.cab-module').forEach(el=>el.style.display='flex');
+  applyCabModuleVisibility(cab);
   cabGo('cab-co-dash');
+}
+
+function applyCabModuleVisibility(cab){
+  const modules=cab.modules||{rh:true,placement:false};
+  document.querySelectorAll('.cab-module-rh').forEach(el=>{
+    el.style.display=modules.rh?(el.tagName==='P'?'block':'flex'):'none';
+  });
+  document.querySelectorAll('.cab-module-placement').forEach(el=>{
+    el.style.display=modules.placement?(el.tagName==='P'?'block':'flex'):'none';
+  });
 }
 
 function saveCabClient(clientId){
@@ -2096,6 +2277,7 @@ function cabCoDash(host,co,cab){
 
 function cabSettings(host,cab){
   const d=cabTrialLeft(cab);
+  const modules=cab.modules||{rh:true,placement:false};
   host.innerHTML=`
   <div class="two-col">
     <div class="card"><div class="card-hd"><div><p class="card-title">Informations du cabinet</p></div></div>
@@ -2106,8 +2288,28 @@ function cabSettings(host,cab){
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${cab.plan==='trial'?`Essai gratuit — ${d} j restants`:cab.plan}</p></div><span class="badge ${cab.plan==='trial'?'ba2':''}" style="${cab.plan!=='trial'?'background:var(--purple-l);color:var(--purple)':''}">${cab.plan==='trial'?'Essai':cab.plan}</span></div>
         ${cab.plan==='trial'?`<button class="btn bb" style="background:var(--purple);color:#fff;width:100%;justify-content:center" onclick="openModal('m-cab-pricing')"><i class="ti ti-crown"></i> Passer à un plan payant</button>`:'<p style="color:var(--green);font-size:12.5px"><i class="ti ti-check"></i> Abonnement actif.</p>'}
       </div>
+      <div class="card" style="margin-top:1rem"><div class="card-hd"><div><p class="card-title">Modules actifs</p></div></div>
+        <p style="font-size:12px;color:var(--text3);margin-bottom:.85rem">Active les modules disponibles pour vos entreprises clientes.</p>
+        <label style="display:flex;align-items:center;gap:10px;padding:.6rem 0;cursor:pointer;border-bottom:1px solid var(--border)">
+          <input type="checkbox" id="mod-rh" ${modules.rh?'checked':''} onchange="toggleCabModule('rh',this.checked)" style="width:16px;height:16px;accent-color:var(--purple)"/>
+          <div><p style="font-size:13px;font-weight:700">RH</p><p style="font-size:11.5px;color:var(--text3)">Employés, congés, absences, paie, documents, ruptures, recrutement</p></div>
+        </label>
+        <label style="display:flex;align-items:center;gap:10px;padding:.6rem 0;cursor:pointer">
+          <input type="checkbox" id="mod-placement" ${modules.placement?'checked':''} onchange="toggleCabModule('placement',this.checked)" style="width:16px;height:16px;accent-color:var(--purple)"/>
+          <div><p style="font-size:13px;font-weight:700">Placement &amp; Sécurité</p><p style="font-size:11.5px;color:var(--text3)">Missions &amp; sites, déploiements d'agents</p></div>
+        </label>
+      </div>
     </div>
   </div>`;
+}
+
+function toggleCabModule(key,enabled){
+  const cab=getCab();if(!cab)return;
+  if(!cab.modules)cab.modules={rh:true,placement:false};
+  cab.modules[key]=enabled;
+  saveCab(cab);
+  if(activeCabClient)applyCabModuleVisibility(cab);
+  toast(`Module ${key==='rh'?'RH':'Placement & Sécurité'} ${enabled?'activé':'désactivé'}.`);
 }
 
 // ══════════════════════════════════════
