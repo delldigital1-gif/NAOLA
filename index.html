@@ -421,7 +421,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       </aside>
       <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
         <div class="topbar">
-          <div><p class="tb-h" id="cab-tb-h">Tableau de bord Cabinet</p><p class="tb-p" id="cab-tb-p">Vue globale de vos entreprises clientes</p></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button id="cab-tb-back" onclick="goBackCab()" style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border-s);background:var(--white);cursor:pointer;color:var(--text2)" title="Retour"><i class="ti ti-arrow-left"></i></button>
+            <div><p class="tb-h" id="cab-tb-h">Tableau de bord Cabinet</p><p class="tb-p" id="cab-tb-p">Vue globale de vos entreprises clientes</p></div>
+          </div>
           <div class="tb-right" id="cab-tb-right"></div>
         </div>
         <div class="page-host" id="cab-page-host"></div>
@@ -621,7 +624,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       </aside>
       <div style="flex:1;display:flex;flex-direction:column;overflow:hidden">
         <div class="topbar">
-          <div><p class="tb-h" id="tb-h">Tableau de bord</p><p class="tb-p" id="tb-p">Vue d'ensemble</p></div>
+          <div style="display:flex;align-items:center;gap:10px">
+            <button id="tb-back" onclick="goBack()" style="display:none;align-items:center;justify-content:center;width:32px;height:32px;border-radius:8px;border:1.5px solid var(--border-s);background:var(--white);cursor:pointer;color:var(--text2)" title="Retour"><i class="ti ti-arrow-left"></i></button>
+            <div><p class="tb-h" id="tb-h">Tableau de bord</p><p class="tb-p" id="tb-p">Vue d'ensemble</p></div>
+          </div>
           <div class="tb-right" id="tb-right">
             <div style="position:relative">
               <div class="nbell" id="nbell" onclick="toggleNotif()"><i class="ti ti-bell" style="font-size:18px;color:var(--text2)"></i><span class="ndot hidden" id="ndot"></span></div>
@@ -1031,6 +1037,15 @@ async function loadCompanyFull(companyId){
 // des appels Supabase ciblés (voir sco() ci-dessous, devenu un no-op).
 // ══════════════════════════════════════
 let CU=null,selPlanName='Starter',CURRENT_CO=null,CURRENT_CAB=null;
+
+// ══════════════════════════════════════
+// NAVIGATION — pile "retour" en mémoire, par contexte (app / cabinet)
+// ══════════════════════════════════════
+let navStackApp=[],currentAppPid=null;
+let navStackCab=[],currentCabNav=null;
+function updBackBtn(btnId,stack){const b=document.getElementById(btnId);if(b)b.style.display=stack.length?'flex':'none';}
+function goBack(){if(!navStackApp.length)return;const prev=navStackApp.pop();go(prev,true);}
+function goBackCab(){if(!navStackCab.length)return;const prev=navStackCab.pop();if(prev.fn==='cabGo')cabGo(prev.pid,true);else cabCoGo(prev.pid,true);}
 function gco(){
   if(CU?.t==='cab')return activeCabClient||null;
   if(!CU||CU.t!=='co')return null;
@@ -1101,6 +1116,7 @@ async function doLogout(){CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClie
 // SHELL
 // ══════════════════════════════════════
 function initShell(co){
+  navStackApp=[];currentAppPid=null;
   const lg=lgl(co);
   document.getElementById('co-tag').textContent=co.name;
   const init=(co.adminName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
@@ -1207,7 +1223,10 @@ const PMETA={
 };
 const NORDER=['p-dash','p-emp','p-contrats','p-carriere','p-conges','p-absences','p-discipline','p-rupture','p-paie','p-decl','p-recruit','p-eval','p-docs','p-legal','p-settings'];
 
-function go(pid){
+function go(pid,fromBack){
+  if(!fromBack&&currentAppPid&&currentAppPid!==pid)navStackApp.push(currentAppPid);
+  currentAppPid=pid;
+  updBackBtn('tb-back',navStackApp);
   document.querySelectorAll('#s-app .s-item').forEach(el=>el.classList.remove('active'));
   const idx=NORDER.indexOf(pid);
   const items=document.querySelectorAll('#s-app .s-item');
@@ -2194,6 +2213,7 @@ async function doCabRegister(){
 }
 
 function initCabShell(cab){
+  navStackCab=[];currentCabNav=null;
   document.getElementById('cab-tag').textContent=cab.name;
   const init=(cab.adminName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('cab-av').textContent=init;
@@ -2210,7 +2230,10 @@ function cabTrialLeft(cab){return Math.max(0,Math.ceil((new Date(cab.trialStart)
 // ══════════════════════════════════════
 // CABINET — NAVIGATION
 // ══════════════════════════════════════
-function cabGo(pid){
+function cabGo(pid,fromBack){
+  if(!fromBack&&currentCabNav&&!(currentCabNav.fn==='cabGo'&&currentCabNav.pid===pid))navStackCab.push(currentCabNav);
+  currentCabNav={fn:'cabGo',pid};
+  updBackBtn('cab-tb-back',navStackCab);
   // Hide client-specific nav if going to cabinet-level pages
   const cabPages=['cab-dash','cab-clients','cab-settings'];
   if(cabPages.includes(pid)){
@@ -2247,9 +2270,12 @@ function cabGo(pid){
   }
 }
 
-function cabCoGo(appPage){
+function cabCoGo(appPage,fromBack){
   // Reuse the enterprise app pages, but operating on activeCabClient
   if(!activeCabClient)return;
+  if(!fromBack&&currentCabNav&&!(currentCabNav.fn==='cabCoGo'&&currentCabNav.pid===appPage))navStackCab.push(currentCabNav);
+  currentCabNav={fn:'cabCoGo',pid:appPage};
+  updBackBtn('cab-tb-back',navStackCab);
   const host=document.getElementById('cab-page-host');
   const m=PMETA[appPage]||{h:'',p:''};
   document.getElementById('cab-tb-h').textContent=`${activeCabClient.name} — ${m.h}`;
