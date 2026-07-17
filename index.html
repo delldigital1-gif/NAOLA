@@ -457,8 +457,42 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
   </div>
 </div>
 
-<!-- Modal: Pricing Cabinet -->
-<div class="overlay hidden" id="m-cab-pricing">
+<!-- Modal: Candidat (recrutement) -->
+<div class="overlay hidden" id="m-cand">
+  <div class="modal">
+    <div class="modal-hd"><h3>Ajouter un candidat</h3><button class="cx" onclick="closeModal('m-cand')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Nom complet *</label><input id="cd-nom" placeholder="Ex: Awa Traoré"/></div>
+      <div class="g2">
+        <div class="fg"><label>Email *</label><input id="cd-email" type="email" placeholder="awa@email.com"/></div>
+        <div class="fg"><label>Téléphone</label><input id="cd-tel" placeholder="+228 xx xx xx xx"/></div>
+      </div>
+      <div class="fg"><label>Offre *</label><select id="cd-offer"></select></div>
+      <div class="fg"><label>Notes</label><textarea id="cd-note" rows="2" placeholder="Remarques éventuelles"></textarea></div>
+      <div class="fg"><label>CV (PDF)</label><input id="cd-cv" type="file" accept="application/pdf"/>
+        <p style="font-size:11px;color:var(--text3);margin-top:4px">Optionnel à l'ajout — nécessaire pour l'analyse IA (matching &amp; screening).</p>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-cand')">Annuler</button>
+      <button class="btn bsm" style="background:var(--purple);color:#fff" id="cd-save-btn" onclick="saveCand()"><i class="ti ti-plus"></i> Ajouter le candidat</button>
+    </div>
+  </div>
+</div>
+
+<!-- Modal: Résultat analyse IA candidat -->
+<div class="overlay hidden" id="m-ai-cand">
+  <div class="modal">
+    <div class="modal-hd"><h3>Analyse IA — <span id="ai-cand-name"></span></h3><button class="cx" onclick="closeModal('m-ai-cand')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body" id="ai-cand-body">
+      <p style="text-align:center;color:var(--text3);padding:2rem 0">Chargement...</p>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-ai-cand')">Fermer</button>
+      <button class="btn bsm" id="ai-cand-btn" style="background:var(--purple);color:#fff" onclick="analyzeCandidate(window._aiCandId,true)"><i class="ti ti-sparkles"></i> (Re)lancer l'analyse IA</button>
+    </div>
+  </div>
+</div>
   <div class="modal mlg">
     <div class="modal-hd"><h3>Plans Cabinet — NAOLA Digital RH</h3><button class="cx" onclick="closeModal('m-cab-pricing')"><i class="ti ti-x"></i></button></div>
     <div class="modal-body">
@@ -988,7 +1022,7 @@ function dcFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,dateFaits:r
 function rpFromRow(r){return{id:r.id,empId:r.employee_id,motif:r.motif,date:r.date,preavis:r.preavis,indem:r.indemnite,obs:r.observations,createdAt:r.created_at?.slice(0,10)};}
 function evFromRow(r){return{id:r.id,empId:r.employee_id,period:r.period,perf:r.perf,comm:r.comm,init:r.init,ponct:r.ponct,comment:r.comment,createdAt:r.created_at?.slice(0,10)};}
 function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10)};}
-function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10)};}
+function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10),cvPath:r.cv_path,cvFilename:r.cv_filename,aiScore:r.ai_score,aiSummary:r.ai_summary,aiStrengths:r.ai_strengths,aiGaps:r.ai_gaps,aiAnalyzedAt:r.ai_analyzed_at};}
 function msFromRow(r){return{id:r.id,name:r.name,clientFinal:r.client_final,address:r.address,agentsNeeded:r.agents_needed,status:r.status,startDate:r.start_date};}
 function dpFromRow(r){return{id:r.id,missionId:r.mission_id,empId:r.employee_id,startDate:r.start_date,endDate:r.end_date,status:r.status};}
 
@@ -1659,7 +1693,7 @@ function rPipe(){
   const board=document.getElementById('pipe-board');if(!board)return;
   board.innerHTML=stages.map((st,si)=>{
     const cands=(co.candidates||[]).filter(c=>c.statut===st);
-    return`<div class="pcol" style="border-top-color:${cols[si]}"><div class="pcol-hd"><span class="pcol-title">${labels[si]}</span><span class="pcnt">${cands.length}</span></div>${cands.length===0?`<p style="font-size:11.5px;color:var(--text3);text-align:center;padding:.5rem">Aucun</p>`:cands.map(c=>{const off=(co.offers||[]).find(o=>o.id===c.offerId);return`<div class="cc"><p style="font-size:12.5px;font-weight:700">${c.prenom} ${c.nom}</p><p style="font-size:11.5px;color:var(--text3)">${off?off.title:'—'}</p>${c.note?`<p style="font-size:11px;color:var(--text2);margin-top:4px">${c.note}</p>`:''}${st!=='Recruté'&&st!=='Refusé'?`<div style="display:flex;gap:4px;margin-top:8px">${si<2?`<button class="btn bs bxs" onclick="mvCand('${c.id}','${stages[si+1]}')"><i class="ti ti-arrow-right"></i></button>`:''}<button class="btn bd bxs" onclick="mvCand('${c.id}','Refusé')"><i class="ti ti-x"></i></button></div>`:''}</div>`;}).join('')}</div>`;
+    return`<div class="pcol" style="border-top-color:${cols[si]}"><div class="pcol-hd"><span class="pcol-title">${labels[si]}</span><span class="pcnt">${cands.length}</span></div>${cands.length===0?`<p style="font-size:11.5px;color:var(--text3);text-align:center;padding:.5rem">Aucun</p>`:cands.map(c=>{const off=(co.offers||[]).find(o=>o.id===c.offerId);const aiBadge=c.aiScore!=null?`<span class="badge" style="background:${scoreColor(c.aiScore)}22;color:${scoreColor(c.aiScore)};font-weight:700">${c.aiScore}%</span>`:(c.cvPath?`<span class="badge" style="background:var(--steel);color:var(--text3)">Non analysé</span>`:'');return`<div class="cc"><div style="display:flex;justify-content:space-between;align-items:flex-start;gap:6px"><p style="font-size:12.5px;font-weight:700">${c.prenom} ${c.nom}</p>${aiBadge}</div><p style="font-size:11.5px;color:var(--text3)">${off?off.title:'—'}</p>${c.note?`<p style="font-size:11px;color:var(--text2);margin-top:4px">${c.note}</p>`:''}<div style="display:flex;gap:4px;margin-top:8px;flex-wrap:wrap">${c.cvPath?`<button class="btn bo bxs" onclick="showCandAI('${c.id}')"><i class="ti ti-sparkles"></i> IA</button>`:''}${st!=='Recruté'&&st!=='Refusé'?`${si<2?`<button class="btn bs bxs" onclick="mvCand('${c.id}','${stages[si+1]}')"><i class="ti ti-arrow-right"></i></button>`:''}<button class="btn bd bxs" onclick="mvCand('${c.id}','Refusé')"><i class="ti ti-x"></i></button>`:''}</div></div>`;}).join('')}</div>`;
   }).join('');
 }
 function rOffers(){
@@ -1679,20 +1713,102 @@ async function openOfferModal(){
   co.offers.push(ofFromRow(data));
   rOffers();rPipe();toast('Offre publiée.');
 }
-async function openCandModal(){
+function openCandModal(){
   const co=gco();if(!co)return;
   const opens=(co.offers||[]).filter(o=>o.statut==='Ouverte');
   if(opens.length===0){toast('Créez d\'abord une offre ouverte.','err');return;}
-  const nom=prompt('Nom complet du candidat :');if(!nom)return;
-  const parts=nom.trim().split(' ');const prenom=parts[0];const n2=parts.slice(1).join(' ')||'—';
-  const email=prompt('Email :');if(!email)return;
-  const note=prompt('Notes :')||'';
-  const row={company_id:co.id,offer_id:opens[0].id,prenom,nom:n2,email,tel:'',note,statut:'Candidature reçue'};
+  document.getElementById('cd-offer').innerHTML=opens.map(o=>`<option value="${o.id}">${o.title} (${o.dept})</option>`).join('');
+  document.getElementById('cd-nom').value='';document.getElementById('cd-email').value='';
+  document.getElementById('cd-tel').value='';document.getElementById('cd-note').value='';
+  document.getElementById('cd-cv').value='';
+  openModal('m-cand');
+}
+async function saveCand(){
+  const co=gco();if(!co)return;
+  const nom=document.getElementById('cd-nom').value.trim();
+  const email=document.getElementById('cd-email').value.trim();
+  if(!nom||!email){toast('Nom et email requis.','err');return;}
+  const parts=nom.split(' ');const prenom=parts[0];const n2=parts.slice(1).join(' ')||'—';
+  const tel=document.getElementById('cd-tel').value.trim();
+  const note=document.getElementById('cd-note').value.trim();
+  const offerId=document.getElementById('cd-offer').value;
+  const cvFile=document.getElementById('cd-cv').files[0];
+  const btn=document.getElementById('cd-save-btn');btn.disabled=true;btn.textContent='Ajout...';
+  const row={company_id:co.id,offer_id:offerId,prenom,nom:n2,email,tel,note,statut:'Candidature reçue'};
   const{data,error}=await sb.from('candidates').insert(row).select().single();
-  if(error){toast('Erreur : '+error.message,'err');return;}
+  if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Ajouter le candidat';return;}
+  let cand=caFromRow(data);
+  if(cvFile){
+    const path=`${co.id}/${data.id}.pdf`;
+    const{error:upErr}=await sb.storage.from('cvs').upload(path,cvFile,{contentType:'application/pdf',upsert:true});
+    if(upErr){toast('Candidat ajouté, mais échec upload CV : '+upErr.message,'err');}
+    else{
+      await sb.from('candidates').update({cv_path:path,cv_filename:cvFile.name}).eq('id',data.id);
+      cand.cvPath=path;cand.cvFilename=cvFile.name;
+    }
+  }
   if(!co.candidates)co.candidates=[];
-  co.candidates.push(caFromRow(data));
+  co.candidates.push(cand);
+  closeModal('m-cand');
   rPipe();rOffers();toast('Candidat ajouté.');
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-plus"></i> Ajouter le candidat';
+}
+function scoreColor(s){if(s==null)return'var(--text3)';if(s>=75)return'var(--green)';if(s>=50)return'var(--amber)';return'var(--red)';}
+async function showCandAI(id){
+  const co=gco();if(!co)return;
+  const ca=(co.candidates||[]).find(c=>c.id===id);if(!ca)return;
+  window._aiCandId=id;
+  document.getElementById('ai-cand-name').textContent=`${ca.prenom} ${ca.nom}`;
+  const body=document.getElementById('ai-cand-body');
+  if(!ca.cvPath){
+    body.innerHTML=`<div class="infoblock"><i class="ti ti-alert-triangle"></i><span>Aucun CV n'a été téléversé pour ce candidat — impossible de lancer l'analyse IA. Modifiez le candidat pour ajouter un CV.</span></div>`;
+    document.getElementById('ai-cand-btn').style.display='none';
+  }else{
+    document.getElementById('ai-cand-btn').style.display='';
+    if(ca.aiScore==null){
+      body.innerHTML=`<p style="text-align:center;color:var(--text3);padding:1.5rem 0">Ce candidat n'a pas encore été analysé.<br>Cliquez sur « Lancer l'analyse IA » ci-dessous.</p>`;
+    }else{
+      renderAIResult(body,ca);
+    }
+  }
+  openModal('m-ai-cand');
+}
+function renderAIResult(body,ca){
+  body.innerHTML=`
+    <div style="display:flex;align-items:center;gap:14px;margin-bottom:1rem">
+      <div style="width:64px;height:64px;border-radius:50%;border:4px solid ${scoreColor(ca.aiScore)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:18px;color:${scoreColor(ca.aiScore)}">${ca.aiScore}%</div>
+      <div><p style="font-weight:700;font-size:14px">Score de compatibilité</p><p style="font-size:11.5px;color:var(--text3)">Analysé le ${fd(ca.aiAnalyzedAt)}</p></div>
+    </div>
+    <div class="fg"><label>Résumé</label><p style="font-size:13px;color:var(--text2)">${ca.aiSummary||'—'}</p></div>
+    <div class="g2">
+      <div class="fg"><label style="color:var(--green)"><i class="ti ti-thumb-up"></i> Points forts</label><p style="font-size:12.5px;white-space:pre-line">${ca.aiStrengths||'—'}</p></div>
+      <div class="fg"><label style="color:var(--amber)"><i class="ti ti-alert-circle"></i> Points d'attention</label><p style="font-size:12.5px;white-space:pre-line">${ca.aiGaps||'—'}</p></div>
+    </div>`;
+}
+async function analyzeCandidate(id,forceReopen){
+  const co=gco();if(!co)return;
+  const btn=document.getElementById('ai-cand-btn');
+  const body=document.getElementById('ai-cand-body');
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Analyse en cours...';}
+  if(body&&forceReopen)body.innerHTML=`<p style="text-align:center;color:var(--text3);padding:2rem 0"><i class="ti ti-loader"></i> Claude analyse le CV...</p>`;
+  const{data:sessionData}=await sb.auth.getSession();
+  const token=sessionData?.session?.access_token;
+  if(!token){toast('Session expirée, reconnectez-vous.','err');return;}
+  try{
+    const resp=await fetch(SUPABASE_URL+'/functions/v1/ai-cv-screening',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},
+      body:JSON.stringify({candidate_id:id})
+    });
+    const result=await resp.json().catch(()=>({}));
+    if(!resp.ok){toast('Erreur analyse IA : '+(result.error||'inconnue'),'err');if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Réanalyser (IA)';}return;}
+    const ca=(co.candidates||[]).find(c=>c.id===id);
+    if(ca){ca.aiScore=result.score;ca.aiSummary=result.summary;ca.aiStrengths=result.strengths;ca.aiGaps=result.gaps;ca.aiAnalyzedAt=new Date().toISOString();}
+    if(body&&ca)renderAIResult(body,ca);
+    rPipe();
+    toast('Analyse IA terminée !');
+  }catch(e){toast('Erreur réseau : '+e.message,'err');}
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-sparkles"></i> Réanalyser (IA)';}
 }
 async function mvCand(id,stage){
   const co=gco();if(!co)return;
