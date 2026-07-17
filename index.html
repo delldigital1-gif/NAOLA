@@ -240,6 +240,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .cab-client-card:hover{border-color:var(--blue);box-shadow:0 2px 12px rgba(26,86,219,.1)}
 .cab-client-active{border-left:4px solid var(--blue)}
 .badge-cab{background:var(--purple-l);color:var(--purple)}
+@keyframes pulse{0%,100%{opacity:1}50%{opacity:.35}}
 </style>
 </head>
 <body>
@@ -1064,6 +1065,33 @@ async function loadCompanyFull(companyId){
 }
 
 // ══════════════════════════════════════
+// TEMPS RÉEL — le dashboard se met à jour automatiquement quand
+// employés/congés/absences/contrats/ruptures changent (Supabase Realtime),
+// sans que l'utilisateur ait besoin de recharger la page.
+// ══════════════════════════════════════
+let RT_CHANNEL=null,rtDebounce=null;
+function subscribeCompanyRealtime(companyId){
+  if(RT_CHANNEL){sb.removeChannel(RT_CHANNEL);RT_CHANNEL=null;}
+  RT_CHANNEL=sb.channel('co-rt-'+companyId)
+    .on('postgres_changes',{event:'*',schema:'public',table:'employees',filter:`company_id=eq.${companyId}`},()=>refreshRealtime(companyId))
+    .on('postgres_changes',{event:'*',schema:'public',table:'conges',filter:`company_id=eq.${companyId}`},()=>refreshRealtime(companyId))
+    .on('postgres_changes',{event:'*',schema:'public',table:'absences',filter:`company_id=eq.${companyId}`},()=>refreshRealtime(companyId))
+    .on('postgres_changes',{event:'*',schema:'public',table:'contracts',filter:`company_id=eq.${companyId}`},()=>refreshRealtime(companyId))
+    .on('postgres_changes',{event:'*',schema:'public',table:'ruptures',filter:`company_id=eq.${companyId}`},()=>refreshRealtime(companyId))
+    .subscribe();
+}
+async function refreshRealtime(companyId){
+  clearTimeout(rtDebounce);
+  rtDebounce=setTimeout(async()=>{
+    const fresh=await loadCompanyFull(companyId);
+    if(!fresh||CU?.t!=='co'||CURRENT_CO?.id!==companyId)return;
+    CURRENT_CO=fresh;
+    if(currentAppPid==='p-dash'){const host=document.getElementById('page-host');if(host)pDash(host,fresh);}
+    updBadges();
+  },1000);
+}
+
+// ══════════════════════════════════════
 // SESSION — CURRENT_CO/CURRENT_CAB sont des caches en mémoire,
 // hydratés une fois depuis Supabase à la connexion/navigation, puis
 // mutés en place à chaque opération pour un rendu synchrone immédiat.
@@ -1118,6 +1146,7 @@ async function doLogin(){
   CURRENT_CO=await loadCompanyFull(company.id);
   if(!CURRENT_CO){toast('Erreur de chargement du compte.','err');return;}
   CU={t:'co',id:company.id};initShell(CURRENT_CO);show('s-app');go('p-dash');
+  subscribeCompanyRealtime(company.id);
 }
 async function demo(t){
   if(t==='super'){document.getElementById('l-email').value='admin@naola.tg';document.getElementById('l-pw').value='naola123';}
@@ -1142,9 +1171,10 @@ async function doRegister(){
   if(e2){toast('Erreur de création du compte : '+e2.message,'err');return;}
   CURRENT_CO=await loadCompanyFull(company.id);
   CU={t:'co',id:company.id};initShell(CURRENT_CO);show('s-app');go('p-dash');
+  subscribeCompanyRealtime(company.id);
   toast(`Bienvenue ${p} ! Votre essai de 14 jours a démarré.`,'info');
 }
-async function doLogout(){CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;await sb.auth.signOut();show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+async function doLogout(){if(RT_CHANNEL){sb.removeChannel(RT_CHANNEL);RT_CHANNEL=null;}CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;await sb.auth.signOut();show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
 
 // ══════════════════════════════════════
 // SHELL
@@ -1296,27 +1326,47 @@ function go(pid,fromBack){
 // ══════════════════════════════════════
 // PAGE DASHBOARD
 // ══════════════════════════════════════
+function headcountAt(co,endOfMonth){
+  const departedIds=new Set((co.ruptures||[]).filter(r=>r.date&&new Date(r.date)<=endOfMonth).map(r=>r.empId));
+  return co.employees.filter(e=>e.emb&&new Date(e.emb)<=endOfMonth&&!departedIds.has(e.id)).length;
+}
 function pDash(host,co){
   const lg=lgl(co);
   const act=co.employees.filter(e=>e.statut==='Actif');
   const pend=co.conges.filter(c=>c.statut==='En attente').length;
   const totB=act.reduce((s,e)=>s+Number(e.sal),0);
   const maxD=Math.max(...(co.depts||DEPTS).map(d=>act.filter(e=>e.dept===d).reduce((s,e)=>s+Number(e.sal),0)),1);
+  const today=new Date().toISOString().split('T')[0];
+  const expSoon=(co.contrats||[]).filter(c=>c.end&&new Date(c.end)>=new Date(today)&&ddays(today,c.end)<=30);
+  const months=[];const now=new Date();for(let i=5;i>=0;i--)months.push(new Date(now.getFullYear(),now.getMonth()-i,1));
+  const trend=months.map(d=>({label:d.toLocaleDateString('fr-FR',{month:'short'}),val:headcountAt(co,new Date(d.getFullYear(),d.getMonth()+1,0))}));
+  const maxT=Math.max(...trend.map(t=>t.val),1);
   host.innerHTML=`
+  <div style="display:flex;align-items:center;gap:6px;margin-bottom:.75rem;font-size:11.5px;color:var(--green)"><span style="width:7px;height:7px;border-radius:50%;background:var(--green);display:inline-block;animation:pulse 2s infinite"></span> Données en temps réel</div>
+  ${expSoon.length>0?`<div class="infoblock" style="border-color:var(--amber);margin-bottom:1rem"><i class="ti ti-alert-triangle" style="color:var(--amber)"></i><span><b>${expSoon.length} contrat(s)</b> arrivent à échéance sous 30 jours. <a href="javascript:void(0)" onclick="go('p-contrats')" style="color:var(--blue);font-weight:600">Voir les contrats →</a></span></div>`:''}
   <div class="kgrid g4">
     <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Employés actifs</p><div class="kpi-ico ib"><i class="ti ti-users"></i></div></div><p class="kpi-val">${act.length}</p><p class="kpi-sub">Tous départements</p></div>
     <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Congés en attente</p><div class="kpi-ico ia"><i class="ti ti-hourglass"></i></div></div><p class="kpi-val">${pend}</p><p class="kpi-sub">À valider</p></div>
     <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Masse salariale brute</p><div class="kpi-ico ig"><i class="ti ti-coins"></i></div></div><p class="kpi-val" style="font-size:16px;margin-top:3px">${fm(totB)}</p><p class="kpi-sub">${lg.pays} · ${lg.caisse}</p></div>
-    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Absences ce mois</p><div class="kpi-ico ir"><i class="ti ti-calendar-x"></i></div></div><p class="kpi-val">${co.absences.length}</p><p class="kpi-sub">Enregistrées</p></div>
+    <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Contrats à renouveler</p><div class="kpi-ico ${expSoon.length>0?'ir':'ig'}"><i class="ti ti-file-alert"></i></div></div><p class="kpi-val">${expSoon.length}</p><p class="kpi-sub">Sous 30 jours</p></div>
   </div>
   <div class="cr">
     <div class="card" style="margin-bottom:0"><div class="card-hd"><div><p class="card-title">Masse salariale par département</p><p class="card-sub">En ${lg.devise}</p></div></div>
       <div class="dept-bars">${(co.depts||DEPTS).map((d,i)=>{const s=act.filter(e=>e.dept===d).reduce((t,e)=>t+Number(e.sal),0);const pct=Math.round((s/maxD)*100);return`<div class="dr"><span class="dn">${d}</span><div class="dt"><div class="df" style="width:${pct}%;background:${DCOLS[i%DCOLS.length]}"></div></div><span class="dc" style="font-size:11px;min-width:70px;color:var(--text2)">${(s/1000).toFixed(0)}k</span></div>`;}).join('')}
       </div>
     </div>
+    <div class="card" style="margin-bottom:0"><div class="card-hd"><div><p class="card-title">Évolution des effectifs</p><p class="card-sub">6 derniers mois</p></div></div>
+      <div class="dept-bars">${trend.map(t=>{const pct=Math.round((t.val/maxT)*100);return`<div class="dr"><span class="dn" style="text-transform:capitalize">${t.label}</span><div class="dt"><div class="df" style="width:${pct}%;background:var(--blue)"></div></div><span class="dc" style="font-size:11px;min-width:30px;color:var(--text2)">${t.val}</span></div>`;}).join('')}
+      </div>
+    </div>
+  </div>
+  <div class="cr">
     <div class="card" style="margin-bottom:0"><div class="card-hd"><div><p class="card-title">Référentiel légal actif</p><p class="card-sub">${lg.pays} — ${lg.code}</p></div><span class="badge bb2">${lg.pays}</span></div>
       <div class="three-col" style="gap:8px">${[['SMIG',fm(lg.smig),'ti-coins'],['Cot. salariale',lg.cotSal+'%','ti-percentage'],['Cot. patronale',lg.cotPat+'%','ti-building'],['Congés/an',lg.cAnnuel+'j','ti-beach'],['Retraite',lg.retNorm+' ans','ti-star'],['Jours fériés',lg.jFeries+'/an','ti-calendar']].map(([l,v,i])=>`<div style="background:var(--steel);border-radius:var(--radius-s);padding:.65rem .9rem"><p style="font-size:10.5px;color:var(--text3);display:flex;align-items:center;gap:4px;margin-bottom:3px"><i class="ti ${i}" style="font-size:12px"></i>${l}</p><p style="font-size:13.5px;font-weight:700">${v}</p></div>`).join('')}</div>
       <p class="lawref" style="margin-top:.75rem"><i class="ti ti-book" style="vertical-align:-2px;margin-right:3px"></i>${lg.code}</p>
+    </div>
+    <div class="card" style="margin-bottom:0"><div class="card-hd"><div><p class="card-title">Absences ce mois</p></div></div>
+      <p class="kpi-val" style="margin:.5rem 0">${co.absences.length}</p><p style="font-size:12px;color:var(--text3)">Enregistrées sur la période en cours</p>
     </div>
   </div>
   <div class="card"><div class="card-hd"><div><p class="card-title">Demandes de congé récentes</p><p class="card-sub">${pend} en attente</p></div><button class="btn bo bsm" onclick="go('p-conges')">Voir tout</button></div>
@@ -1816,17 +1866,32 @@ async function mvCand(id,stage){
   if(error){toast('Erreur : '+error.message,'err');return;}
   const ca=co.candidates.find(x=>x.id===id);if(ca)ca.statut=stage;
   rPipe();rOffers();toast(`→ ${stage}.`);
-  if(stage==='Recruté'){setTimeout(async()=>{if(confirm('Ajouter comme employé ?')){
-    const co2=gco();if(!co2)return;
-    const off=(co2.offers||[]).find(o=>o.id===ca.offerId);
-    const emp={mat:`EMP-${String(co2.employees.length+1).padStart(3,'0')}`,prenom:ca.prenom,nom:ca.nom,sx:'—',ddn:'',nat:'—',sitMat:'Célibataire',enf:0,cni:'',email:ca.email,tel:'',adr:'',poste:off?off.title:'Nouveau poste',dept:off?off.dept:'Commercial',cat:'Employé',ct:'CDI',emb:new Date().toISOString().split('T')[0],sal:off?off.salary:0,cnss:`CNSS-${co2.employees.length+1}`,statut:'Actif'};
-    const{data,error:e2}=await sb.from('employees').insert(empToRow(emp,co2.id)).select().single();
-    if(e2){toast('Erreur : '+e2.message,'err');return;}
-    co2.employees.push(empFromRow(data));
-    toast('Employé créé !');
-    if(CU?.t==='cab'){if(document.getElementById('emp-tbl'))rEmp();}
-    else if(document.getElementById('emp-tbl'))rEmp();
-  }},300);}
+  if(stage==='Recruté'){setTimeout(()=>convertCandToEmp(id),300);}
+}
+function convertCandToEmp(candId){
+  const co=gco();if(!co)return;
+  const ca=(co.candidates||[]).find(c=>c.id===candId);if(!ca)return;
+  const off=(co.offers||[]).find(o=>o.id===ca.offerId);
+  document.getElementById('m-emp-t').textContent='Recrutement — créer la fiche employé';
+  document.getElementById('ep-dept').innerHTML=(co.depts||DEPTS).map(d=>`<option ${off&&d===off.dept?'selected':''}>${d}</option>`).join('');
+  document.getElementById('ep-p').value=ca.prenom;
+  document.getElementById('ep-n').value=ca.nom;
+  document.getElementById('ep-email').value=ca.email;
+  document.getElementById('ep-tel').value=ca.tel||'';
+  document.getElementById('ep-poste').value=off?off.title:'';
+  document.getElementById('ep-ct').value=off?off.contract:'CDI';
+  document.getElementById('ep-sal').value=off?off.salary:0;
+  document.getElementById('ep-emb').value=new Date().toISOString().split('T')[0];
+  document.getElementById('ep-ddn').value='';
+  document.getElementById('ep-nat').value='Togolaise';
+  document.getElementById('ep-mat').value='Célibataire';
+  document.getElementById('ep-enf').value=0;
+  document.getElementById('ep-cni').value='';
+  document.getElementById('ep-adr').value='';
+  document.getElementById('ep-cnss').value='';
+  document.getElementById('ep-cat').value='Employé';
+  openModal('m-emp');
+  toast(`Vérifiez les informations de ${ca.prenom} ${ca.nom} avant de créer sa fiche.`);
 }
 async function delOffer(id){
   if(!confirm('Supprimer cette offre ?'))return;
