@@ -483,14 +483,21 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 
 <!-- Modal: Résultat analyse IA candidat -->
 <div class="overlay hidden" id="m-ai-cand">
-  <div class="modal">
+  <div class="modal mlg">
     <div class="modal-hd"><h3>Analyse IA — <span id="ai-cand-name"></span></h3><button class="cx" onclick="closeModal('m-ai-cand')"><i class="ti ti-x"></i></button></div>
     <div class="modal-body" id="ai-cand-body">
       <p style="text-align:center;color:var(--text3);padding:2rem 0">Chargement...</p>
     </div>
+    <div class="sep"></div>
+    <div class="modal-body" style="padding-top:0">
+      <p class="slbl"><i class="ti ti-message-2"></i> Entretien IA</p>
+      <div id="ai-interview-body">
+        <p style="text-align:center;color:var(--text3);padding:1rem 0">—</p>
+      </div>
+    </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-ai-cand')">Fermer</button>
-      <button class="btn bsm" id="ai-cand-btn" style="background:var(--purple);color:#fff" onclick="analyzeCandidate(window._aiCandId,true)"><i class="ti ti-sparkles"></i> (Re)lancer l'analyse IA</button>
+      <button class="btn bsm" id="ai-cand-btn" style="background:var(--purple);color:#fff" onclick="analyzeCandidate(window._aiCandId,true)"><i class="ti ti-sparkles"></i> (Re)lancer l'analyse CV</button>
     </div>
   </div>
 </div>
@@ -1023,7 +1030,7 @@ function dcFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,dateFaits:r
 function rpFromRow(r){return{id:r.id,empId:r.employee_id,motif:r.motif,date:r.date,preavis:r.preavis,indem:r.indemnite,obs:r.observations,createdAt:r.created_at?.slice(0,10)};}
 function evFromRow(r){return{id:r.id,empId:r.employee_id,period:r.period,perf:r.perf,comm:r.comm,init:r.init,ponct:r.ponct,comment:r.comment,createdAt:r.created_at?.slice(0,10)};}
 function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10)};}
-function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10),cvPath:r.cv_path,cvFilename:r.cv_filename,aiScore:r.ai_score,aiSummary:r.ai_summary,aiStrengths:r.ai_strengths,aiGaps:r.ai_gaps,aiAnalyzedAt:r.ai_analyzed_at};}
+function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10),cvPath:r.cv_path,cvFilename:r.cv_filename,aiScore:r.ai_score,aiSummary:r.ai_summary,aiStrengths:r.ai_strengths,aiGaps:r.ai_gaps,aiAnalyzedAt:r.ai_analyzed_at,interviewQuestions:r.interview_questions,interviewAnswers:r.interview_answers,interviewScore:r.interview_score,interviewEvaluation:r.interview_evaluation,interviewAt:r.interview_at};}
 function msFromRow(r){return{id:r.id,name:r.name,clientFinal:r.client_final,address:r.address,agentsNeeded:r.agents_needed,status:r.status,startDate:r.start_date};}
 function dpFromRow(r){return{id:r.id,missionId:r.mission_id,empId:r.employee_id,startDate:r.start_date,endDate:r.end_date,status:r.status};}
 
@@ -1822,6 +1829,54 @@ async function showCandAI(id){
     }
   }
   openModal('m-ai-cand');
+  renderInterviewSection(ca);
+}
+function renderInterviewSection(ca){
+  const el=document.getElementById('ai-interview-body');
+  if(!ca.interviewQuestions){
+    el.innerHTML=`<button class="btn bo bsm" onclick="generateInterviewQuestions('${ca.id}')" id="gen-q-btn"><i class="ti ti-list-details"></i> Générer les questions d'entretien</button>`;
+    return;
+  }
+  let html=`<div class="fg"><label>Questions suggérées par l'IA</label><p style="font-size:12.5px;white-space:pre-line;background:var(--steel);border-radius:var(--radius-s);padding:.75rem">${ca.interviewQuestions}</p></div>`;
+  html+=`<div class="fg"><label>Réponses du candidat (à saisir après l'entretien)</label><textarea id="ai-interview-answers" rows="4" placeholder="Retranscrivez ou résumez les réponses du candidat pour chaque question...">${ca.interviewAnswers||''}</textarea></div>`;
+  html+=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="evaluateInterview('${ca.id}')" id="eval-btn"><i class="ti ti-checkup-list"></i> Évaluer l'entretien</button>`;
+  if(ca.interviewScore!=null){
+    html+=`<div style="margin-top:1rem;display:flex;align-items:center;gap:14px">
+      <div style="width:56px;height:56px;border-radius:50%;border:4px solid ${scoreColor(ca.interviewScore)};display:flex;align-items:center;justify-content:center;font-weight:800;font-size:15px;color:${scoreColor(ca.interviewScore)}">${ca.interviewScore}%</div>
+      <p style="font-size:12.5px;color:var(--text2);flex:1">${ca.interviewEvaluation||''}</p>
+    </div>`;
+  }
+  el.innerHTML=html;
+}
+async function generateInterviewQuestions(id){
+  const co=gco();if(!co)return;
+  const btn=document.getElementById('gen-q-btn');if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Génération...';}
+  const{data:sessionData}=await sb.auth.getSession();
+  const token=sessionData?.session?.access_token;
+  try{
+    const resp=await fetch(SUPABASE_URL+'/functions/v1/ai-interview',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'generate_questions',candidate_id:id})});
+    const result=await resp.json().catch(()=>({}));
+    if(!resp.ok){toast('Erreur : '+(result.error||'inconnue'),'err');if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-list-details"></i> Générer les questions';}return;}
+    const ca=(co.candidates||[]).find(c=>c.id===id);
+    if(ca){ca.interviewQuestions=result.questions;renderInterviewSection(ca);}
+    toast('Questions générées !');
+  }catch(e){toast('Erreur réseau : '+e.message,'err');}
+}
+async function evaluateInterview(id){
+  const co=gco();if(!co)return;
+  const answers=document.getElementById('ai-interview-answers').value.trim();
+  if(!answers){toast('Saisissez les réponses du candidat.','err');return;}
+  const btn=document.getElementById('eval-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Évaluation...';
+  const{data:sessionData}=await sb.auth.getSession();
+  const token=sessionData?.session?.access_token;
+  try{
+    const resp=await fetch(SUPABASE_URL+'/functions/v1/ai-interview',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({action:'evaluate',candidate_id:id,answers})});
+    const result=await resp.json().catch(()=>({}));
+    if(!resp.ok){toast('Erreur : '+(result.error||'inconnue'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-checkup-list"></i> Évaluer l\u2019entretien';return;}
+    const ca=(co.candidates||[]).find(c=>c.id===id);
+    if(ca){ca.interviewAnswers=answers;ca.interviewScore=result.score;ca.interviewEvaluation=result.evaluation;ca.interviewAt=new Date().toISOString();renderInterviewSection(ca);}
+    toast('Entretien évalué !');
+  }catch(e){toast('Erreur réseau : '+e.message,'err');}
 }
 function renderAIResult(body,ca){
   body.innerHTML=`
