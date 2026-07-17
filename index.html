@@ -458,6 +458,30 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
   </div>
 </div>
 
+<!-- Modal: Offre d'emploi -->
+<div class="overlay hidden" id="m-offer">
+  <div class="modal">
+    <div class="modal-hd"><h3>Publier une offre</h3><button class="cx" onclick="closeModal('m-offer')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="fg"><label>Intitulé du poste *</label><input id="of-title" placeholder="Ex: Directeur Commercial"/></div>
+      <div class="g2">
+        <div class="fg"><label>Département</label><select id="of-dept"></select></div>
+        <div class="fg"><label>Type de contrat</label><select id="of-contract"><option>CDI</option><option>CDD</option><option>Stage</option><option>Consultance</option></select></div>
+      </div>
+      <div class="fg"><label>Salaire proposé (FCFA)</label><input id="of-salary" type="number" placeholder="500000"/></div>
+      <div class="fg"><label>Description du poste</label><textarea id="of-desc" rows="3" placeholder="Missions, exigences, profil recherché — utilisé aussi par l'IA pour le matching"></textarea></div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px;background:var(--purple-l);border-radius:var(--radius-s);padding:.65rem .9rem">
+        <input id="of-confidentiel" type="checkbox" style="width:auto"/>
+        <label style="margin:0;font-size:12.5px"><i class="ti ti-crown" style="color:var(--purple)"></i> Poste de direction / Executive Search (offre confidentielle)</label>
+      </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-offer')">Annuler</button>
+      <button class="btn bsm" style="background:var(--purple);color:#fff" onclick="saveOffer()"><i class="ti ti-plus"></i> Publier l'offre</button>
+    </div>
+  </div>
+</div>
+
 <!-- Modal: Candidat (recrutement) -->
 <div class="overlay hidden" id="m-cand">
   <div class="modal">
@@ -1029,7 +1053,7 @@ function abFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,start:r.sta
 function dcFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,dateFaits:r.date_faits,dateConv:r.date_convocation,faits:r.faits,decision:r.decision,createdAt:r.created_at?.slice(0,10)};}
 function rpFromRow(r){return{id:r.id,empId:r.employee_id,motif:r.motif,date:r.date,preavis:r.preavis,indem:r.indemnite,obs:r.observations,createdAt:r.created_at?.slice(0,10)};}
 function evFromRow(r){return{id:r.id,empId:r.employee_id,period:r.period,perf:r.perf,comm:r.comm,init:r.init,ponct:r.ponct,comment:r.comment,createdAt:r.created_at?.slice(0,10)};}
-function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10)};}
+function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10),confidentiel:r.confidentiel};}
 function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10),cvPath:r.cv_path,cvFilename:r.cv_filename,aiScore:r.ai_score,aiSummary:r.ai_summary,aiStrengths:r.ai_strengths,aiGaps:r.ai_gaps,aiAnalyzedAt:r.ai_analyzed_at,interviewQuestions:r.interview_questions,interviewAnswers:r.interview_answers,interviewScore:r.interview_score,interviewEvaluation:r.interview_evaluation,interviewAt:r.interview_at};}
 function msFromRow(r){return{id:r.id,name:r.name,clientFinal:r.client_final,address:r.address,agentsNeeded:r.agents_needed,status:r.status,startDate:r.start_date};}
 function dpFromRow(r){return{id:r.id,missionId:r.mission_id,empId:r.employee_id,startDate:r.start_date,endDate:r.end_date,status:r.status};}
@@ -1756,19 +1780,57 @@ function rPipe(){
 function rOffers(){
   const co=gco();if(!co)return;
   const el=document.getElementById('offers-list');if(!el)return;
-  el.innerHTML=(co.offers||[]).length===0?`<div class="empty"><i class="ti ti-briefcase"></i><p>Aucune offre créée</p></div>`:(co.offers||[]).map(o=>{const n=(co.candidates||[]).filter(c=>c.offerId===o.id).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><p style="font-size:13.5px;font-weight:700">${o.title}</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${o.dept} · ${o.contract} · ${fm(o.salary)} · ${n} candidat(s)</p></div><div style="display:flex;gap:6px"><span class="badge ${o.statut==='Ouverte'?'bg2':'bs2'}">${o.statut}</span><button class="btn bd bxs" onclick="delOffer('${o.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
+  el.innerHTML=(co.offers||[]).length===0?`<div class="empty"><i class="ti ti-briefcase"></i><p>Aucune offre créée</p></div>`:(co.offers||[]).map(o=>{const n=(co.candidates||[]).filter(c=>c.offerId===o.id).length;const nWithCv=(co.candidates||[]).filter(c=>c.offerId===o.id&&c.cvPath&&c.aiScore==null).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><p style="font-size:13.5px;font-weight:700">${o.confidentiel?'<i class="ti ti-crown" style="color:var(--purple)"></i> ':''}${o.title}${o.confidentiel?' <span class="badge" style="background:var(--purple-l);color:var(--purple);font-size:10px">Executive Search</span>':''}</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${o.dept} · ${o.contract} · ${fm(o.salary)} · ${n} candidat(s)</p></div><div style="display:flex;gap:6px;align-items:center">${nWithCv>0?`<button class="btn bo bxs" onclick="bulkAnalyzeOffer('${o.id}')" id="bulk-${o.id}"><i class="ti ti-sparkles"></i> Analyser ${nWithCv} candidat(s)</button>`:''}<span class="badge ${o.statut==='Ouverte'?'bg2':'bs2'}">${o.statut}</span><button class="btn bd bxs" onclick="delOffer('${o.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
 }
-async function openOfferModal(){
+async function bulkAnalyzeOffer(offerId){
   const co=gco();if(!co)return;
-  const t=prompt('Intitulé du poste :');if(!t)return;
-  const d=prompt('Département :');if(!d)return;
-  const s=prompt('Salaire proposé (FCFA) :')||'0';
-  const row={company_id:co.id,title:t,dept:d,contract:'CDI',location:'Lomé',salary:Number(s),description:'',statut:'Ouverte'};
+  const targets=(co.candidates||[]).filter(c=>c.offerId===offerId&&c.cvPath&&c.aiScore==null);
+  if(targets.length===0)return;
+  const btn=document.getElementById('bulk-'+offerId);
+  for(let i=0;i<targets.length;i++){
+    if(btn)btn.innerHTML=`<i class="ti ti-loader"></i> Analyse ${i+1}/${targets.length}...`;
+    await analyzeCandidateSilent(targets[i].id);
+  }
+  toast(`${targets.length} candidat(s) analysé(s) — recrutement de masse terminé.`);
+  rPipe();rOffers();
+}
+async function analyzeCandidateSilent(id){
+  const co=gco();if(!co)return;
+  const{data:sessionData}=await sb.auth.getSession();
+  const token=sessionData?.session?.access_token;
+  if(!token)return;
+  try{
+    const resp=await fetch(SUPABASE_URL+'/functions/v1/ai-cv-screening',{method:'POST',headers:{'Content-Type':'application/json','Authorization':'Bearer '+token},body:JSON.stringify({candidate_id:id})});
+    const result=await resp.json().catch(()=>({}));
+    if(resp.ok){
+      const ca=(co.candidates||[]).find(c=>c.id===id);
+      if(ca){ca.aiScore=result.score;ca.aiSummary=result.summary;ca.aiStrengths=result.strengths;ca.aiGaps=result.gaps;ca.aiAnalyzedAt=new Date().toISOString();}
+    }
+  }catch(e){/* on continue le lot même si un candidat échoue */}
+}
+function openOfferModal(){
+  const co=gco();if(!co)return;
+  document.getElementById('of-title').value='';document.getElementById('of-salary').value='';
+  document.getElementById('of-desc').value='';document.getElementById('of-confidentiel').checked=false;
+  document.getElementById('of-dept').innerHTML=(co.depts||DEPTS).map(d=>`<option>${d}</option>`).join('');
+  openModal('m-offer');
+}
+async function saveOffer(){
+  const co=gco();if(!co)return;
+  const t=document.getElementById('of-title').value.trim();
+  const d=document.getElementById('of-dept').value;
+  const ct=document.getElementById('of-contract').value;
+  const s=document.getElementById('of-salary').value||'0';
+  const desc=document.getElementById('of-desc').value.trim();
+  const conf=document.getElementById('of-confidentiel').checked;
+  if(!t){toast('Intitulé du poste requis.','err');return;}
+  const row={company_id:co.id,title:t,dept:d,contract:ct,location:'Lomé',salary:Number(s),description:desc,statut:'Ouverte',confidentiel:conf};
   const{data,error}=await sb.from('offers').insert(row).select().single();
   if(error){toast('Erreur : '+error.message,'err');return;}
   if(!co.offers)co.offers=[];
   co.offers.push(ofFromRow(data));
-  rOffers();rPipe();toast('Offre publiée.');
+  closeModal('m-offer');
+  rOffers();rPipe();toast(conf?'Offre confidentielle (Executive Search) publiée.':'Offre publiée.');
 }
 function openCandModal(){
   const co=gco();if(!co)return;
