@@ -5,19 +5,21 @@
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>NAOLA Digital RH — SIRH Multi-pays</title>
 <link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@3.19.0/dist/tabler-icons.min.css">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap">
 <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.js"></script>
 <style>
 :root{
-  --navy:#0D1B2A;--blue:#1A56DB;--blue-m:#2563EB;--blue-l:#EFF6FF;--blue-mid:#DBEAFE;
-  --slate:#475569;--slate-l:#94A3B8;--steel:#F1F5F9;--border:rgba(0,0,0,.08);--border-s:rgba(0,0,0,.14);
-  --white:#FFFFFF;--text:#0F172A;--text2:#475569;--text3:#94A3B8;
-  --green:#059669;--green-l:#ECFDF5;--amber:#D97706;--amber-l:#FFFBEB;
-  --red:#DC2626;--red-l:#FEF2F2;--purple:#7C3AED;--purple-l:#F5F3FF;
-  --gold:#B45309;--gold-l:#FFFBEB;--radius:10px;--radius-s:6px;
-  --sidebar-w:232px;--shadow:0 1px 3px rgba(0,0,0,.08);--shadow-m:0 4px 16px rgba(0,0,0,.1);
+  --navy:#0A0D0A;--blue:#D4AF37;--blue-m:#E6C34F;--blue-l:rgba(212,175,55,.14);--blue-mid:rgba(212,175,55,.24);
+  --slate:#B8B2A3;--slate-l:#4A473E;--steel:#10130F;--border:rgba(212,175,55,.13);--border-s:rgba(212,175,55,.22);
+  --white:#181D17;--text:#F2EEE3;--text2:#B0AA9A;--text3:#736D5F;
+  --green:#16A673;--green-l:rgba(22,166,115,.15);--amber:#E0923C;--amber-l:rgba(224,146,60,.15);
+  --red:#DE6363;--red-l:rgba(222,99,99,.15);--purple:#D4AF37;--purple-l:rgba(212,175,55,.14);
+  --gold:#D4AF37;--gold-l:rgba(212,175,55,.15);--radius:10px;--radius-s:6px;
+  --sidebar-w:232px;--shadow:0 1px 3px rgba(0,0,0,.45);--shadow-m:0 8px 28px rgba(0,0,0,.55);
 }
 *{box-sizing:border-box;margin:0;padding:0}
-body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--steel);color:var(--text);font-size:14px;line-height:1.5}
+body{font-family:'Inter',-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-serif;background:var(--steel);color:var(--text);font-size:14px;line-height:1.5}
 .screen{display:none;min-height:100vh}.screen.active{display:flex}
 /* AUTH */
 .auth-wrap{flex:1;display:flex}
@@ -57,10 +59,10 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .bp{background:var(--blue);color:#fff}.bp:hover{background:var(--blue-m)}
 .bo{background:transparent;border:1.5px solid var(--border-s);color:var(--text)}.bo:hover{background:var(--steel)}
 .bg{background:transparent;border:none;color:var(--text2)}.bg:hover{background:var(--steel)}
-.bd{background:var(--red-l);color:var(--red);border:none}.bd:hover{background:#FECACA}
-.bs{background:var(--green-l);color:var(--green);border:none}.bs:hover{background:#A7F3D0}
+.bd{background:var(--red-l);color:var(--red);border:none}.bd:hover{background:rgba(222,99,99,.28)}
+.bs{background:var(--green-l);color:var(--green);border:none}.bs:hover{background:rgba(22,166,115,.28)}
 .ba{background:var(--amber-l);color:var(--amber);border:none}
-.bn{background:var(--navy);color:#fff}.bn:hover{background:#1a2d42}
+.bn{background:var(--navy);color:#fff}.bn:hover{background:#1a1f19}
 .bb{width:100%;justify-content:center;padding:11px}
 .bsm{padding:5px 11px;font-size:12px}.bxs{padding:3px 8px;font-size:11px}
 /* SHELL */
@@ -110,7 +112,7 @@ body{font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',system-ui,sans-seri
 .kpi-ico{width:34px;height:34px;border-radius:8px;display:flex;align-items:center;justify-content:center;font-size:17px;flex-shrink:0}
 .ib{background:var(--blue-l);color:var(--blue)}.ig{background:var(--green-l);color:var(--green)}
 .ia{background:var(--amber-l);color:var(--amber)}.ir{background:var(--red-l);color:var(--red)}
-.ip{background:var(--purple-l);color:var(--purple)}.in{background:rgba(13,27,42,.08);color:var(--navy)}
+.ip{background:var(--purple-l);color:var(--purple)}.in{background:var(--green-l);color:var(--green)}
 .kpi-val{font-size:26px;font-weight:800;line-height:1;color:var(--text)}
 .kpi-sub{font-size:11.5px;color:var(--text3);margin-top:4px}
 .card{background:var(--white);border:1px solid var(--border);border-radius:var(--radius);padding:1.1rem 1.25rem;margin-bottom:1.25rem;box-shadow:var(--shadow)}
@@ -135,7 +137,7 @@ tr:hover td{background:var(--blue-l)}
 .badge{display:inline-flex;align-items:center;gap:3px;font-size:11px;font-weight:600;padding:3px 9px;border-radius:20px;white-space:nowrap}
 .bb2{background:var(--blue-mid);color:var(--blue)}.bg2{background:var(--green-l);color:var(--green)}
 .ba2{background:var(--amber-l);color:var(--amber)}.br2{background:var(--red-l);color:var(--red)}
-.bp2{background:var(--purple-l);color:var(--purple)}.bn2{background:rgba(13,27,42,.1);color:var(--navy)}
+.bp2{background:var(--purple-l);color:var(--purple)}.bn2{background:var(--green-l);color:var(--green)}
 .bs2{background:var(--steel);color:var(--slate)}.bgo{background:var(--gold-l);color:var(--gold)}
 /* MODALS */
 .overlay{position:fixed;inset:0;background:rgba(0,0,0,.5);display:flex;align-items:center;justify-content:center;z-index:1000;padding:1rem}
@@ -235,7 +237,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .land-footer span{font-size:11.5px;color:rgba(255,255,255,.3)}
 .land-footer .chip{background:rgba(255,255,255,.07);padding:3px 10px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.4)}
 /* ── CABINET SCREEN ── */
-.cab-dash-header{background:linear-gradient(135deg,var(--purple),#5B21B6);color:#fff;border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
+.cab-dash-header{background:linear-gradient(135deg,var(--purple),#9c8226);color:#fff;border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .cab-client-card{background:var(--white);border:1.5px solid var(--border-s);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .2s}
 .cab-client-card:hover{border-color:var(--blue);box-shadow:0 2px 12px rgba(26,86,219,.1)}
 .cab-client-active{border-left:4px solid var(--blue)}
@@ -384,7 +386,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 <!-- ═══ CABINET APP ═══ -->
 <div class="screen" id="s-cabinet">
   <div class="app">
-    <div class="trialbar hidden" id="cab-trial-bar" style="background:linear-gradient(90deg,var(--purple),#7C3AED)">
+    <div class="trialbar hidden" id="cab-trial-bar" style="background:linear-gradient(90deg,var(--purple),#9c8226)">
       <span><i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai cabinet — <strong id="cab-trial-days">14</strong> jours restants</span>
       <button class="btn bsm" style="background:rgba(255,255,255,.25);color:#fff;border:1.5px solid rgba(255,255,255,.4)" onclick="openModal('m-cab-pricing')"><i class="ti ti-crown"></i> Choisir un plan</button>
     </div>
@@ -1025,9 +1027,9 @@ const LEGAL={
     indem:[{an:5,pct:30},{an:5,pct:35},{an:Infinity,pct:40}],
     preavis:{h:'8 jours',e:'1 mois',c:'3 mois'}},
 };
-const AVC=['#1A56DB','#059669','#7C3AED','#D97706','#DC2626','#0891B2','#BE185D','#0D9488'];
+const AVC=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 const DEPTS=['Commercial','Technique','Finance','RH','Direction','Operations','Marketing','Juridique'];
-const DCOLS=['#1A56DB','#059669','#7C3AED','#D97706','#DC2626','#0891B2','#BE185D','#0D9488'];
+const DCOLS=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 
 function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
 
@@ -1704,7 +1706,7 @@ function pPaie(host,co){
   const tIrpp=paies.reduce((s,{p})=>s+p.irpp,0);
   const tPat=paies.reduce((s,{p})=>s+p.cotPat,0);
   host.innerHTML=`
-  <div style="background:linear-gradient(135deg,var(--navy),#1a3a5c);color:#fff;border-radius:var(--radius);padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;box-shadow:var(--shadow-m)">
+  <div style="background:linear-gradient(135deg,var(--navy),#1c2119);color:#fff;border-radius:var(--radius);padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;box-shadow:var(--shadow-m)">
     <div><p style="font-size:11.5px;opacity:.6">Masse salariale brute — Juin 2026 · ${lg.pays}</p><p style="font-size:28px;font-weight:800;margin-top:3px">${fm(tBrut)}</p><p style="font-size:12px;opacity:.5;margin-top:3px">${act.length} employés actifs · ${lg.caisse}</p></div>
     <div style="text-align:right"><p style="font-size:11.5px;opacity:.6">Net total à payer</p><p style="font-size:22px;font-weight:700;margin-top:2px">${fm(tNet)}</p></div>
   </div>
@@ -2657,7 +2659,7 @@ function cabCoDash(host,co,cab){
   const pend=co.conges?.filter(c=>c.statut==='En attente').length||0;
   const totB=act.reduce((s,e)=>s+Number(e.sal),0);
   host.innerHTML=`
-  <div style="background:linear-gradient(135deg,var(--purple),#5B21B6);color:#fff;border-radius:var(--radius);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
+  <div style="background:linear-gradient(135deg,var(--purple),#9c8226);color:#fff;border-radius:var(--radius);padding:1.1rem 1.5rem;display:flex;align-items:center;justify-content:space-between;margin-bottom:1.25rem">
     <div><p style="font-size:11px;opacity:.7">Géré par ${cab.name}</p><p style="font-size:18px;font-weight:800;margin-top:2px">${co.name}</p><p style="font-size:12px;opacity:.6;margin-top:2px">${co.sector} · ${lg.pays} · Contact : ${co.contact||'—'}</p></div>
     <span class="badge" style="background:rgba(255,255,255,.2);color:#fff;font-size:12px"><i class="ti ti-briefcase"></i>Client Cabinet</span>
   </div>
