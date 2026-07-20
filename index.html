@@ -1295,13 +1295,13 @@ async function submitApplication(){
   const btn=document.getElementById('ap-submit-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Envoi...';
   const id=crypto.randomUUID();
   const path=`public/${id}.pdf`;
-  const{error:upErr}=await sb.storage.from('cvs').upload(path,cvFile,{contentType:'application/pdf',upsert:true});
+  const{error:upErr}=await sb.storage.from('cvs').upload(path,cvFile,{contentType:'application/pdf'});
   if(upErr){toast('Erreur lors de l\'envoi du CV : '+upErr.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label">'+fm(APPLICATION_FEE)+'</span>';return;}
   const row={id,source:'public',offer_id:window._applyOfferId,prenom,nom,email,tel,note,statut:'Candidature reçue',cv_path:path,cv_filename:cvFile.name};
   const{error}=await sb.from('candidates').insert(row);
   if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label">'+fm(APPLICATION_FEE)+'</span>';return;}
   // Paiement placeholder (frais de dossier) — en attendant l'intégration CinetPay réelle, même logique que subscribeCab()
-  await sb.from('candidates').update({application_paid:true,application_fee_ref:'SIMULE-'+Date.now()}).eq('id',id);
+  await sb.from('candidate_applications').insert({candidate_id:id,payment_ref:'SIMULE-'+Date.now()});
   closeModal('m-apply');
   toast('Candidature envoyée ! Vous serez contacté par email si votre profil est retenu.');
   btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label"></span>';
