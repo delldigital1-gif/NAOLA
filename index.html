@@ -419,6 +419,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <p class="asub">Accédez au tableau de bord de votre cabinet.</p>
         <div class="fg"><label>Adresse e-mail</label><input id="cl-email" type="email" placeholder="cabinet@naolarh.tg"/></div>
         <div class="fg"><label>Mot de passe</label><input id="cl-pw" type="password" placeholder="••••••••"/></div>
+        <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('cl-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff;margin-bottom:.75rem" onclick="doCabLogin()"><i class="ti ti-login"></i> Se connecter</button>
         <div class="divider">Compte de démonstration</div>
         <button class="btn bo bsm" style="width:100%;justify-content:center" onclick="demoCab()"><i class="ti ti-briefcase"></i> Demo Cabinet RH</button>
@@ -688,6 +689,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <p class="asub">Accédez à votre espace entreprise sécurisé.</p>
         <div class="fg"><label>Adresse e-mail</label><input id="l-email" type="email" placeholder="vous@entreprise.tg"/></div>
         <div class="fg"><label>Mot de passe</label><input id="l-pw" type="password" placeholder="••••••••"/></div>
+        <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('l-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bp bb" onclick="doLogin()"><i class="ti ti-login"></i> Se connecter</button>
         <div class="divider">Comptes de démonstration</div>
         <div style="display:flex;gap:8px">
@@ -696,6 +698,29 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         </div>
         <div class="sl">Pas encore de compte ? <a onclick="show('s-register')">Créer un compte</a></div>
         <div class="sl" style="margin-top:.5rem"><a onclick="show('s-landing')" style="color:var(--text3);font-size:12px"><i class="ti ti-arrow-left" style="font-size:11px"></i> Retour à l'accueil</a></div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ RÉINITIALISATION MOT DE PASSE ═══ -->
+<div class="screen" id="s-reset-password">
+  <div class="auth-wrap">
+    <div class="auth-left">
+      <div class="a-brand">
+        <div class="a-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
+        <div><div class="a-brand-name">NAOLA Digital RH</div><div class="a-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
+      </div>
+      <h2>Réinitialiser votre mot de passe</h2>
+      <p>Choisissez un nouveau mot de passe pour votre compte.</p>
+    </div>
+    <div class="auth-right">
+      <div class="auth-box">
+        <h3>Nouveau mot de passe</h3>
+        <p class="asub">Minimum 6 caractères.</p>
+        <div class="fg"><label>Nouveau mot de passe</label><input id="rp-pw1" type="password" placeholder="••••••••"/></div>
+        <div class="fg"><label>Confirmer le mot de passe</label><input id="rp-pw2" type="password" placeholder="••••••••"/></div>
+        <button class="btn bp bb" onclick="doResetPassword()"><i class="ti ti-check"></i> Mettre à jour le mot de passe</button>
       </div>
     </div>
   </div>
@@ -1138,6 +1163,25 @@ function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
 const SUPABASE_URL='https://hadpvpvztlkpjzixvotd.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZHB2cHZ6dGxrcGp6aXh2b3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxOTk0NDcsImV4cCI6MjA5OTc3NTQ0N30.3HTSvzcXQW7tzfzgP5gIEvJxn0En4CV-bfM7HEBvZtg';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')show('s-reset-password');});
+async function forgotPassword(emailFieldId){
+  const email=document.getElementById(emailFieldId).value.trim().toLowerCase();
+  if(!email){toast('Renseignez votre email d\'abord.','err');return;}
+  const{error}=await sb.auth.resetPasswordForEmail(email,{redirectTo:window.location.origin+window.location.pathname});
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  toast('Email envoyé — vérifiez votre boîte de réception pour réinitialiser votre mot de passe.');
+}
+async function doResetPassword(){
+  const pw1=document.getElementById('rp-pw1').value;
+  const pw2=document.getElementById('rp-pw2').value;
+  if(!pw1||pw1.length<6){toast('Minimum 6 caractères.','err');return;}
+  if(pw1!==pw2){toast('Les mots de passe ne correspondent pas.','err');return;}
+  const{error}=await sb.auth.updateUser({password:pw1});
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  toast('Mot de passe mis à jour. Vous pouvez vous reconnecter.');
+  await sb.auth.signOut();
+  show('s-login');
+}
 
 // Le panneau superadmin (statistiques cross-cabinets) n'est pas migré :
 // une vue cross-tenant nécessiterait la clé service_role, qui ne doit
