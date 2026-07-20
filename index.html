@@ -236,6 +236,20 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .land-footer{padding:1.5rem 3rem;display:flex;align-items:center;justify-content:center;gap:16px;border-top:1px solid rgba(255,255,255,.07)}
 .land-footer span{font-size:11.5px;color:rgba(255,255,255,.3)}
 .land-footer .chip{background:rgba(255,255,255,.07);padding:3px 10px;border-radius:20px;font-size:11px;color:rgba(255,255,255,.4)}
+.land-features{padding:1rem 2rem 4rem;border-top:1px solid rgba(255,255,255,.07);text-align:center}
+.land-features h2{font-size:26px;font-weight:800;color:#fff;margin:3rem 0 .6rem}
+.land-features>p{font-size:14px;color:rgba(255,255,255,.5);max-width:480px;margin:0 auto 2.5rem}
+.feat-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:18px;max-width:1000px;margin:0 auto}
+.feat-card{background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:1.5rem 1.35rem;text-align:left}
+.feat-ico{width:42px;height:42px;border-radius:10px;display:flex;align-items:center;justify-content:center;font-size:19px;margin-bottom:1rem}
+.feat-ico.gold{background:rgba(212,175,55,.2);color:var(--blue-m)}
+.feat-ico.green{background:rgba(22,166,115,.22);color:#4ADE9B}
+.feat-ico.blue2{background:rgba(26,86,219,.3);color:#93C5FD}
+.feat-ico.purple2{background:rgba(124,58,237,.3);color:#C4B5FD}
+.feat-card h4{font-size:14.5px;font-weight:700;color:#fff;margin-bottom:.4rem}
+.feat-card p{font-size:12.5px;color:rgba(255,255,255,.5);line-height:1.55}
+@media (max-width:900px){.feat-grid{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.feat-grid{grid-template-columns:1fr}}
 /* ── CABINET SCREEN ── */
 .cab-dash-header{background:linear-gradient(135deg,var(--purple),#9c8226);color:#fff;border-radius:var(--radius);padding:1.5rem;margin-bottom:1.25rem;display:flex;align-items:center;justify-content:space-between}
 .cab-client-card{background:var(--white);border:1.5px solid var(--border-s);border-radius:var(--radius);padding:1rem 1.25rem;margin-bottom:10px;display:flex;align-items:center;justify-content:space-between;cursor:pointer;transition:all .2s}
@@ -290,6 +304,32 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
             <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Rapports & exports par entreprise</div>
           </div>
           <span class="land-card-cta purple"><i class="ti ti-login"></i>Espace Cabinet<i class="ti ti-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+    <div class="land-features">
+      <h2>Tout ce dont votre RH a besoin, en un seul outil</h2>
+      <p>Une plateforme pensée pour la réalité du travail en Afrique de l'Ouest — pas un logiciel générique traduit.</p>
+      <div class="feat-grid">
+        <div class="feat-card">
+          <div class="feat-ico gold"><i class="ti ti-receipt-2"></i></div>
+          <h4>Paie & conformité</h4>
+          <p>Calcul automatique CNSS et IRPP progressif selon la réglementation de votre pays. Bulletins générés en un clic.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-ico green"><i class="ti ti-calendar-time"></i></div>
+          <h4>Congés, absences & ruptures</h4>
+          <p>Soldes calculés automatiquement, workflows de validation, gestion des ruptures de contrat en toute conformité.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-ico purple2"><i class="ti ti-sparkles"></i></div>
+          <h4>Recrutement propulsé par l'IA</h4>
+          <p>Matching & screening de CV automatique, génération de tests et entretiens IA, offres confidentielles Executive Search.</p>
+        </div>
+        <div class="feat-card">
+          <div class="feat-ico blue2"><i class="ti ti-world"></i></div>
+          <h4>Multi-pays, multi-entreprises</h4>
+          <p>6 pays couverts, isolation stricte des données par entreprise ou par client de cabinet.</p>
         </div>
       </div>
     </div>
