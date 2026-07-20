@@ -269,7 +269,8 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="land-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
         <div><div class="land-brand-name">NAOLA Digital RH</div><div class="land-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
       </div>
-      <div style="display:flex;gap:10px">
+      <div style="display:flex;gap:10px;align-items:center">
+        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="openJobs()"><i class="ti ti-briefcase"></i> Offres d'emploi</button>
         <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="show('s-login')">Connexion</button>
         <button class="btn bp bsm" onclick="show('s-register')">Commencer gratuitement</button>
       </div>
@@ -338,6 +339,52 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <span class="chip">🇹🇬 Togo</span><span class="chip">🇸🇳 Sénégal</span><span class="chip">🇨🇮 Côte d'Ivoire</span><span class="chip">🇧🇯 Bénin</span><span class="chip">🇲🇱 Mali</span><span class="chip">🇧🇫 Burkina Faso</span>
       <span style="margin-left:8px">·</span>
       <span>© 2026 NAOLA Digital RH</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ OFFRES D'EMPLOI (PUBLIC) ═══ -->
+<div class="screen" id="s-jobs">
+  <div class="landing">
+    <nav class="land-nav">
+      <div class="land-brand" style="cursor:pointer" onclick="show('s-landing')">
+        <div class="land-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
+        <div><div class="land-brand-name">NAOLA Digital RH</div><div class="land-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Retour à l'accueil</button>
+      </div>
+    </nav>
+    <div style="padding:1rem 2rem 4rem;max-width:820px;margin:0 auto;width:100%">
+      <div style="text-align:center;margin-bottom:2.5rem">
+        <span class="land-tag"><i class="ti ti-world" style="vertical-align:-2px;margin-right:5px"></i>Offres publiées par nos entreprises et cabinets clients</span>
+        <h1 style="font-size:32px;font-weight:900;color:#fff;margin:.6rem 0">Offres d'emploi</h1>
+        <p style="font-size:14.5px;color:rgba(255,255,255,.55);max-width:520px;margin:0 auto">Consultez librement les postes ouverts. Déposez votre CV pour postuler à une offre, ou rejoignez notre base de candidats.</p>
+        <button class="btn bp bsm" style="margin-top:1.25rem" onclick="openApplyModal(null)"><i class="ti ti-upload"></i> Candidature spontanée — déposer mon CV</button>
+      </div>
+      <div id="jobs-list"></div>
+    </div>
+  </div>
+</div>
+
+<!-- Modal : Postuler (public) -->
+<div class="overlay hidden" id="m-apply">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="ap-title">Postuler</h3><button class="cx" onclick="closeModal('m-apply')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="g2">
+        <div class="fg"><label>Prénom *</label><input id="ap-prenom" placeholder="Kofi"/></div>
+        <div class="fg"><label>Nom *</label><input id="ap-nom" placeholder="Mensah"/></div>
+      </div>
+      <div class="fg"><label>Email *</label><input id="ap-email" type="email" placeholder="vous@email.com"/></div>
+      <div class="fg"><label>Téléphone</label><input id="ap-tel" placeholder="+228 xx xx xx xx"/></div>
+      <div class="fg"><label>CV (PDF) *</label><input id="ap-cv" type="file" accept="application/pdf"/></div>
+      <div class="fg"><label>Message (facultatif)</label><textarea id="ap-note" rows="2"></textarea></div>
+      <div class="infoblock"><i class="ti ti-info-circle"></i><span id="ap-fee-note"></span></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-apply')">Annuler</button>
+      <button class="btn bp bsm" id="ap-submit-btn" onclick="submitApplication()"><i class="ti ti-send"></i> <span id="ap-submit-label"></span></button>
     </div>
   </div>
 </div>
@@ -450,6 +497,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-docs')"><i class="ti ti-files"></i>Documents</div>
         <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-rupture')"><i class="ti ti-door-exit"></i>Ruptures</div>
         <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-recruit')"><i class="ti ti-user-search"></i>Recrutement</div>
+        <div class="s-item cab-module cab-module-rh" style="display:none" onclick="cabCoGo('p-cvbank')"><i class="ti ti-address-book"></i>Banque de CV</div>
         <p class="s-sec cab-module cab-module-placement" style="display:none">Placement &amp; Sécurité</p>
         <div class="s-item cab-module cab-module-placement" style="display:none" onclick="cabCoGo('p-missions')"><i class="ti ti-map-pin"></i>Missions &amp; Sites</div>
         <div class="s-item cab-module cab-module-placement" style="display:none" onclick="cabCoGo('p-deploiements')"><i class="ti ti-shield"></i>Déploiements</div>
@@ -514,8 +562,12 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="fg"><label>Salaire proposé (FCFA)</label><input id="of-salary" type="number" placeholder="500000"/></div>
       <div class="fg"><label>Description du poste</label><textarea id="of-desc" rows="3" placeholder="Missions, exigences, profil recherché — utilisé aussi par l'IA pour le matching"></textarea></div>
       <div class="fg" style="display:flex;align-items:center;gap:8px;background:var(--purple-l);border-radius:var(--radius-s);padding:.65rem .9rem">
-        <input id="of-confidentiel" type="checkbox" style="width:auto"/>
+        <input id="of-confidentiel" type="checkbox" style="width:auto" onchange="if(this.checked){document.getElementById('of-public').checked=false;document.getElementById('of-public').disabled=true}else{document.getElementById('of-public').disabled=false}"/>
         <label style="margin:0;font-size:12.5px"><i class="ti ti-crown" style="color:var(--purple)"></i> Poste de direction / Executive Search (offre confidentielle)</label>
+      </div>
+      <div class="fg" style="display:flex;align-items:center;gap:8px;background:var(--green-l);border-radius:var(--radius-s);padding:.65rem .9rem">
+        <input id="of-public" type="checkbox" style="width:auto"/>
+        <label style="margin:0;font-size:12.5px"><i class="ti ti-world" style="color:var(--green)"></i> Publier sur le site public (visible sans connexion, candidatures ouvertes à tous)</label>
       </div>
     </div>
     <div class="modal-ft">
@@ -720,6 +772,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="s-item" onclick="go('p-decl')"><i class="ti ti-report"></i>Déclarations</div>
         <p class="s-sec">RH</p>
         <div class="s-item" onclick="go('p-recruit')"><i class="ti ti-briefcase"></i>Recrutement</div>
+        <div class="s-item" onclick="go('p-cvbank')"><i class="ti ti-address-book"></i>Banque de CV</div>
         <div class="s-item" onclick="go('p-eval')"><i class="ti ti-star"></i>Évaluations</div>
         <div class="s-item" onclick="go('p-docs')"><i class="ti ti-files"></i>Documents</div>
         <p class="s-sec">Admin</p>
@@ -1072,6 +1125,9 @@ const LEGAL={
 };
 const AVC=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 const DEPTS=['Commercial','Technique','Finance','RH','Direction','Operations','Marketing','Juridique'];
+// Frais placeholders — non finalisés, en attente d'un vrai paiement CinetPay (voir subscribeCab)
+const APPLICATION_FEE=2000;
+const UNLOCK_FEE=3000;
 const DCOLS=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 
 function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
@@ -1098,7 +1154,7 @@ function abFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,start:r.sta
 function dcFromRow(r){return{id:r.id,empId:r.employee_id,type:r.type,dateFaits:r.date_faits,dateConv:r.date_convocation,faits:r.faits,decision:r.decision,createdAt:r.created_at?.slice(0,10)};}
 function rpFromRow(r){return{id:r.id,empId:r.employee_id,motif:r.motif,date:r.date,preavis:r.preavis,indem:r.indemnite,obs:r.observations,createdAt:r.created_at?.slice(0,10)};}
 function evFromRow(r){return{id:r.id,empId:r.employee_id,period:r.period,perf:r.perf,comm:r.comm,init:r.init,ponct:r.ponct,comment:r.comment,createdAt:r.created_at?.slice(0,10)};}
-function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10),confidentiel:r.confidentiel};}
+function ofFromRow(r){return{id:r.id,title:r.title,dept:r.dept,contract:r.contract,location:r.location,salary:r.salary,desc:r.description,statut:r.statut,createdAt:r.created_at?.slice(0,10),confidentiel:r.confidentiel,isPublic:r.is_public};}
 function caFromRow(r){return{id:r.id,offerId:r.offer_id,prenom:r.prenom,nom:r.nom,email:r.email,tel:r.tel,note:r.note,statut:r.statut,createdAt:r.created_at?.slice(0,10),cvPath:r.cv_path,cvFilename:r.cv_filename,aiScore:r.ai_score,aiSummary:r.ai_summary,aiStrengths:r.ai_strengths,aiGaps:r.ai_gaps,aiAnalyzedAt:r.ai_analyzed_at,interviewQuestions:r.interview_questions,interviewAnswers:r.interview_answers,interviewScore:r.interview_score,interviewEvaluation:r.interview_evaluation,interviewAt:r.interview_at};}
 function msFromRow(r){return{id:r.id,name:r.name,clientFinal:r.client_final,address:r.address,agentsNeeded:r.agents_needed,status:r.status,startDate:r.start_date};}
 function dpFromRow(r){return{id:r.id,missionId:r.mission_id,empId:r.employee_id,startDate:r.start_date,endDate:r.end_date,status:r.status};}
@@ -1195,6 +1251,61 @@ function sco(){/* no-op : chaque fonction persiste elle-même via Supabase */}
 // AUTH — Supabase Auth réel
 // ══════════════════════════════════════
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+// ══════════════════════════════════════
+// JOB BOARD PUBLIC — offres visibles sans connexion + dépôt de CV/candidature
+// ══════════════════════════════════════
+function openJobs(){show('s-jobs');loadPublicJobs();}
+async function loadPublicJobs(){
+  const el=document.getElementById('jobs-list');
+  el.innerHTML='<p style="text-align:center;color:rgba(255,255,255,.4);padding:2rem 0">Chargement...</p>';
+  const{data,error}=await sb.from('offers').select('id,title,dept,contract,location,salary,description,created_at').eq('is_public',true).order('created_at',{ascending:false});
+  if(error){el.innerHTML='<p style="text-align:center;color:rgba(255,255,255,.4);padding:2rem 0">Impossible de charger les offres pour le moment.</p>';return;}
+  if(!data||data.length===0){el.innerHTML='<p style="text-align:center;color:rgba(255,255,255,.4);padding:2rem 0">Aucune offre publique pour le moment. Revenez bientôt, ou déposez votre CV dès maintenant.</p>';return;}
+  el.innerHTML=data.map(o=>`<div style="background:rgba(255,255,255,.04);border:1.5px solid rgba(255,255,255,.08);border-radius:14px;padding:1.35rem 1.5rem;margin-bottom:14px;text-align:left">
+    <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:14px;flex-wrap:wrap">
+      <div>
+        <h4 style="font-size:16px;font-weight:700;color:#fff;margin-bottom:.3rem">${o.title}</h4>
+        <p style="font-size:12px;color:rgba(255,255,255,.45)">${o.dept||''}${o.contract?' · '+o.contract:''}${o.location?' · '+o.location:''}${o.salary?' · '+fm(o.salary):''}</p>
+      </div>
+      <button class="btn bp bxs" onclick='openApplyModal(${JSON.stringify(o.id)},${JSON.stringify(o.title)})'><i class="ti ti-send"></i> Postuler</button>
+    </div>
+    ${o.description?`<p style="font-size:13px;color:rgba(255,255,255,.6);margin-top:.75rem;line-height:1.6">${o.description}</p>`:''}
+  </div>`).join('');
+}
+function openApplyModal(offerId,offerTitle){
+  window._applyOfferId=offerId||null;
+  document.getElementById('ap-title').textContent=offerId?('Postuler — '+(offerTitle||'')):'Candidature spontanée';
+  document.getElementById('ap-prenom').value='';document.getElementById('ap-nom').value='';
+  document.getElementById('ap-email').value='';document.getElementById('ap-tel').value='';
+  document.getElementById('ap-note').value='';document.getElementById('ap-cv').value='';
+  document.getElementById('ap-fee-note').textContent=`Des frais de dossier de ${fm(APPLICATION_FEE)} s'appliquent pour valider l'envoi de votre candidature.`;
+  document.getElementById('ap-submit-label').textContent=`Payer ${fm(APPLICATION_FEE)} et postuler`;
+  const btn=document.getElementById('ap-submit-btn');btn.disabled=false;
+  openModal('m-apply');
+}
+async function submitApplication(){
+  const prenom=document.getElementById('ap-prenom').value.trim();
+  const nom=document.getElementById('ap-nom').value.trim();
+  const email=document.getElementById('ap-email').value.trim();
+  const tel=document.getElementById('ap-tel').value.trim();
+  const note=document.getElementById('ap-note').value.trim();
+  const cvFile=document.getElementById('ap-cv').files[0];
+  if(!prenom||!nom||!email){toast('Prénom, nom et email requis.','err');return;}
+  if(!cvFile){toast('Le CV (PDF) est requis.','err');return;}
+  const btn=document.getElementById('ap-submit-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Envoi...';
+  const id=crypto.randomUUID();
+  const path=`public/${id}.pdf`;
+  const{error:upErr}=await sb.storage.from('cvs').upload(path,cvFile,{contentType:'application/pdf',upsert:true});
+  if(upErr){toast('Erreur lors de l\'envoi du CV : '+upErr.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label">'+fm(APPLICATION_FEE)+'</span>';return;}
+  const row={id,source:'public',offer_id:window._applyOfferId,prenom,nom,email,tel,note,statut:'Candidature reçue',cv_path:path,cv_filename:cvFile.name};
+  const{error}=await sb.from('candidates').insert(row);
+  if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label">'+fm(APPLICATION_FEE)+'</span>';return;}
+  // Paiement placeholder (frais de dossier) — en attendant l'intégration CinetPay réelle, même logique que subscribeCab()
+  await sb.from('candidates').update({application_paid:true,application_fee_ref:'SIMULE-'+Date.now()}).eq('id',id);
+  closeModal('m-apply');
+  toast('Candidature envoyée ! Vous serez contacté par email si votre profil est retenu.');
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label"></span>';
+}
 // Supabase exige par défaut la confirmation d'email avant qu'une session
 // n'existe : à l'inscription, si aucune session n'est retournée, la ligne
 // companies/cabinets ne peut pas encore être créée (RLS exige auth.uid()).
@@ -1354,6 +1465,7 @@ const PMETA={
   'p-paie':{h:'Paie',p:'Calcul IRPP progressif conforme CNSS — bulletins'},
   'p-decl':{h:'Déclarations sociales & fiscales',p:'CNSS, impôts, états récapitulatifs'},
   'p-recruit':{h:'Recrutement',p:'Offres d\'emploi et pipeline candidatures'},
+  'p-cvbank':{h:'Banque de CV',p:'Candidatures publiques déposées sur la plateforme'},
   'p-missions':{h:'Missions & Sites',p:'Sites clients et missions de placement/sécurité'},
   'p-deploiements':{h:'Déploiements',p:'Agents affectés aux missions et sites'},
   'p-eval':{h:'Évaluations & Performance',p:'Suivi des objectifs et évaluations périodiques'},
@@ -1361,7 +1473,7 @@ const PMETA={
   'p-legal':{h:'Référentiel légal',p:'Paramètres légaux par pays'},
   'p-settings':{h:'Paramètres',p:'Compte entreprise et abonnement'},
 };
-const NORDER=['p-dash','p-emp','p-contrats','p-carriere','p-conges','p-absences','p-discipline','p-rupture','p-paie','p-decl','p-recruit','p-eval','p-docs','p-legal','p-settings'];
+const NORDER=['p-dash','p-emp','p-contrats','p-carriere','p-conges','p-absences','p-discipline','p-rupture','p-paie','p-decl','p-recruit','p-cvbank','p-eval','p-docs','p-legal','p-settings'];
 
 function go(pid,fromBack){
   if(!fromBack&&currentAppPid&&currentAppPid!==pid)navStackApp.push(currentAppPid);
@@ -1393,6 +1505,7 @@ function go(pid,fromBack){
   else if(pid==='p-paie'){pPaie(host,co);addBtns(`<button class="btn bo bsm" onclick="expCSV('pay')"><i class="ti ti-download"></i> Export CSV</button>`);}
   else if(pid==='p-decl')pDecl(host,co);
   else if(pid==='p-recruit'){pRecruit(host,co);addBtns(`<button class="btn bo bsm" onclick="openCandModal()"><i class="ti ti-user-plus"></i> Candidat</button><button class="btn bp bsm" onclick="openOfferModal()"><i class="ti ti-plus"></i> Offre</button>`);}
+  else if(pid==='p-cvbank')pCvBank(host,co);
   else if(pid==='p-eval'){pEval(host,co);addBtns(`<button class="btn bp bsm" onclick="openEvalModal()"><i class="ti ti-plus"></i> Évaluation</button>`);}
   else if(pid==='p-docs'){pDocs(host,co);addBtns(`<button class="btn bo bsm" onclick="expCSV('emp')"><i class="ti ti-download"></i> Export employés</button>`);}
   else if(pid==='p-legal')pLegal(host,co);
@@ -1825,7 +1938,7 @@ function rPipe(){
 function rOffers(){
   const co=gco();if(!co)return;
   const el=document.getElementById('offers-list');if(!el)return;
-  el.innerHTML=(co.offers||[]).length===0?`<div class="empty"><i class="ti ti-briefcase"></i><p>Aucune offre créée</p></div>`:(co.offers||[]).map(o=>{const n=(co.candidates||[]).filter(c=>c.offerId===o.id).length;const nWithCv=(co.candidates||[]).filter(c=>c.offerId===o.id&&c.cvPath&&c.aiScore==null).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><p style="font-size:13.5px;font-weight:700">${o.confidentiel?'<i class="ti ti-crown" style="color:var(--purple)"></i> ':''}${o.title}${o.confidentiel?' <span class="badge" style="background:var(--purple-l);color:var(--purple);font-size:10px">Executive Search</span>':''}</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${o.dept} · ${o.contract} · ${fm(o.salary)} · ${n} candidat(s)</p></div><div style="display:flex;gap:6px;align-items:center">${nWithCv>0?`<button class="btn bo bxs" onclick="bulkAnalyzeOffer('${o.id}')" id="bulk-${o.id}"><i class="ti ti-sparkles"></i> Analyser ${nWithCv} candidat(s)</button>`:''}<span class="badge ${o.statut==='Ouverte'?'bg2':'bs2'}">${o.statut}</span><button class="btn bd bxs" onclick="delOffer('${o.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
+  el.innerHTML=(co.offers||[]).length===0?`<div class="empty"><i class="ti ti-briefcase"></i><p>Aucune offre créée</p></div>`:(co.offers||[]).map(o=>{const n=(co.candidates||[]).filter(c=>c.offerId===o.id).length;const nWithCv=(co.candidates||[]).filter(c=>c.offerId===o.id&&c.cvPath&&c.aiScore==null).length;return`<div style="display:flex;align-items:center;justify-content:space-between;padding:10px 0;border-bottom:1px solid var(--border)"><div><p style="font-size:13.5px;font-weight:700">${o.confidentiel?'<i class="ti ti-crown" style="color:var(--purple)"></i> ':''}${o.title}${o.confidentiel?' <span class="badge" style="background:var(--purple-l);color:var(--purple);font-size:10px">Executive Search</span>':''}${o.isPublic?' <span class="badge" style="background:var(--green-l);color:var(--green);font-size:10px"><i class="ti ti-world"></i> Public</span>':''}</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${o.dept} · ${o.contract} · ${fm(o.salary)} · ${n} candidat(s)</p></div><div style="display:flex;gap:6px;align-items:center">${nWithCv>0?`<button class="btn bo bxs" onclick="bulkAnalyzeOffer('${o.id}')" id="bulk-${o.id}"><i class="ti ti-sparkles"></i> Analyser ${nWithCv} candidat(s)</button>`:''}<span class="badge ${o.statut==='Ouverte'?'bg2':'bs2'}">${o.statut}</span><button class="btn bd bxs" onclick="delOffer('${o.id}')"><i class="ti ti-trash"></i></button></div></div>`;}).join('');
 }
 async function bulkAnalyzeOffer(offerId){
   const co=gco();if(!co)return;
@@ -1853,10 +1966,52 @@ async function analyzeCandidateSilent(id){
     }
   }catch(e){/* on continue le lot même si un candidat échoue */}
 }
+// ══════════════════════════════════════
+// BANQUE DE CV — candidatures publiques, coordonnées masquées jusqu'au déblocage payant
+// ══════════════════════════════════════
+async function pCvBank(host,co){
+  host.innerHTML=`<div class="infoblock" style="margin-bottom:1.25rem"><i class="ti ti-info-circle"></i><span>Ces profils viennent du dépôt de CV public sur naoladigital-rh.com. Le nom, l'email, le téléphone et le CV restent masqués tant que vous n'avez pas débloqué le profil (${fm(UNLOCK_FEE)}).</span></div><div class="card"><div class="card-hd"><div><p class="card-title">Candidatures publiques</p></div></div><div id="cvbank-list"><p style="text-align:center;color:var(--text3);padding:2rem 0">Chargement...</p></div></div>`;
+  await rCvBank(co);
+}
+async function rCvBank(co){
+  const el=document.getElementById('cvbank-list');if(!el)return;
+  const{data,error}=await sb.rpc('list_public_candidates',{p_company_id:co.id});
+  if(error){el.innerHTML=`<div class="empty"><i class="ti ti-alert-triangle"></i><p>Erreur : ${error.message}</p></div>`;return;}
+  if(!data||data.length===0){el.innerHTML=`<div class="empty"><i class="ti ti-address-book"></i><p>Aucune candidature publique pour le moment.</p></div>`;return;}
+  el.innerHTML=data.map(c=>{
+    const aiBadge=c.ai_score!=null?`<span class="badge" style="background:${scoreColor(c.ai_score)}22;color:${scoreColor(c.ai_score)};font-weight:700">${c.ai_score}%</span>`:'';
+    return`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
+      <div>
+        <p style="font-size:13.5px;font-weight:700">${c.prenom} ${c.nom} ${aiBadge}</p>
+        <p style="font-size:12px;color:var(--text3);margin-top:2px">${c.offer_title||'Candidature spontanée'} · déposée le ${(c.created_at||'').slice(0,10)}</p>
+        ${c.unlocked?`<p style="font-size:12.5px;color:var(--text2);margin-top:6px"><i class="ti ti-mail"></i> ${c.email||'—'} &nbsp; <i class="ti ti-phone"></i> ${c.tel||'—'}</p>`:''}
+        ${c.note?`<p style="font-size:12px;color:var(--text3);margin-top:4px">${c.note}</p>`:''}
+      </div>
+      <div style="display:flex;gap:6px;flex-shrink:0">
+        ${c.unlocked?(c.cv_path?`<button class="btn bo bxs" onclick="dlCandidateCv('${c.cv_path}')"><i class="ti ti-download"></i> CV</button>`:''):`<button class="btn bp bxs" onclick="unlockCandidate('${c.id}',this)"><i class="ti ti-lock-open"></i> Débloquer (${fm(UNLOCK_FEE)})</button>`}
+      </div>
+    </div>`;
+  }).join('');
+}
+async function unlockCandidate(candId,btn){
+  const co=gco();if(!co)return;
+  if(btn){btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Paiement...';}
+  // Paiement placeholder — en attendant l'intégration CinetPay réelle, même logique que subscribeCab()
+  const{error}=await sb.rpc('unlock_candidate',{p_candidate_id:candId,p_company_id:co.id,p_amount_cents:UNLOCK_FEE*100,p_ref:'SIMULE-'+Date.now()});
+  if(error){toast('Erreur : '+error.message,'err');if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-lock-open"></i> Débloquer';}return;}
+  toast('Coordonnées débloquées.');
+  await rCvBank(co);
+}
+async function dlCandidateCv(path){
+  const{data,error}=await sb.storage.from('cvs').createSignedUrl(path,60);
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  window.open(data.signedUrl,'_blank');
+}
 function openOfferModal(){
   const co=gco();if(!co)return;
   document.getElementById('of-title').value='';document.getElementById('of-salary').value='';
   document.getElementById('of-desc').value='';document.getElementById('of-confidentiel').checked=false;
+  document.getElementById('of-public').checked=false;document.getElementById('of-public').disabled=false;
   document.getElementById('of-dept').innerHTML=(co.depts||DEPTS).map(d=>`<option>${d}</option>`).join('');
   openModal('m-offer');
 }
@@ -1868,14 +2023,15 @@ async function saveOffer(){
   const s=document.getElementById('of-salary').value||'0';
   const desc=document.getElementById('of-desc').value.trim();
   const conf=document.getElementById('of-confidentiel').checked;
+  const pub=document.getElementById('of-public').checked&&!conf;
   if(!t){toast('Intitulé du poste requis.','err');return;}
-  const row={company_id:co.id,title:t,dept:d,contract:ct,location:'Lomé',salary:Number(s),description:desc,statut:'Ouverte',confidentiel:conf};
+  const row={company_id:co.id,title:t,dept:d,contract:ct,location:'Lomé',salary:Number(s),description:desc,statut:'Ouverte',confidentiel:conf,is_public:pub};
   const{data,error}=await sb.from('offers').insert(row).select().single();
   if(error){toast('Erreur : '+error.message,'err');return;}
   if(!co.offers)co.offers=[];
   co.offers.push(ofFromRow(data));
   closeModal('m-offer');
-  rOffers();rPipe();toast(conf?'Offre confidentielle (Executive Search) publiée.':'Offre publiée.');
+  rOffers();rPipe();toast(conf?'Offre confidentielle (Executive Search) publiée.':(pub?'Offre publiée — visible sur le site public.':'Offre publiée (usage interne).'));
 }
 function openCandModal(){
   const co=gco();if(!co)return;
@@ -2636,6 +2792,7 @@ function cabCoGo(appPage,fromBack){
   else if(appPage==='p-docs')pDocsForCab(host,co);
   else if(appPage==='p-rupture'){pRuptures(host,co);tbr.innerHTML=`<button class="btn bd bsm" onclick="openRuptureModal()"><i class="ti ti-door-exit"></i> Nouvelle rupture</button>`;}
   else if(appPage==='p-recruit'){pRecruit(host,co);tbr.innerHTML=`<button class="btn bo bsm" onclick="openCandModal()"><i class="ti ti-user-plus"></i> Candidat</button><button class="btn bp bsm" onclick="openOfferModal()"><i class="ti ti-plus"></i> Offre</button>`;}
+  else if(appPage==='p-cvbank')pCvBank(host,co);
   else if(appPage==='p-missions'){pMissions(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openModal('m-mission')"><i class="ti ti-plus"></i> Nouvelle mission</button>`;}
   else if(appPage==='p-deploiements'){pDeploiements(host,co);tbr.innerHTML=`<button class="btn bsm" style="background:var(--purple);color:#fff" onclick="openDeploiementModal()"><i class="ti ti-plus"></i> Déployer un agent</button>`;}
 }
