@@ -591,7 +591,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <h3>Connexion Cabinet</h3>
         <p class="asub">Accédez au tableau de bord de votre cabinet.</p>
         <div class="fg"><label>Adresse e-mail</label><input id="cl-email" type="email" placeholder="cabinet@naolarh.tg"/></div>
-        <div class="fg"><label>Mot de passe</label><input id="cl-pw" type="password" placeholder="••••••••"/></div>
+        <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input id="cl-pw" type="password" placeholder="••••••••"/><button type="button" class="pw-toggle" onclick="togglePw('cl-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('cl-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff;margin-bottom:.75rem" onclick="doCabLogin()"><i class="ti ti-login"></i> Se connecter</button>
         <div class="sl">Pas encore de compte ? <a onclick="show('s-cabinet-register')" style="color:var(--purple)">Créer un compte cabinet</a></div>
@@ -634,7 +634,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           <select id="cr-type"><option value="rh">Cabinet RH</option><option value="placement">Agence de placement / sécurité</option><option value="both">RH + Placement &amp; Sécurité</option></select>
         </div>
         <div class="fg"><label>Email professionnel *</label><input id="cr-email" type="email" placeholder="contact@cabinet.tg"/></div>
-        <div class="fg"><label>Mot de passe *</label><input id="cr-pw" type="password" placeholder="Min. 6 caractères"/></div>
+        <div class="fg"><label>Mot de passe *</label><div class="pw-wrap"><input id="cr-pw" type="password" placeholder="Min. 6 caractères"/><button type="button" class="pw-toggle" onclick="togglePw('cr-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff" onclick="doCabRegister()"><i class="ti ti-rocket"></i> Créer mon cabinet</button>
         <div class="sl">Déjà un compte ? <a onclick="show('s-cabinet-login')" style="color:var(--purple)">Se connecter</a></div>
         <div class="sl" style="margin-top:.5rem"><a onclick="show('s-landing')" style="color:var(--text3);font-size:12px"><i class="ti ti-arrow-left" style="font-size:11px"></i> Retour à l'accueil</a></div>
