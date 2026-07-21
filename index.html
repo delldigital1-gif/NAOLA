@@ -224,6 +224,8 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .land-card-ico{width:52px;height:52px;border-radius:12px;display:flex;align-items:center;justify-content:center;font-size:24px;margin-bottom:1.25rem}
 .land-card-ico.blue{background:rgba(26,86,219,.3);color:#93C5FD}
 .land-card-ico.purple{background:rgba(124,58,237,.3);color:#C4B5FD}
+.land-card-ico.green{background:rgba(22,166,115,.3);color:#4ADE9B}
+.land-card-cta.green{background:var(--green);color:#fff}
 .land-card h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:.5rem}
 .land-card p{font-size:13.5px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:1.25rem}
 .land-card-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:1.5rem}
@@ -271,7 +273,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="openJobs()"><i class="ti ti-briefcase"></i> Offres d'emploi</button>
-        <button class="btn bp bsm" onclick="show('s-space-choice')">Connexion</button>
+        <button class="btn bp bsm" onclick="show('s-pricing-public')">Connexion</button>
       </div>
     </nav>
     <div class="land-hero">
@@ -336,6 +338,115 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <span class="chip">🇹🇬 Togo</span><span class="chip">🇸🇳 Sénégal</span><span class="chip">🇨🇮 Côte d'Ivoire</span><span class="chip">🇧🇯 Bénin</span><span class="chip">🇲🇱 Mali</span><span class="chip">🇧🇫 Burkina Faso</span>
       <span style="margin-left:8px">·</span>
       <span>© 2026 NAOLA Digital RH</span>
+    </div>
+  </div>
+</div>
+
+<!-- ═══ TARIFS (PUBLIC) ═══ -->
+<div class="screen" id="s-pricing-public">
+  <div class="landing">
+    <nav class="land-nav">
+      <div class="land-brand" style="cursor:pointer" onclick="show('s-landing')">
+        <div class="land-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
+        <div><div class="land-brand-name">NAOLA Digital RH</div><div class="land-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Retour à l'accueil</button>
+      </div>
+    </nav>
+    <div class="land-hero">
+      <span class="land-tag"><i class="ti ti-shield-check" style="vertical-align:-2px;margin-right:5px"></i>SIRH conforme · 6 pays · Multi-tenant</span>
+      <h1>Choisissez votre <span>formule</span></h1>
+      <p>Un essai gratuit pour découvrir, ou un plan payant adapté à votre structure.</p>
+
+      <div class="land-cards" id="pp-overview" style="grid-template-columns:repeat(3,1fr);max-width:1000px">
+        <div class="land-card" onclick="show('s-space-choice')">
+          <div class="land-card-ico green"><i class="ti ti-gift"></i></div>
+          <h3>Essai gratuit</h3>
+          <p>7 jours pour tester toutes les fonctionnalités NAOLA, sans carte bancaire.</p>
+          <span class="land-card-cta green"><i class="ti ti-rocket"></i>Détail<i class="ti ti-arrow-right"></i></span>
+        </div>
+        <div class="land-card" onclick="showPricingCat('co')">
+          <div class="land-card-ico blue"><i class="ti ti-building"></i></div>
+          <h3>Espace Entreprise</h3>
+          <p>Gérez directement les RH de votre entreprise : employés, paie, congés, contrats.</p>
+          <span class="land-card-cta blue"><i class="ti ti-tag"></i>Détail<i class="ti ti-arrow-right"></i></span>
+        </div>
+        <div class="land-card cabinet" onclick="showPricingCat('cab')">
+          <div class="land-card-ico purple"><i class="ti ti-briefcase"></i></div>
+          <h3>Espace Cabinet</h3>
+          <p>Gérez plusieurs entreprises clientes depuis un compte cabinet unique.</p>
+          <span class="land-card-cta purple"><i class="ti ti-tag"></i>Détail<i class="ti ti-arrow-right"></i></span>
+        </div>
+      </div>
+
+      <div class="hidden" id="pp-detail-co" style="width:100%;max-width:900px">
+        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent;margin-bottom:1.25rem" onclick="hidePricingDetail()"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div class="three-col">
+          <div class="doctpl" onclick="show('s-register')">
+            <i class="ti ti-plant-2" style="color:var(--green)"></i><p>Starter</p>
+            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">15 000 FCFA/mois</span>
+            <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Jusqu'à 20 employés</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Paie & congés</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Documents de base</div>
+            </div>
+          </div>
+          <div class="doctpl" onclick="show('s-register')">
+            <i class="ti ti-building" style="color:var(--blue)"></i><p>Business ✦</p>
+            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">35 000 FCFA/mois</span>
+            <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Employés illimités</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Tous les modules</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Multi-pays</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Support prioritaire</div>
+            </div>
+          </div>
+          <div class="doctpl" onclick="show('s-register')">
+            <i class="ti ti-crown" style="color:var(--gold)"></i><p>Enterprise</p>
+            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">Sur devis</span>
+            <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Multi-filiales</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> API & intégrations</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Formation incluse</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Account manager</div>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <div class="hidden" id="pp-detail-cab" style="width:100%;max-width:900px">
+        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent;margin-bottom:1.25rem" onclick="hidePricingDetail()"><i class="ti ti-arrow-left"></i> Retour</button>
+        <div class="three-col">
+          <div class="doctpl" onclick="show('s-cabinet-register')">
+            <i class="ti ti-plant-2" style="color:var(--green)"></i><p>Cabinet Starter</p>
+            <span style="font-size:19px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">50 000 FCFA/mois</span>
+            <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:4px;margin-top:.5rem">
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Jusqu'à 5 entreprises</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Tous les modules RH</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Export & rapports</div>
+            </div>
+          </div>
+          <div class="doctpl" onclick="show('s-cabinet-register')">
+            <i class="ti ti-briefcase" style="color:var(--purple)"></i><p>Cabinet Pro ✦</p>
+            <span style="font-size:19px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">120 000 FCFA/mois</span>
+            <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:4px;margin-top:.5rem">
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Jusqu'à 20 entreprises</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Multi-pays</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Support prioritaire</div>
+            </div>
+          </div>
+          <div class="doctpl" onclick="show('s-cabinet-register')">
+            <i class="ti ti-crown" style="color:var(--gold)"></i><p>Cabinet Enterprise</p>
+            <span style="font-size:19px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">Sur devis</span>
+            <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:4px;margin-top:.5rem">
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Entreprises illimitées</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> API & intégrations</div>
+              <div><i class="ti ti-check" style="color:var(--green)"></i> Account manager dédié</div>
+            </div>
+          </div>
+        </div>
+      </div>
     </div>
   </div>
 </div>
@@ -1352,6 +1463,8 @@ function sco(){/* no-op : chaque fonction persiste elle-même via Supabase */}
 // AUTH — Supabase Auth réel
 // ══════════════════════════════════════
 function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+function showPricingCat(cat){document.getElementById('pp-overview').classList.add('hidden');document.getElementById('pp-detail-'+cat).classList.remove('hidden');}
+function hidePricingDetail(){document.getElementById('pp-detail-co').classList.add('hidden');document.getElementById('pp-detail-cab').classList.add('hidden');document.getElementById('pp-overview').classList.remove('hidden');}
 // ══════════════════════════════════════
 // JOB BOARD PUBLIC — offres visibles sans connexion + dépôt de CV/candidature
 // ══════════════════════════════════════
