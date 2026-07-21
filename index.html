@@ -271,8 +271,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       </div>
       <div style="display:flex;gap:10px;align-items:center">
         <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="openJobs()"><i class="ti ti-briefcase"></i> Offres d'emploi</button>
-        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="show('s-login')">Connexion</button>
-        <button class="btn bp bsm" onclick="show('s-register')">Commencer gratuitement</button>
+        <button class="btn bp bsm" onclick="show('s-space-choice')">Connexion</button>
       </div>
     </nav>
     <div class="land-hero">
@@ -280,31 +279,29 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <h1>La RH <span>maîtrisée</span>,<br>partout en Afrique de l'Ouest</h1>
       <p>Gérez vos ressources humaines en conformité avec le code du travail de votre pays. Paie IRPP, congés, contrats, ruptures — en un seul outil.</p>
       <div class="land-cards">
-        <!-- ENTREPRISE -->
-        <div class="land-card" onclick="show('s-login')">
-          <div class="land-card-ico blue"><i class="ti ti-building"></i></div>
-          <h3>Je suis une Entreprise</h3>
-          <p>Gérez directement vos RH : employés, paie, congés, contrats. Accès total à votre espace dédié et sécurisé.</p>
+        <!-- CANDIDAT : dépôt de CV / candidature -->
+        <div class="land-card" onclick="openApplyModal(null)">
+          <div class="land-card-ico blue"><i class="ti ti-file-cv"></i></div>
+          <h3>Déposer ma candidature</h3>
+          <p>Vous êtes candidat ? Déposez votre CV et postulez aux offres publiées par nos entreprises et cabinets clients.</p>
           <div class="land-card-feats">
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Inscription libre, essai 14 jours gratuit</div>
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Paie conforme CNSS + IRPP progressif</div>
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Données exclusivement visibles par vous</div>
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Documents & déclarations automatisés</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Dépôt de CV en quelques minutes</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Candidature spontanée ou ciblée</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Visible par les recruteurs de la plateforme</div>
           </div>
-          <span class="land-card-cta blue"><i class="ti ti-login"></i>Accéder à mon espace<i class="ti ti-arrow-right"></i></span>
+          <span class="land-card-cta blue"><i class="ti ti-upload"></i>Déposer mon CV<i class="ti ti-arrow-right"></i></span>
         </div>
-        <!-- CABINET -->
-        <div class="land-card cabinet" onclick="show('s-cabinet-login')">
+        <!-- OFFRES D'EMPLOI -->
+        <div class="land-card cabinet" onclick="openJobs()">
           <div class="land-card-ico purple"><i class="ti ti-briefcase"></i></div>
-          <h3>Je suis un Cabinet RH</h3>
-          <p>Gérez les RH de plusieurs entreprises clientes depuis un seul tableau de bord. Ajoutez, pilotez, produisez des rapports.</p>
+          <h3>Annonce des offres d'emploi</h3>
+          <p>Consultez librement les postes ouverts, publiés par les entreprises et cabinets RH présents sur NAOLA.</p>
           <div class="land-card-feats">
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Un compte unique, N entreprises clientes</div>
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Accès total aux données de chaque client</div>
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Isolation stricte entre vos clients</div>
-            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Rapports & exports par entreprise</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Offres publiques, sans connexion</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Postulez directement en ligne</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Mises à jour par nos clients en temps réel</div>
           </div>
-          <span class="land-card-cta purple"><i class="ti ti-login"></i>Espace Cabinet<i class="ti ti-arrow-right"></i></span>
+          <span class="land-card-cta purple"><i class="ti ti-briefcase"></i>Voir les offres<i class="ti ti-arrow-right"></i></span>
         </div>
       </div>
     </div>
@@ -343,6 +340,54 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
   </div>
 </div>
 
+<!-- ═══ CHOIX DE L'ESPACE (CONNEXION) ═══ -->
+<div class="screen" id="s-space-choice">
+  <div class="landing">
+    <nav class="land-nav">
+      <div class="land-brand" style="cursor:pointer" onclick="show('s-landing')">
+        <div class="land-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
+        <div><div class="land-brand-name">NAOLA Digital RH</div><div class="land-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
+      </div>
+      <div style="display:flex;gap:10px">
+        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="show('s-landing')"><i class="ti ti-arrow-left"></i> Retour à l'accueil</button>
+      </div>
+    </nav>
+    <div class="land-hero">
+      <span class="land-tag"><i class="ti ti-shield-check" style="vertical-align:-2px;margin-right:5px"></i>SIRH conforme · 6 pays · Multi-tenant</span>
+      <h1>Quel est <span>votre espace</span> ?</h1>
+      <p>Choisissez votre profil pour accéder à votre tableau de bord.</p>
+      <div class="land-cards">
+        <!-- ENTREPRISE -->
+        <div class="land-card" onclick="show('s-login')">
+          <div class="land-card-ico blue"><i class="ti ti-building"></i></div>
+          <h3>Je suis une Entreprise</h3>
+          <p>Gérez directement vos RH : employés, paie, congés, contrats. Accès total à votre espace dédié et sécurisé.</p>
+          <div class="land-card-feats">
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Inscription libre, essai 7 jours gratuit</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Paie conforme CNSS + IRPP progressif</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Données exclusivement visibles par vous</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#60A5FA"></i>Documents & déclarations automatisés</div>
+          </div>
+          <span class="land-card-cta blue"><i class="ti ti-login"></i>Accéder à mon espace<i class="ti ti-arrow-right"></i></span>
+        </div>
+        <!-- CABINET -->
+        <div class="land-card cabinet" onclick="show('s-cabinet-login')">
+          <div class="land-card-ico purple"><i class="ti ti-briefcase"></i></div>
+          <h3>Je suis un Cabinet RH</h3>
+          <p>Gérez les RH de plusieurs entreprises clientes depuis un seul tableau de bord. Ajoutez, pilotez, produisez des rapports.</p>
+          <div class="land-card-feats">
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Un compte unique, N entreprises clientes</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Accès total aux données de chaque client</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Isolation stricte entre vos clients</div>
+            <div class="land-card-feat"><i class="ti ti-check" style="color:#A78BFA"></i>Rapports & exports par entreprise</div>
+          </div>
+          <span class="land-card-cta purple"><i class="ti ti-login"></i>Espace Cabinet<i class="ti ti-arrow-right"></i></span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
 <!-- ═══ OFFRES D'EMPLOI (PUBLIC) ═══ -->
 <div class="screen" id="s-jobs">
   <div class="landing">
@@ -371,7 +416,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 <div class="overlay hidden" id="m-apply">
   <div class="modal">
     <div class="modal-hd"><h3 id="ap-title">Postuler</h3><button class="cx" onclick="closeModal('m-apply')"><i class="ti ti-x"></i></button></div>
-    <div class="modal-body">
+    <div class="modal-body" id="ap-view-form">
       <div class="g2">
         <div class="fg"><label>Prénom *</label><input id="ap-prenom" placeholder="Kofi"/></div>
         <div class="fg"><label>Nom *</label><input id="ap-nom" placeholder="Mensah"/></div>
@@ -382,9 +427,21 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="fg"><label>Message (facultatif)</label><textarea id="ap-note" rows="2"></textarea></div>
       <div class="infoblock"><i class="ti ti-info-circle"></i><span id="ap-fee-note"></span></div>
     </div>
-    <div class="modal-ft">
+    <div class="modal-ft" id="ap-ft-form">
       <button class="btn bo bsm" onclick="closeModal('m-apply')">Annuler</button>
-      <button class="btn bp bsm" id="ap-submit-btn" onclick="submitApplication()"><i class="ti ti-send"></i> <span id="ap-submit-label"></span></button>
+      <button class="btn bp bsm" id="ap-submit-btn" onclick="submitApplicationForm()"><i class="ti ti-arrow-right"></i> <span id="ap-submit-label"></span></button>
+    </div>
+    <div class="modal-body hidden" id="ap-view-pay">
+      <div style="text-align:center;padding:.5rem 0 1.25rem">
+        <div style="width:56px;height:56px;border-radius:50%;background:var(--green-l);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="ti ti-circle-check" style="color:var(--green);font-size:26px"></i></div>
+        <p style="font-weight:700;font-size:15px">Formulaire validé</p>
+        <p style="font-size:13px;color:var(--text3);margin-top:.4rem">Il ne reste plus qu'à régler les frais de dossier pour valider définitivement votre candidature.</p>
+      </div>
+      <div class="infoblock" style="justify-content:center;text-align:center;font-size:16px;font-weight:800"><span id="ap-pay-amount"></span></div>
+    </div>
+    <div class="modal-ft hidden" id="ap-ft-pay">
+      <button class="btn bo bsm" onclick="closeModal('m-apply')">Plus tard</button>
+      <button class="btn bp bsm" id="ap-pay-btn" onclick="payApplicationFee()"><i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span></button>
     </div>
   </div>
 </div>
@@ -438,7 +495,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div><div class="a-brand-name">NAOLA Digital RH</div><div class="a-brand-sub">Espace Cabinet RH</div></div>
       </div>
       <h2>Créez votre compte Cabinet</h2>
-      <p>14 jours d'essai gratuit. Ajoutez autant d'entreprises clientes que vous souhaitez pendant la période d'essai.</p>
+      <p>7 jours d'essai gratuit. Ajoutez autant d'entreprises clientes que vous souhaitez pendant la période d'essai.</p>
       <div style="margin-top:auto;padding-top:2rem">
         <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6);background:transparent" onclick="show('s-cabinet-login')"><i class="ti ti-arrow-left"></i> Déjà un compte ?</button>
       </div>
@@ -734,7 +791,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="a-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
         <div><div class="a-brand-name">NAOLA Digital RH</div><div class="a-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
       </div>
-      <h2>14 jours d'essai gratuit — sans carte bancaire</h2>
+      <h2>7 jours d'essai gratuit — sans carte bancaire</h2>
       <p>Votre espace est créé instantanément, cloisonné et conforme à la législation de votre pays.</p>
       <div class="auth-feats" style="margin-top:2rem">
         <div class="af"><div class="af-ico"><i class="ti ti-check"></i></div><div><p>Employés illimités pendant l'essai</p><span>Testez toutes les fonctionnalités</span></div></div>
@@ -1318,16 +1375,21 @@ async function loadPublicJobs(){
 }
 function openApplyModal(offerId,offerTitle){
   window._applyOfferId=offerId||null;
+  window._applyCandidateId=null;
   document.getElementById('ap-title').textContent=offerId?('Postuler — '+(offerTitle||'')):'Candidature spontanée';
   document.getElementById('ap-prenom').value='';document.getElementById('ap-nom').value='';
   document.getElementById('ap-email').value='';document.getElementById('ap-tel').value='';
   document.getElementById('ap-note').value='';document.getElementById('ap-cv').value='';
-  document.getElementById('ap-fee-note').textContent=`Des frais de dossier de ${fm(APPLICATION_FEE)} s'appliquent pour valider l'envoi de votre candidature.`;
-  document.getElementById('ap-submit-label').textContent=`Payer ${fm(APPLICATION_FEE)} et postuler`;
+  document.getElementById('ap-fee-note').textContent=`Des frais de dossier de ${fm(APPLICATION_FEE)} s'appliquent pour valider votre candidature — réglables à l'étape suivante.`;
+  document.getElementById('ap-submit-label').textContent='Continuer';
+  document.getElementById('ap-view-form').classList.remove('hidden');
+  document.getElementById('ap-ft-form').classList.remove('hidden');
+  document.getElementById('ap-view-pay').classList.add('hidden');
+  document.getElementById('ap-ft-pay').classList.add('hidden');
   const btn=document.getElementById('ap-submit-btn');btn.disabled=false;
   openModal('m-apply');
 }
-async function submitApplication(){
+async function submitApplicationForm(){
   const prenom=document.getElementById('ap-prenom').value.trim();
   const nom=document.getElementById('ap-nom').value.trim();
   const email=document.getElementById('ap-email').value.trim();
@@ -1340,15 +1402,29 @@ async function submitApplication(){
   const id=crypto.randomUUID();
   const path=`public/${id}.pdf`;
   const{error:upErr}=await sb.storage.from('cvs').upload(path,cvFile,{contentType:'application/pdf'});
-  if(upErr){toast('Erreur lors de l\'envoi du CV : '+upErr.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label">'+fm(APPLICATION_FEE)+'</span>';return;}
+  if(upErr){toast('Erreur lors de l\'envoi du CV : '+upErr.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-arrow-right"></i> <span id="ap-submit-label">Continuer</span>';return;}
   const row={id,source:'public',offer_id:window._applyOfferId,prenom,nom,email,tel,note,statut:'Candidature reçue',cv_path:path,cv_filename:cvFile.name};
   const{error}=await sb.from('candidates').insert(row);
-  if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label">'+fm(APPLICATION_FEE)+'</span>';return;}
+  if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-arrow-right"></i> <span id="ap-submit-label">Continuer</span>';return;}
+  window._applyCandidateId=id;
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-arrow-right"></i> <span id="ap-submit-label">Continuer</span>';
+  document.getElementById('ap-title').textContent='Paiement des frais de dossier';
+  document.getElementById('ap-view-form').classList.add('hidden');
+  document.getElementById('ap-ft-form').classList.add('hidden');
+  document.getElementById('ap-view-pay').classList.remove('hidden');
+  document.getElementById('ap-ft-pay').classList.remove('hidden');
+  document.getElementById('ap-pay-amount').textContent=fm(APPLICATION_FEE);
+  document.getElementById('ap-pay-label').textContent=`Payer ${fm(APPLICATION_FEE)}`;
+}
+async function payApplicationFee(){
+  if(!window._applyCandidateId)return;
+  const btn=document.getElementById('ap-pay-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Paiement...';
   // Paiement placeholder (frais de dossier) — en attendant l'intégration CinetPay réelle, même logique que subscribeCab()
-  await sb.from('candidate_applications').insert({candidate_id:id,payment_ref:'SIMULE-'+Date.now()});
+  const{error}=await sb.from('candidate_applications').insert({candidate_id:window._applyCandidateId,payment_ref:'SIMULE-'+Date.now()});
+  if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';return;}
   closeModal('m-apply');
-  toast('Candidature envoyée ! Vous serez contacté par email si votre profil est retenu.');
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-send"></i> <span id="ap-submit-label"></span>';
+  toast('Candidature validée ! Vous serez contacté par email si votre profil est retenu.');
+  btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';
 }
 // Supabase exige par défaut la confirmation d'email avant qu'une session
 // n'existe : à l'inscription, si aucune session n'est retournée, la ligne
@@ -1403,7 +1479,7 @@ async function doRegister(){
   CURRENT_CO=await loadCompanyFull(company.id);
   CU={t:'co',id:company.id};initShell(CURRENT_CO);show('s-app');go('p-dash');
   subscribeCompanyRealtime(company.id);
-  toast(`Bienvenue ${p} ! Votre essai de 14 jours a démarré.`,'info');
+  toast(`Bienvenue ${p} ! Votre essai de 7 jours a démarré.`,'info');
 }
 async function doLogout(){if(RT_CHANNEL){sb.removeChannel(RT_CHANNEL);RT_CHANNEL=null;}CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;await sb.auth.signOut();show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
 
@@ -1422,9 +1498,10 @@ function initShell(co){
   const tb=document.getElementById('trial-bar');
   if(co.plan==='trial'&&d>0){tb.classList.remove('hidden');document.getElementById('trial-days').textContent=d;}
   else tb.classList.add('hidden');
+  if(co.plan==='trial'&&d<=0){toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');openModal('m-pricing');}
   updBadges();
 }
-function trialLeft(co){return Math.max(0,Math.ceil((new Date(co.trialStart).getTime()+14*864e5-Date.now())/864e5));}
+function trialLeft(co){return Math.max(0,Math.ceil((new Date(co.trialStart).getTime()+7*864e5-Date.now())/864e5));}
 function updBadges(){
   const co=gco();if(!co)return;
   const p=co.conges.filter(c=>c.statut==='En attente').length;
@@ -2765,10 +2842,11 @@ function initCabShell(cab){
   const tb=document.getElementById('cab-trial-bar');
   if(cab.plan==='trial'&&d>0){tb.classList.remove('hidden');document.getElementById('cab-trial-days').textContent=d;}
   else tb.classList.add('hidden');
+  if(cab.plan==='trial'&&d<=0){toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');openModal('m-cab-pricing');}
   const sb=document.getElementById('sb-clients');
   if(sb){sb.textContent=cab.clients.length;sb.style.display=cab.clients.length>0?'':'none';}
 }
-function cabTrialLeft(cab){return Math.max(0,Math.ceil((new Date(cab.trialStart).getTime()+14*864e5-Date.now())/864e5));}
+function cabTrialLeft(cab){return Math.max(0,Math.ceil((new Date(cab.trialStart).getTime()+7*864e5-Date.now())/864e5));}
 
 // ══════════════════════════════════════
 // CABINET — NAVIGATION
