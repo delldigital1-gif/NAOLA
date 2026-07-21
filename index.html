@@ -1335,6 +1335,15 @@ function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
 const SUPABASE_URL='https://hadpvpvztlkpjzixvotd.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZHB2cHZ6dGxrcGp6aXh2b3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxOTk0NDcsImV4cCI6MjA5OTc3NTQ0N30.3HTSvzcXQW7tzfzgP5gIEvJxn0En4CV-bfM7HEBvZtg';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+// L'horloge de l'appareil de l'utilisateur n'est pas toujours fiable (VM, mauvais réglage...).
+// On calcule un décalage avec l'heure du serveur pour que l'essai gratuit (jours restants) ne
+// dépende jamais de l'heure locale de l'appareil.
+let serverTimeOffset=0;
+async function syncServerTime(){
+  try{const{data}=await sb.rpc('server_now');if(data)serverTimeOffset=new Date(data).getTime()-Date.now();}catch(e){}
+}
+function nowServer(){return Date.now()+serverTimeOffset;}
+syncServerTime();
 sb.auth.onAuthStateChange((event)=>{if(event==='PASSWORD_RECOVERY')show('s-reset-password');});
 async function forgotPassword(emailFieldId){
   const email=document.getElementById(emailFieldId).value.trim().toLowerCase();
@@ -1585,6 +1594,7 @@ function stashPending(kind,email,data){localStorage.setItem('naola_pending_'+kin
 function popPending(kind,email){const k='naola_pending_'+kind+'_'+email;const v=localStorage.getItem(k);if(v)localStorage.removeItem(k);return v?JSON.parse(v):null;}
 
 async function doLogin(){
+  await syncServerTime();
   const email=document.getElementById('l-email').value.trim().toLowerCase();
   const pw=document.getElementById('l-pw').value;
   if(email===SA_LOGIN.email&&pw===SA_LOGIN.pw){CU={t:'super'};show('s-super');saGo('sa-dash');return;}
@@ -1659,7 +1669,7 @@ function initShell(co){
   if(co.plan==='trial'&&d<=0){toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');openModal('m-pricing');}
   updBadges();
 }
-function trialLeft(co){return Math.max(0,Math.ceil((new Date(co.trialStart).getTime()+7*864e5-Date.now())/864e5));}
+function trialLeft(co){return Math.max(0,Math.ceil((new Date(co.trialStart).getTime()+7*864e5-nowServer())/864e5));}
 function updBadges(){
   const co=gco();if(!co)return;
   const p=co.conges.filter(c=>c.statut==='En attente').length;
@@ -3004,7 +3014,7 @@ function initCabShell(cab){
   const sb=document.getElementById('sb-clients');
   if(sb){sb.textContent=cab.clients.length;sb.style.display=cab.clients.length>0?'':'none';}
 }
-function cabTrialLeft(cab){return Math.max(0,Math.ceil((new Date(cab.trialStart).getTime()+7*864e5-Date.now())/864e5));}
+function cabTrialLeft(cab){return Math.max(0,Math.ceil((new Date(cab.trialStart).getTime()+7*864e5-nowServer())/864e5));}
 
 // ══════════════════════════════════════
 // CABINET — NAVIGATION
