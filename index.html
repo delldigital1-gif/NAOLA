@@ -226,6 +226,8 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .land-card-ico.purple{background:rgba(124,58,237,.3);color:#C4B5FD}
 .land-card-ico.green{background:rgba(22,166,115,.3);color:#4ADE9B}
 .land-card-cta.green{background:var(--green);color:#fff}
+#nav-arrows-wrap button:disabled{opacity:.3;cursor:not-allowed}
+#nav-arrows-wrap button:not(:disabled):hover{border-color:var(--blue)}
 .land-card h3{font-size:20px;font-weight:800;color:#fff;margin-bottom:.5rem}
 .land-card p{font-size:13.5px;color:rgba(255,255,255,.5);line-height:1.6;margin-bottom:1.25rem}
 .land-card-feats{display:flex;flex-direction:column;gap:7px;margin-bottom:1.5rem}
@@ -459,14 +461,12 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="land-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
         <div><div class="land-brand-name">NAOLA Digital RH</div><div class="land-brand-sub">SIRH Multi-pays · Afrique de l'Ouest</div></div>
       </div>
-      <div style="display:flex;gap:10px">
-        <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent" onclick="show('s-pricing-public')"><i class="ti ti-arrow-left"></i> Retour aux formules</button>
-      </div>
     </nav>
     <div class="land-hero">
       <span class="land-tag"><i class="ti ti-shield-check" style="vertical-align:-2px;margin-right:5px"></i>SIRH conforme · 6 pays · Multi-tenant</span>
       <h1>Quel est <span>votre espace</span> ?</h1>
       <p>Choisissez votre profil pour accéder à votre tableau de bord.</p>
+      <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.7);background:transparent;margin-bottom:1.25rem" onclick="show('s-pricing-public')"><i class="ti ti-arrow-left"></i> Retour</button>
       <div class="land-cards">
         <!-- ENTREPRISE -->
         <div class="land-card" onclick="show('s-login')">
@@ -1286,6 +1286,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 </div>
 
 <div class="toast hidden" id="toast"><i class="ti ti-check" id="toast-ico"></i><span id="toast-msg"></span></div>
+<div id="nav-arrows-wrap" style="position:fixed;bottom:18px;left:18px;display:flex;gap:8px;z-index:600">
+  <button id="nav-prev-btn" onclick="goPrevScreen()" title="Page précédente" disabled style="width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);background:rgba(15,15,15,.85);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px"><i class="ti ti-chevron-left"></i></button>
+  <button id="nav-next-btn" onclick="goNextScreen()" title="Page suivante" disabled style="width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);background:rgba(15,15,15,.85);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px"><i class="ti ti-chevron-right"></i></button>
+</div>
 <script>
 // ══════════════════════════════════════
 // RÉFÉRENTIELS LÉGAUX MULTI-PAYS
@@ -1462,7 +1466,34 @@ function sco(){/* no-op : chaque fonction persiste elle-même via Supabase */}
 // ══════════════════════════════════════
 // AUTH — Supabase Auth réel
 // ══════════════════════════════════════
-function show(id){document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));document.getElementById(id).classList.add('active');}
+let navHistory=[],navHistoryFwd=[];
+function show(id,fromNav){
+  const cur=document.querySelector('.screen.active');
+  if(!fromNav&&cur&&cur.id!==id){navHistory.push(cur.id);navHistoryFwd=[];}
+  document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+  updNavArrows();
+}
+function goPrevScreen(){
+  if(!navHistory.length)return;
+  const cur=document.querySelector('.screen.active');
+  const prev=navHistory.pop();
+  if(cur)navHistoryFwd.push(cur.id);
+  show(prev,true);
+}
+function goNextScreen(){
+  if(!navHistoryFwd.length)return;
+  const cur=document.querySelector('.screen.active');
+  const next=navHistoryFwd.pop();
+  if(cur)navHistory.push(cur.id);
+  show(next,true);
+}
+function updNavArrows(){
+  const p=document.getElementById('nav-prev-btn'),n=document.getElementById('nav-next-btn');
+  if(!p||!n)return;
+  p.disabled=navHistory.length===0;
+  n.disabled=navHistoryFwd.length===0;
+}
 function showPricingCat(cat){document.getElementById('pp-overview').classList.add('hidden');document.getElementById('pp-detail-'+cat).classList.remove('hidden');}
 function hidePricingDetail(){document.getElementById('pp-detail-co').classList.add('hidden');document.getElementById('pp-detail-cab').classList.add('hidden');document.getElementById('pp-overview').classList.remove('hidden');}
 // ══════════════════════════════════════
