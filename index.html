@@ -677,7 +677,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="s-item cab-module cab-module-placement" style="display:none" onclick="cabCoGo('p-deploiements')"><i class="ti ti-shield"></i>Déploiements</div>
         <p class="s-sec">Admin</p>
         <div class="s-item" onclick="cabGo('cab-settings')"><i class="ti ti-settings"></i>Paramètres</div>
-        <div class="s-item" onclick="show('s-landing');CU=null"><i class="ti ti-logout"></i>Déconnexion</div>
+        <div class="s-item" onclick="navHistory=[];navHistoryFwd=[];CU=null;show('s-landing')"><i class="ti ti-logout"></i>Déconnexion</div>
         <div class="s-foot">
           <div class="s-user">
             <div class="sav" id="cab-av" style="background:var(--purple)">--</div>
@@ -1476,12 +1476,15 @@ function sco(){/* no-op : chaque fonction persiste elle-même via Supabase */}
 // AUTH — Supabase Auth réel
 // ══════════════════════════════════════
 let navHistory=[],navHistoryFwd=[];
+const AUTHED_SCREENS=['s-app','s-cabinet','s-super'];
 function show(id,fromNav){
   const cur=document.querySelector('.screen.active');
   if(!fromNav&&cur&&cur.id!==id){navHistory.push(cur.id);navHistoryFwd=[];}
   document.querySelectorAll('.screen').forEach(s=>s.classList.remove('active'));
   document.getElementById(id).classList.add('active');
   updNavArrows();
+  const wrap=document.getElementById('nav-arrows-wrap');
+  if(wrap)wrap.style.display=AUTHED_SCREENS.includes(id)?'none':'flex';
 }
 function goPrevScreen(){
   if(!navHistory.length)return;
@@ -1641,7 +1644,7 @@ async function doRegister(){
   subscribeCompanyRealtime(company.id);
   toast(`Bienvenue ${p} ! Votre essai de 7 jours a démarré.`,'info');
 }
-async function doLogout(){if(RT_CHANNEL){sb.removeChannel(RT_CHANNEL);RT_CHANNEL=null;}CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;await sb.auth.signOut();show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
+async function doLogout(){if(RT_CHANNEL){sb.removeChannel(RT_CHANNEL);RT_CHANNEL=null;}CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;navHistory=[];navHistoryFwd=[];await sb.auth.signOut();show('s-login');['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
 
 // ══════════════════════════════════════
 // SHELL
