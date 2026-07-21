@@ -175,6 +175,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .infoblock{background:var(--blue-l);border:1px solid var(--blue-mid);border-radius:var(--radius-s);padding:.75rem 1rem;font-size:12.5px;color:#1E40AF;display:flex;gap:8px;align-items:flex-start;margin-bottom:1rem}
 .infoblock i{flex-shrink:0;font-size:15px;margin-top:1px}
 .trialbar{background:linear-gradient(90deg,var(--amber),#F59E0B);color:#fff;padding:.55rem 1.5rem;display:flex;align-items:center;justify-content:space-between;font-size:12.5px;flex-shrink:0}
+.trialbar.urgent{background:linear-gradient(90deg,var(--red),#B91C1C)}
 .pipe-board{display:grid;grid-template-columns:repeat(4,1fr);gap:10px;margin-bottom:1.25rem}
 .pcol{background:var(--steel);border-radius:var(--radius);padding:.75rem;border-top:3px solid transparent}
 .pcol-hd{display:flex;justify-content:space-between;align-items:center;margin-bottom:.75rem}
@@ -940,7 +941,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 <div class="screen" id="s-app">
   <div class="app">
     <div class="trialbar hidden" id="trial-bar">
-      <span><i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — <strong id="trial-days">14</strong> jours restants</span>
+      <span id="trial-bar-msg"><i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — <strong id="trial-days">7</strong> jours restants</span>
       <button class="btn bsm" style="background:rgba(255,255,255,.25);color:#fff;border:1.5px solid rgba(255,255,255,.4)" onclick="openModal('m-pricing')"><i class="ti ti-crown"></i> Choisir un plan</button>
     </div>
     <div class="app-inner">
@@ -1645,7 +1646,15 @@ function initShell(co){
   document.getElementById('s-role').textContent=`Admin · ${lg.pays}`;
   const d=trialLeft(co);
   const tb=document.getElementById('trial-bar');
-  if(co.plan==='trial'&&d>0){tb.classList.remove('hidden');document.getElementById('trial-days').textContent=d;}
+  if(co.plan==='trial'&&d>0){
+    tb.classList.remove('hidden');
+    document.getElementById('trial-days').textContent=d;
+    const urgent=d<=3;
+    tb.classList.toggle('urgent',urgent);
+    document.getElementById('trial-bar-msg').innerHTML=urgent
+      ?`<i class="ti ti-alert-triangle" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — plus que <strong id="trial-days">${d}</strong> jour(s) ! Passez au plan payant pour garder vos données.`
+      :`<i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — <strong id="trial-days">${d}</strong> jours restants`;
+  }
   else tb.classList.add('hidden');
   if(co.plan==='trial'&&d<=0){toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');openModal('m-pricing');}
   updBadges();
