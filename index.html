@@ -1333,6 +1333,9 @@ function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
 const SUPABASE_URL='https://hadpvpvztlkpjzixvotd.supabase.co';
 const SUPABASE_ANON_KEY='eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImhhZHB2cHZ6dGxrcGp6aXh2b3RkIiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODQxOTk0NDcsImV4cCI6MjA5OTc3NTQ0N30.3HTSvzcXQW7tzfzgP5gIEvJxn0En4CV-bfM7HEBvZtg';
 const sb=window.supabase.createClient(SUPABASE_URL,SUPABASE_ANON_KEY);
+// Capte le code d'affilié Dell Digital Partner (?ref=...) et le mémorise :
+// le visiteur peut arriver par ce lien puis s'inscrire plus tard.
+(function(){const ref=new URLSearchParams(window.location.search).get('ref');if(ref)localStorage.setItem('dd_ref_affilie',ref);})();
 // L'horloge de l'appareil de l'utilisateur n'est pas toujours fiable (VM, mauvais réglage...).
 // On calcule un décalage avec l'heure du serveur pour que l'essai gratuit (jours restants) ne
 // dépende jamais de l'heure locale de l'appareil.
@@ -1633,7 +1636,7 @@ async function doRegister(){
   if(pw.length<6){toast('Mot de passe : 6 caractères minimum.','err');return;}
   const{data,error}=await sb.auth.signUp({email,password:pw});
   if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
-  const pendingRow={name:nm,sector,pays,admin_name:`${p} ${n}`,contact_email:email};
+  const pendingRow={name:nm,sector,pays,admin_name:`${p} ${n}`,contact_email:email,ref_affilie:localStorage.getItem('dd_ref_affilie')||null};
   if(!data.session){stashPending('co',email,pendingRow);toast('Compte créé. Vérifiez votre email pour confirmer, puis connectez-vous.','info');show('s-login');return;}
   const{data:company,error:e2}=await sb.from('companies').insert({owner_auth_id:data.user.id,...pendingRow}).select().single();
   if(e2){toast('Erreur de création du compte : '+e2.message,'err');return;}
@@ -2868,11 +2871,22 @@ document.addEventListener('click',function(e){const p=document.getElementById('n
 function selPlan(name,el){selPlanName=name;document.querySelectorAll('.doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
 async function subscribe(){
   if(!CU||CU.t!=='co'||!CURRENT_CO)return;
-  const{error}=await sb.from('companies').update({plan:selPlanName}).eq('id',CU.id);
-  if(error){toast('Erreur : '+error.message,'err');return;}
-  CURRENT_CO.plan=selPlanName;
-  document.getElementById('trial-bar').classList.add('hidden');
-  closeModal('m-pricing');toast(`Abonnement ${selPlanName} activé !`);
+  await initierPaiementAbonnement('company',selPlanName);
+}
+async function initierPaiementAbonnement(ownerType,plan){
+  const{data:{session}}=await sb.auth.getSession();
+  if(!session){toast('Session expirée, reconnectez-vous.','err');return;}
+  try{
+    const resp=await fetch(`${SUPABASE_URL}/functions/v1/initier-paiement-abonnement`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
+      body:JSON.stringify({ownerType,plan}),
+    });
+    const data=await resp.json();
+    if(!resp.ok||data.erreur){toast('Erreur : '+(data.erreur||data.error||'inconnue'),'err');return;}
+    if(data.mode==='sandbox')toast(`🧪 Mode sandbox (CinetPay pas encore activé) — transaction ${data.transaction_id} créée.`,'info');
+    window.location.href=data.url_paiement+(data.url_paiement.includes('?')?'&':'?')+'transaction_id='+data.transaction_id;
+  }catch(e){toast('Impossible de contacter le service de paiement.','err');}
 }
 
 // ══════════════════════════════════════
@@ -2991,7 +3005,7 @@ async function doCabRegister(){
   const{data,error}=await sb.auth.signUp({email,password:pw});
   if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
   const modules={rh:type==='rh'||type==='both',placement:type==='placement'||type==='both'};
-  const pendingRow={name,pays,admin_name:`${prenom} ${nom}`,admin_email:email,modules};
+  const pendingRow={name,pays,admin_name:`${prenom} ${nom}`,admin_email:email,modules,ref_affilie:localStorage.getItem('dd_ref_affilie')||null};
   if(!data.session){stashPending('cab',email,pendingRow);toast('Cabinet créé. Vérifiez votre email pour confirmer, puis connectez-vous.','info');show('s-cabinet-login');return;}
   const{data:cabRow,error:e2}=await sb.from('cabinets').insert({admin_auth_id:data.user.id,...pendingRow}).select().single();
   if(e2){toast('Erreur de création du cabinet : '+e2.message,'err');return;}
@@ -3250,11 +3264,9 @@ function pDocsForCab(host,co){pDocs(host,co);}
 // CABINET — PRICING
 // ══════════════════════════════════════
 function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
-function subscribeCab(){
+async function subscribeCab(){
   if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
-  CURRENT_CAB.plan=selCabPlanName;saveCab(CURRENT_CAB);
-  document.getElementById('cab-trial-bar').classList.add('hidden');
-  closeModal('m-cab-pricing');toast(`Abonnement Cabinet ${selCabPlanName} activé !`);
+  await initierPaiementAbonnement('cabinet',selCabPlanName);
 }
 
 // ══════════════════════════════════════
