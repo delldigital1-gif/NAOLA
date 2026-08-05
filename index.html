@@ -1320,8 +1320,8 @@ const LEGAL={
 };
 const AVC=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 const DEPTS=['Commercial','Technique','Finance','RH','Direction','Operations','Marketing','Juridique'];
-// Frais placeholders — non finalisés, en attente d'un vrai paiement CinetPay (voir subscribeCab)
-const APPLICATION_FEE=2000;
+const APPLICATION_FEE=5000;
+// UNLOCK_FEE : placeholder, non finalisé, en attente d'un vrai paiement CinetPay
 const UNLOCK_FEE=3000;
 const DCOLS=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 
@@ -1582,12 +1582,18 @@ async function submitApplicationForm(){
 async function payApplicationFee(){
   if(!window._applyCandidateId)return;
   const btn=document.getElementById('ap-pay-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Paiement...';
-  // Paiement placeholder (frais de dossier) — en attendant l'intégration CinetPay réelle, même logique que subscribeCab()
-  const{error}=await sb.from('candidate_applications').insert({candidate_id:window._applyCandidateId,payment_ref:'SIMULE-'+Date.now()});
-  if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';return;}
-  closeModal('m-apply');
-  toast('Candidature validée ! Vous serez contacté par email si votre profil est retenu.');
-  btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';
+  try{
+    const resp=await fetch(`${SUPABASE_URL}/functions/v1/initier-paiement-candidature`,{
+      method:'POST',
+      headers:{'Content-Type':'application/json'},
+      body:JSON.stringify({candidateId:window._applyCandidateId}),
+    });
+    const data=await resp.json();
+    if(!resp.ok||data.erreur){toast('Erreur : '+(data.erreur||data.error||'inconnue'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';return;}
+    if(data.deja_paye){closeModal('m-apply');toast('Candidature déjà validée !');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';return;}
+    if(data.mode==='sandbox')toast(`🧪 Mode sandbox (CinetPay pas encore activé) — transaction ${data.transaction_id} créée.`,'info');
+    window.location.href=data.url_paiement+(data.url_paiement.includes('?')?'&':'?')+'transaction_id='+data.transaction_id;
+  }catch(e){toast('Impossible de contacter le service de paiement.','err');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';}
 }
 // Supabase exige par défaut la confirmation d'email avant qu'une session
 // n'existe : à l'inscription, si aucune session n'est retournée, la ligne
