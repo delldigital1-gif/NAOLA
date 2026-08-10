@@ -647,7 +647,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           <select id="cr-type"><option value="rh">Cabinet RH</option><option value="placement">Agence de placement / sécurité</option><option value="both">RH + Placement &amp; Sécurité</option></select>
         </div>
         <div class="fg"><label>Email professionnel *</label><input id="cr-email" type="email" placeholder="contact@cabinet.tg"/></div>
-        <div class="fg"><label>Mot de passe *</label><div class="pw-wrap"><input id="cr-pw" type="password" placeholder="Min. 6 caractères"/><button type="button" class="pw-toggle" onclick="togglePw('cr-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
+        <div class="fg"><label>Mot de passe *</label><div class="pw-wrap"><input id="cr-pw" type="password" placeholder="Min. 8 car., 1 chiffre, 1 spécial"/><button type="button" class="pw-toggle" onclick="togglePw('cr-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff" onclick="doCabRegister()"><i class="ti ti-rocket"></i> Créer mon cabinet</button>
         <div class="sl">Déjà un compte ? <a onclick="show('s-cabinet-login')" style="color:var(--purple)">Se connecter</a></div>
         <div class="sl" style="margin-top:.5rem"><a onclick="show('s-landing')" style="color:var(--text3);font-size:12px"><i class="ti ti-arrow-left" style="font-size:11px"></i> Retour à l'accueil</a></div>
@@ -909,7 +909,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
     <div class="auth-right">
       <div class="auth-box">
         <h3>Nouveau mot de passe</h3>
-        <p class="asub">Minimum 6 caractères.</p>
+        <p class="asub">Minimum 8 caractères, avec au moins un chiffre et un caractère spécial.</p>
         <div class="fg"><label>Nouveau mot de passe</label><input id="rp-pw1" type="password" placeholder="••••••••"/></div>
         <div class="fg"><label>Confirmer le mot de passe</label><input id="rp-pw2" type="password" placeholder="••••••••"/></div>
         <button class="btn bp bb" onclick="doResetPassword()"><i class="ti ti-check"></i> Mettre à jour le mot de passe</button>
@@ -952,7 +952,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           </div>
         </div>
         <div class="fg"><label>Email professionnel *</label><input id="r-email" type="email" placeholder="vous@entreprise.tg"/></div>
-        <div class="fg"><label>Mot de passe *</label><div class="pw-wrap"><input id="r-pw" type="password" placeholder="Min. 6 caractères"/><button type="button" class="pw-toggle" onclick="togglePw('r-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
+        <div class="fg"><label>Mot de passe *</label><div class="pw-wrap"><input id="r-pw" type="password" placeholder="Min. 8 car., 1 chiffre, 1 spécial"/><button type="button" class="pw-toggle" onclick="togglePw('r-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <button class="btn bp bb" onclick="doRegister()"><i class="ti ti-rocket"></i> Créer mon espace</button>
         <div class="sl">Déjà un compte ? <a onclick="show('s-login')">Se connecter</a></div>
         <div class="sl" style="margin-top:.5rem"><a onclick="show('s-landing')" style="color:var(--text3);font-size:12px"><i class="ti ti-arrow-left" style="font-size:11px"></i> Retour à l'accueil</a></div>
@@ -1391,10 +1391,12 @@ async function forgotPassword(emailFieldId){
   if(error){toast('Erreur : '+error.message,'err');return;}
   toast('Email envoyé — vérifiez votre boîte de réception pour réinitialiser votre mot de passe.');
 }
+const PW_HINT='Min. 8 caractères, avec au moins un chiffre et un caractère spécial.';
+function pwOk(pw){return !!pw&&pw.length>=8&&/[0-9]/.test(pw)&&/[^A-Za-z0-9]/.test(pw);}
 async function doResetPassword(){
   const pw1=document.getElementById('rp-pw1').value;
   const pw2=document.getElementById('rp-pw2').value;
-  if(!pw1||pw1.length<6){toast('Minimum 6 caractères.','err');return;}
+  if(!pwOk(pw1)){toast(PW_HINT,'err');return;}
   if(pw1!==pw2){toast('Les mots de passe ne correspondent pas.','err');return;}
   const{error}=await sb.auth.updateUser({password:pw1});
   if(error){toast('Erreur : '+error.message,'err');return;}
@@ -1666,7 +1668,7 @@ async function doRegister(){
   const email=document.getElementById('r-email').value.trim().toLowerCase();
   const pw=document.getElementById('r-pw').value;
   if(!p||!n||!nm||!email||!pw){toast('Tous les champs sont requis.','err');return;}
-  if(pw.length<6){toast('Mot de passe : 6 caractères minimum.','err');return;}
+  if(!pwOk(pw)){toast(PW_HINT,'err');return;}
   const{data,error}=await sb.auth.signUp({email,password:pw});
   if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
   const pendingRow={name:nm,sector,pays,admin_name:`${p} ${n}`,contact_email:email,ref_affilie:localStorage.getItem('dd_ref_affilie')||null};
@@ -2858,7 +2860,7 @@ function pSettings(host,co){
         ${co.plan!=='trial'?`<button class="btn bo bsm" style="width:100%;justify-content:center;margin-top:.6rem" onclick="genFacture('company','${co.id}','${co.name.replace(/'/g,"\\'")}')"><i class="ti ti-receipt"></i> Télécharger ma facture</button>`:''}
       </div>
       <div class="card" style="margin-top:12px"><div class="card-hd"><div><p class="card-title">Sécurité</p></div></div>
-        <div class="fg"><label>Nouveau mot de passe</label><input id="new-pw" type="password" placeholder="Min. 6 caractères"/></div>
+        <div class="fg"><label>Nouveau mot de passe</label><input id="new-pw" type="password" placeholder="Min. 8 car., 1 chiffre, 1 spécial"/></div>
         <button class="btn bo bsm" onclick="chgPw()"><i class="ti ti-lock"></i> Mettre à jour</button>
       </div>
     </div>
@@ -2866,7 +2868,7 @@ function pSettings(host,co){
 }
 async function chgPw(){
   const pw=document.getElementById('new-pw')?.value;
-  if(!pw||pw.length<6){toast('Min. 6 caractères.','err');return;}
+  if(!pwOk(pw)){toast(PW_HINT,'err');return;}
   const{error}=await sb.auth.updateUser({password:pw});
   if(error){toast('Erreur : '+error.message,'err');return;}
   toast('Mot de passe mis à jour.');
@@ -3122,7 +3124,7 @@ async function doCabRegister(){
   const email=document.getElementById('cr-email').value.trim().toLowerCase();
   const pw=document.getElementById('cr-pw').value;
   if(!prenom||!nom||!name||!email||!pw){toast('Tous les champs sont requis.','err');return;}
-  if(pw.length<6){toast('Mot de passe : 6 caractères minimum.','err');return;}
+  if(!pwOk(pw)){toast(PW_HINT,'err');return;}
   const{data,error}=await sb.auth.signUp({email,password:pw});
   if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
   const modules={rh:type==='rh'||type==='both',placement:type==='placement'||type==='both'};
