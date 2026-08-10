@@ -848,7 +848,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
     </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-cab-pricing')">Annuler</button>
-      <button class="btn bsm" style="background:var(--purple);color:#fff" onclick="subscribeCab()"><i class="ti ti-credit-card"></i> Souscrire</button>
+      <button class="btn bsm hidden" id="pay-btn-cab" style="background:var(--purple);color:#fff" onclick="subscribeCab()"><i class="ti ti-credit-card"></i> Souscrire</button>
     </div>
   </div>
 </div>
@@ -1299,7 +1299,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
     </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-pricing')">Annuler</button>
-      <button class="btn bp bsm" onclick="subscribe()"><i class="ti ti-credit-card"></i> Souscrire</button>
+      <button class="btn bp bsm hidden" id="pay-btn-co" onclick="subscribe()"><i class="ti ti-credit-card"></i> Souscrire</button>
     </div>
   </div>
 </div>
@@ -2962,19 +2962,21 @@ const PLAN_MONTHLY={Starter:50000,Business:35000,'Cabinet Starter':50000,'Cabine
 function selCycle(key,el){selCycleName=key;document.querySelectorAll('.cycle-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
 function updateCycleUI(){
   const c=CYCLES[selCycleName];
-  const co=document.getElementById('cyc-total-co'),blockCo=document.getElementById('cyc-block-co');
+  const co=document.getElementById('cyc-total-co'),blockCo=document.getElementById('cyc-block-co'),payCo=document.getElementById('pay-btn-co');
   if(co){
     const m=PLAN_MONTHLY[selPlanName];
     blockCo.classList.toggle('hidden',!m);
+    payCo.classList.toggle('hidden',!m);
     if(m){
       document.getElementById('cyc-plan-label-co').textContent=selPlanName;
       co.textContent=c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`;
     }
   }
-  const cab=document.getElementById('cyc-total-cab'),blockCab=document.getElementById('cyc-block-cab');
+  const cab=document.getElementById('cyc-total-cab'),blockCab=document.getElementById('cyc-block-cab'),payCab=document.getElementById('pay-btn-cab');
   if(cab){
     const m=PLAN_MONTHLY[selCabPlanName];
     blockCab.classList.toggle('hidden',!m);
+    payCab.classList.toggle('hidden',!m);
     if(m){
       document.getElementById('cyc-plan-label-cab').textContent=selCabPlanName;
       cab.textContent=c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`;
@@ -3038,7 +3040,7 @@ function expCSV(type){
 // ══════════════════════════════════════
 // MODALS & TOAST
 // ══════════════════════════════════════
-function openModal(id){document.getElementById(id).classList.remove('hidden');if(id==='m-pricing'||id==='m-cab-pricing')updateCycleUI();}
+function openModal(id){document.getElementById(id).classList.remove('hidden');}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',function(ev){if(ev.target===this)this.classList.add('hidden');});});
 let toastT;
