@@ -645,7 +645,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 <div class="screen" id="s-cabinet">
   <div class="app">
     <div class="trialbar hidden" id="cab-trial-bar" style="background:linear-gradient(90deg,var(--purple),#9c8226)">
-      <span><i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai cabinet — <strong id="cab-trial-days">14</strong> jours restants</span>
+      <span id="cab-trial-bar-msg"><i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai cabinet — <strong id="cab-trial-days">14</strong> jours restants</span>
       <button class="btn bsm" style="background:rgba(255,255,255,.25);color:#fff;border:1.5px solid rgba(255,255,255,.4)" onclick="openModal('m-cab-pricing')"><i class="ti ti-crown"></i> Choisir un plan</button>
     </div>
     <div class="app-inner">
@@ -1447,7 +1447,7 @@ async function loadCompanyFull(companyId){
   return{
     id:c.id,name:c.name,sector:c.sector,pays:c.pays,adminName:c.admin_name,adminEmail:c.contact_email,
     contact:c.contact_name,email:c.contact_email,tel:c.contact_tel,
-    plan:c.plan,trialStart:c.trial_start,depts:(c.depts&&c.depts.length?c.depts:[...DEPTS]),
+    plan:c.plan,trialStart:c.trial_start,planExpiresAt:c.plan_expires_at,depts:(c.depts&&c.depts.length?c.depts:[...DEPTS]),
     addedAt:c.created_at?.slice(0,10),
     employees:(employees.data||[]).map(empFromRow),
     contrats:(contracts.data||[]).map(ctFromRow),
@@ -1694,22 +1694,43 @@ function initShell(co){
   document.getElementById('s-av').textContent=init;
   document.getElementById('s-nm').textContent=co.adminName;
   document.getElementById('s-role').textContent=`Admin · ${lg.pays}`;
-  const d=trialLeft(co);
   const tb=document.getElementById('trial-bar');
-  if(co.plan==='trial'&&d>0){
-    tb.classList.remove('hidden');
-    document.getElementById('trial-days').textContent=d;
-    const urgent=d<=3;
-    tb.classList.toggle('urgent',urgent);
-    document.getElementById('trial-bar-msg').innerHTML=urgent
-      ?`<i class="ti ti-alert-triangle" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — plus que <strong id="trial-days">${d}</strong> jour(s) ! Passez au plan payant pour garder vos données.`
-      :`<i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — <strong id="trial-days">${d}</strong> jours restants`;
+  if(co.plan==='trial'){
+    const d=trialLeft(co);
+    if(d>0){
+      tb.classList.remove('hidden');
+      document.getElementById('trial-days').textContent=d;
+      const urgent=d<=3;
+      tb.classList.toggle('urgent',urgent);
+      document.getElementById('trial-bar-msg').innerHTML=urgent
+        ?`<i class="ti ti-alert-triangle" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — plus que <strong id="trial-days">${d}</strong> jour(s) ! Passez au plan payant pour garder vos données.`
+        :`<i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai gratuit — <strong id="trial-days">${d}</strong> jours restants`;
+    }else{
+      tb.classList.add('hidden');
+      toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');
+      openModal('m-pricing');
+    }
+  }else{
+    const pd=planLeft(co);
+    if(pd!==null&&pd<=0){
+      tb.classList.add('hidden');
+      toast('Votre abonnement a expiré — renouvelez votre plan pour continuer.','err');
+      openModal('m-pricing');
+    }else if(pd!==null&&pd<=7){
+      tb.classList.remove('hidden');
+      const urgent=pd<=3;
+      tb.classList.toggle('urgent',urgent);
+      document.getElementById('trial-bar-msg').innerHTML=urgent
+        ?`<i class="ti ti-alert-triangle" style="vertical-align:-2px;margin-right:4px"></i>Abonnement — plus que <strong>${pd}</strong> jour(s) ! Renouvelez pour ne pas perdre l'accès.`
+        :`<i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Abonnement — <strong>${pd}</strong> jours restants avant renouvellement`;
+    }else{
+      tb.classList.add('hidden');
+    }
   }
-  else tb.classList.add('hidden');
-  if(co.plan==='trial'&&d<=0){toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');openModal('m-pricing');}
   updBadges();
 }
 function trialLeft(co){return Math.max(0,Math.ceil((new Date(co.trialStart).getTime()+7*864e5-nowServer())/864e5));}
+function planLeft(o){return o.planExpiresAt?Math.ceil((new Date(o.planExpiresAt).getTime()-nowServer())/864e5):null;}
 function updBadges(){
   const co=gco();if(!co)return;
   const p=co.conges.filter(c=>c.statut==='En attente').length;
@@ -2805,7 +2826,13 @@ function pLegal(host,co){
 // PAGE PARAMÈTRES
 // ══════════════════════════════════════
 function pSettings(host,co){
-  const lg=lgl(co);const d=trialLeft(co);
+  const lg=lgl(co);const d=trialLeft(co);const pd=planLeft(co);
+  const planSub=co.plan==='trial'?`Essai gratuit — ${d} j restants`:(co.planExpiresAt?`${co.plan} — expire le ${new Date(co.planExpiresAt).toLocaleDateString('fr-FR')}`:co.plan);
+  const planAction=co.plan==='trial'
+    ?`<button class="btn bp bb" onclick="openModal('m-pricing')"><i class="ti ti-crown"></i> Passer à un plan payant</button>`
+    :(pd!==null&&pd<=7
+      ?`<button class="btn bp bb" onclick="openModal('m-pricing')"><i class="ti ti-refresh"></i> ${pd<=0?'Renouveler mon abonnement (expiré)':'Renouveler mon abonnement'}</button>`
+      :'<p style="font-size:12.5px;color:var(--green)"><i class="ti ti-check"></i> Abonnement actif.</p>');
   host.innerHTML=`
   <div class="two-col">
     <div class="card"><div class="card-hd"><div><p class="card-title">Informations entreprise</p></div></div>
@@ -2813,8 +2840,8 @@ function pSettings(host,co){
     </div>
     <div>
       <div class="card"><div class="card-hd"><div><p class="card-title">Abonnement</p></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${co.plan==='trial'?`Essai gratuit — ${d} j restants`:co.plan}</p></div><span class="badge ${co.plan==='trial'?'ba2':'bg2'}">${co.plan==='trial'?'Essai':co.plan}</span></div>
-        ${co.plan==='trial'?`<button class="btn bp bb" onclick="openModal('m-pricing')"><i class="ti ti-crown"></i> Passer à un plan payant</button>`:'<p style="font-size:12.5px;color:var(--green)"><i class="ti ti-check"></i> Abonnement actif.</p>'}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${planSub}</p></div><span class="badge ${co.plan==='trial'?'ba2':'bg2'}">${co.plan==='trial'?'Essai':co.plan}</span></div>
+        ${planAction}
       </div>
       <div class="card" style="margin-top:12px"><div class="card-hd"><div><p class="card-title">Sécurité</p></div></div>
         <div class="fg"><label>Nouveau mot de passe</label><input id="new-pw" type="password" placeholder="Min. 6 caractères"/></div>
@@ -2884,6 +2911,10 @@ function buildNotifs(co){
   if(pend>0)ns.push({ico:'ia','i':'ti-hourglass',t:`${pend} congé(s) en attente`,s:'À valider',a:'p-conges',read:false});
   const d=trialLeft(co);
   if(co.plan==='trial'&&d<=7)ns.push({ico:'ir',i:'ti-clock',t:`Essai expire dans ${d} jour(s)`,s:'Choisissez un plan',a:'pricing',read:false});
+  if(co.plan!=='trial'){
+    const pd=planLeft(co);
+    if(pd!==null&&pd<=7)ns.push({ico:'ir',i:'ti-clock',t:pd<=0?'Abonnement expiré':`Abonnement expire dans ${pd} jour(s)`,s:'Renouvelez votre plan',a:'pricing',read:false});
+  }
   const nc=(co.candidates||[]).filter(c=>c.statut==='Candidature reçue').length;
   if(nc>0)ns.push({ico:'ib',i:'ti-users',t:`${nc} nouveau(x) candidat(s)`,s:'En attente de traitement',a:'p-recruit',read:true});
   ns.push({ico:'ig',i:'ti-receipt',t:'Paie Juin 2026 — À finaliser',s:'Vérifiez les bulletins',a:'p-paie',read:true});
@@ -3003,7 +3034,7 @@ async function loadCabinetShell(cabinetId){
   const{data:cab}=await sb.from('cabinets').select('*').eq('id',cabinetId).single();
   if(!cab)return null;
   const clients=await loadCabClients(cabinetId);
-  return{id:cab.id,name:cab.name,pays:cab.pays,adminName:cab.admin_name,adminEmail:cab.admin_email,plan:cab.plan,trialStart:cab.trial_start,modules:cab.modules,clients};
+  return{id:cab.id,name:cab.name,pays:cab.pays,adminName:cab.admin_name,adminEmail:cab.admin_email,plan:cab.plan,trialStart:cab.trial_start,planExpiresAt:cab.plan_expires_at,modules:cab.modules,clients};
 }
 async function saveCab(cab){
   await sb.from('cabinets').update({name:cab.name,pays:cab.pays,plan:cab.plan,modules:cab.modules}).eq('id',cab.id);
@@ -3067,11 +3098,30 @@ function initCabShell(cab){
   const init=(cab.adminName||'?').split(' ').map(w=>w[0]).join('').slice(0,2).toUpperCase();
   document.getElementById('cab-av').textContent=init;
   document.getElementById('cab-nm').textContent=cab.adminName;
-  const d=cabTrialLeft(cab);
   const tb=document.getElementById('cab-trial-bar');
-  if(cab.plan==='trial'&&d>0){tb.classList.remove('hidden');document.getElementById('cab-trial-days').textContent=d;}
-  else tb.classList.add('hidden');
-  if(cab.plan==='trial'&&d<=0){toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');openModal('m-cab-pricing');}
+  if(cab.plan==='trial'){
+    const d=cabTrialLeft(cab);
+    if(d>0){
+      tb.classList.remove('hidden');
+      document.getElementById('cab-trial-bar-msg').innerHTML=`<i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Essai cabinet — <strong>${d}</strong> jours restants`;
+    }else{
+      tb.classList.add('hidden');
+      toast('Votre essai gratuit de 7 jours est terminé — choisissez un plan pour continuer.','err');
+      openModal('m-cab-pricing');
+    }
+  }else{
+    const pd=planLeft(cab);
+    if(pd!==null&&pd<=0){
+      tb.classList.add('hidden');
+      toast('Votre abonnement a expiré — renouvelez votre plan pour continuer.','err');
+      openModal('m-cab-pricing');
+    }else if(pd!==null&&pd<=7){
+      tb.classList.remove('hidden');
+      document.getElementById('cab-trial-bar-msg').innerHTML=`<i class="ti ti-clock" style="vertical-align:-2px;margin-right:4px"></i>Abonnement cabinet — <strong>${pd}</strong> jours restants avant renouvellement`;
+    }else{
+      tb.classList.add('hidden');
+    }
+  }
   const sb=document.getElementById('sb-clients');
   if(sb){sb.textContent=cab.clients.length;sb.style.display=cab.clients.length>0?'':'none';}
 }
@@ -3235,8 +3285,14 @@ function cabCoDash(host,co,cab){
 }
 
 function cabSettings(host,cab){
-  const d=cabTrialLeft(cab);
+  const d=cabTrialLeft(cab);const pd=planLeft(cab);
   const modules=cab.modules||{rh:true,placement:false};
+  const cabPlanSub=cab.plan==='trial'?`Essai gratuit — ${d} j restants`:(cab.planExpiresAt?`${cab.plan} — expire le ${new Date(cab.planExpiresAt).toLocaleDateString('fr-FR')}`:cab.plan);
+  const cabPlanAction=cab.plan==='trial'
+    ?`<button class="btn bb" style="background:var(--purple);color:#fff;width:100%;justify-content:center" onclick="openModal('m-cab-pricing')"><i class="ti ti-crown"></i> Passer à un plan payant</button>`
+    :(pd!==null&&pd<=7
+      ?`<button class="btn bb" style="background:var(--purple);color:#fff;width:100%;justify-content:center" onclick="openModal('m-cab-pricing')"><i class="ti ti-refresh"></i> ${pd<=0?'Renouveler mon abonnement (expiré)':'Renouveler mon abonnement'}</button>`
+      :'<p style="color:var(--green);font-size:12.5px"><i class="ti ti-check"></i> Abonnement actif.</p>');
   host.innerHTML=`
   <div class="two-col">
     <div class="card"><div class="card-hd"><div><p class="card-title">Informations du cabinet</p></div></div>
@@ -3244,8 +3300,8 @@ function cabSettings(host,cab){
     </div>
     <div>
       <div class="card"><div class="card-hd"><div><p class="card-title">Abonnement Cabinet</p></div></div>
-        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${cab.plan==='trial'?`Essai gratuit — ${d} j restants`:cab.plan}</p></div><span class="badge ${cab.plan==='trial'?'ba2':''}" style="${cab.plan!=='trial'?'background:var(--purple-l);color:var(--purple)':''}">${cab.plan==='trial'?'Essai':cab.plan}</span></div>
-        ${cab.plan==='trial'?`<button class="btn bb" style="background:var(--purple);color:#fff;width:100%;justify-content:center" onclick="openModal('m-cab-pricing')"><i class="ti ti-crown"></i> Passer à un plan payant</button>`:'<p style="color:var(--green);font-size:12.5px"><i class="ti ti-check"></i> Abonnement actif.</p>'}
+        <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${cabPlanSub}</p></div><span class="badge ${cab.plan==='trial'?'ba2':''}" style="${cab.plan!=='trial'?'background:var(--purple-l);color:var(--purple)':''}">${cab.plan==='trial'?'Essai':cab.plan}</span></div>
+        ${cabPlanAction}
       </div>
       <div class="card" style="margin-top:1rem"><div class="card-hd"><div><p class="card-title">Modules actifs</p></div></div>
         <p style="font-size:12px;color:var(--text3);margin-bottom:.85rem">Active les modules disponibles pour vos entreprises clientes.</p>
