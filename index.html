@@ -541,7 +541,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="fg"><label>Téléphone</label><input id="ap-tel" placeholder="+228 xx xx xx xx"/></div>
       <div class="fg"><label>CV (PDF) *</label><input id="ap-cv" type="file" accept="application/pdf"/></div>
       <div class="fg"><label>Message (facultatif)</label><textarea id="ap-note" rows="2"></textarea></div>
-      <div class="infoblock"><i class="ti ti-info-circle"></i><span id="ap-fee-note"></span></div>
+      <p style="font-size:12px;color:var(--text3);display:flex;align-items:center;gap:6px"><i class="ti ti-shield-check" style="color:var(--green)"></i>Aucun frais n'est jamais demandé pour déposer ou faire examiner une candidature sur NAOLA.</p>
     </div>
     <div class="modal-ft" id="ap-ft-form">
       <button class="btn bo bsm" onclick="closeModal('m-apply')">Annuler</button>
@@ -550,14 +550,12 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
     <div class="modal-body hidden" id="ap-view-pay">
       <div style="text-align:center;padding:.5rem 0 1.25rem">
         <div style="width:56px;height:56px;border-radius:50%;background:var(--green-l);display:flex;align-items:center;justify-content:center;margin:0 auto 1rem"><i class="ti ti-circle-check" style="color:var(--green);font-size:26px"></i></div>
-        <p style="font-weight:700;font-size:15px">Formulaire validé</p>
-        <p style="font-size:13px;color:var(--text3);margin-top:.4rem">Il ne reste plus qu'à régler les frais de dossier pour valider définitivement votre candidature.</p>
+        <p style="font-size:13px;color:var(--text3);margin-top:.4rem" id="ap-done-msg"></p>
       </div>
-      <div class="infoblock" style="justify-content:center;text-align:center;font-size:16px;font-weight:800"><span id="ap-pay-amount"></span></div>
+      <p style="font-size:12px;color:var(--text3);text-align:center;display:flex;align-items:center;justify-content:center;gap:6px"><i class="ti ti-shield-check" style="color:var(--green)"></i>Aucun frais n'est jamais demandé pour déposer ou faire examiner une candidature sur NAOLA.</p>
     </div>
     <div class="modal-ft hidden" id="ap-ft-pay">
-      <button class="btn bo bsm" onclick="closeModal('m-apply')">Plus tard</button>
-      <button class="btn bp bsm" id="ap-pay-btn" onclick="payApplicationFee()"><i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span></button>
+      <button class="btn bp bsm" style="width:100%" onclick="closeModal('m-apply');openJobs()"><i class="ti ti-arrow-left"></i> Retour aux offres</button>
     </div>
   </div>
 </div>
@@ -1320,7 +1318,6 @@ const LEGAL={
 };
 const AVC=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 const DEPTS=['Commercial','Technique','Finance','RH','Direction','Operations','Marketing','Juridique'];
-const APPLICATION_FEE=5000;
 // UNLOCK_FEE : placeholder, non finalisé, en attente d'un vrai paiement CinetPay
 const UNLOCK_FEE=3000;
 const DCOLS=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
@@ -1543,7 +1540,6 @@ function openApplyModal(offerId,offerTitle){
   document.getElementById('ap-prenom').value='';document.getElementById('ap-nom').value='';
   document.getElementById('ap-email').value='';document.getElementById('ap-tel').value='';
   document.getElementById('ap-note').value='';document.getElementById('ap-cv').value='';
-  document.getElementById('ap-fee-note').textContent=`Des frais de dossier de ${fm(APPLICATION_FEE)} s'appliquent pour valider votre candidature — réglables à l'étape suivante.`;
   document.getElementById('ap-submit-label').textContent='Continuer';
   document.getElementById('ap-view-form').classList.remove('hidden');
   document.getElementById('ap-ft-form').classList.remove('hidden');
@@ -1571,29 +1567,12 @@ async function submitApplicationForm(){
   if(error){toast('Erreur : '+error.message,'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-arrow-right"></i> <span id="ap-submit-label">Continuer</span>';return;}
   window._applyCandidateId=id;
   btn.disabled=false;btn.innerHTML='<i class="ti ti-arrow-right"></i> <span id="ap-submit-label">Continuer</span>';
-  document.getElementById('ap-title').textContent='Paiement des frais de dossier';
+  document.getElementById('ap-title').textContent='Candidature bien reçue ✓';
   document.getElementById('ap-view-form').classList.add('hidden');
   document.getElementById('ap-ft-form').classList.add('hidden');
   document.getElementById('ap-view-pay').classList.remove('hidden');
   document.getElementById('ap-ft-pay').classList.remove('hidden');
-  document.getElementById('ap-pay-amount').textContent=fm(APPLICATION_FEE);
-  document.getElementById('ap-pay-label').textContent=`Payer ${fm(APPLICATION_FEE)}`;
-}
-async function payApplicationFee(){
-  if(!window._applyCandidateId)return;
-  const btn=document.getElementById('ap-pay-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Paiement...';
-  try{
-    const resp=await fetch(`${SUPABASE_URL}/functions/v1/initier-paiement-candidature`,{
-      method:'POST',
-      headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({candidateId:window._applyCandidateId}),
-    });
-    const data=await resp.json();
-    if(!resp.ok||data.erreur){toast('Erreur : '+(data.erreur||data.error||'inconnue'),'err');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';return;}
-    if(data.deja_paye){closeModal('m-apply');toast('Candidature déjà validée !');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';return;}
-    if(data.mode==='sandbox')toast(`🧪 Mode sandbox (CinetPay pas encore activé) — transaction ${data.transaction_id} créée.`,'info');
-    window.location.href=data.url_paiement+(data.url_paiement.includes('?')?'&':'?')+'transaction_id='+data.transaction_id;
-  }catch(e){toast('Impossible de contacter le service de paiement.','err');btn.disabled=false;btn.innerHTML='<i class="ti ti-credit-card"></i> <span id="ap-pay-label"></span>';}
+  document.getElementById('ap-done-msg').textContent=`Merci ${prenom}, votre candidature a été transmise à l'entreprise recruteuse. Notre équipe RH l'examinera et vous contactera directement par email ou téléphone si votre profil correspond au poste.`;
 }
 // Supabase exige par défaut la confirmation d'email avant qu'une session
 // n'existe : à l'inscription, si aucune session n'est retournée, la ligne
