@@ -425,8 +425,8 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
             </div>
           </div>
           <div class="doctpl" onclick="show('s-register')">
-            <i class="ti ti-crown" style="color:var(--gold)"></i><p>Enterprise</p>
-            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">Sur devis</span>
+            <i class="ti ti-crown" style="color:var(--gold)"></i><p>Business Pro</p>
+            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">90 000 FCFA/mois</span>
             <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
               <div><i class="ti ti-check" style="color:var(--green)"></i> Multi-filiales</div>
               <div><i class="ti ti-check" style="color:var(--green)"></i> API & intégrations</div>
@@ -1269,9 +1269,9 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
             <div><i class="ti ti-check" style="color:var(--green)"></i> Support prioritaire</div>
           </div>
         </div>
-        <div class="doctpl" id="plan-e" onclick="selPlan('Enterprise',this)">
-          <i class="ti ti-crown" style="color:var(--gold)"></i><p>Enterprise</p>
-          <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">Sur devis</span>
+        <div class="doctpl" id="plan-e" onclick="selPlan('Business Pro',this)">
+          <i class="ti ti-crown" style="color:var(--gold)"></i><p>Business Pro</p>
+          <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">90 000 FCFA/mois</span>
           <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
             <div><i class="ti ti-check" style="color:var(--green)"></i> Multi-filiales</div>
             <div><i class="ti ti-check" style="color:var(--green)"></i> API & intégrations</div>
@@ -2955,7 +2955,7 @@ async function subscribe(){
   await initierPaiementAbonnement('company',selPlanName,selCycleName);
 }
 const CYCLES={mensuel:{months:1,disc:0},trimestriel:{months:3,disc:10},semestriel:{months:6,disc:15},annuel:{months:12,disc:20}};
-const PLAN_MONTHLY={Starter:50000,Business:75000,'Cabinet Starter':50000,'Cabinet Pro':120000};
+const PLAN_MONTHLY={Starter:50000,Business:75000,'Business Pro':90000,'Cabinet Starter':50000,'Cabinet Pro':120000};
 function selCycle(key){
   selCycleName=key;
   if(!document.getElementById('cyc-block-co').classList.contains('hidden'))renderCycleBlock('co');
