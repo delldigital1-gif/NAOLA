@@ -392,7 +392,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="three-col">
           <div class="doctpl" onclick="show('s-register')">
             <i class="ti ti-plant-2" style="color:var(--green)"></i><p>Starter</p>
-            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">15 000 FCFA/mois</span>
+            <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">50 000 FCFA/mois</span>
             <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
               <div><i class="ti ti-check" style="color:var(--green)"></i> Jusqu'à 20 employés</div>
               <div><i class="ti ti-check" style="color:var(--green)"></i> Paie & congés</div>
@@ -823,6 +823,28 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           </div>
         </div>
       </div>
+      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement</p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <div class="doctpl cycle-opt sel" style="padding:.6rem" onclick="selCycle('mensuel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Mensuel</p>
+            <span style="font-size:11px;color:var(--text2)">Sans engagement</span>
+          </div>
+          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('trimestriel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Trimestriel</p>
+            <span style="font-size:11px;color:var(--green);font-weight:700">-10%</span>
+          </div>
+          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('semestriel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Semestriel</p>
+            <span style="font-size:11px;color:var(--green);font-weight:700">-15%</span>
+          </div>
+          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('annuel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Annuel</p>
+            <span style="font-size:11px;color:var(--green);font-weight:700">-20%</span>
+          </div>
+        </div>
+        <div style="margin-top:.75rem;text-align:center;font-size:13px;color:var(--text)">Total à payer : <strong id="cyc-total-cab">—</strong></div>
+      </div>
     </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-cab-pricing')">Annuler</button>
@@ -1224,7 +1246,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="three-col">
         <div class="doctpl sel" id="plan-s" onclick="selPlan('Starter',this)">
           <i class="ti ti-plant-2" style="color:var(--green)"></i><p>Starter</p>
-          <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">15 000 FCFA/mois</span>
+          <span style="font-size:20px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">50 000 FCFA/mois</span>
           <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:5px;margin-top:.5rem">
             <div><i class="ti ti-check" style="color:var(--green)"></i> Jusqu'à 20 employés</div>
             <div><i class="ti ti-check" style="color:var(--green)"></i> Paie & congés</div>
@@ -1251,6 +1273,28 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
             <div><i class="ti ti-check" style="color:var(--green)"></i> Account manager</div>
           </div>
         </div>
+      </div>
+      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement</p>
+        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
+          <div class="doctpl cycle-opt sel" style="padding:.6rem" onclick="selCycle('mensuel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Mensuel</p>
+            <span style="font-size:11px;color:var(--text2)">Sans engagement</span>
+          </div>
+          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('trimestriel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Trimestriel</p>
+            <span style="font-size:11px;color:var(--green);font-weight:700">-10%</span>
+          </div>
+          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('semestriel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Semestriel</p>
+            <span style="font-size:11px;color:var(--green);font-weight:700">-15%</span>
+          </div>
+          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('annuel',this)">
+            <p style="font-weight:700;font-size:13px;margin:0">Annuel</p>
+            <span style="font-size:11px;color:var(--green);font-weight:700">-20%</span>
+          </div>
+        </div>
+        <div style="margin-top:.75rem;text-align:center;font-size:13px;color:var(--text)">Total à payer : <strong id="cyc-total-co">—</strong></div>
       </div>
     </div>
     <div class="modal-ft">
@@ -1453,7 +1497,7 @@ async function refreshRealtime(companyId){
 // La persistance réelle se fait dans chaque fonction de sauvegarde via
 // des appels Supabase ciblés (voir sco() ci-dessous, devenu un no-op).
 // ══════════════════════════════════════
-let CU=null,selPlanName='Starter',CURRENT_CO=null,CURRENT_CAB=null;
+let CU=null,selPlanName='Starter',selCycleName='mensuel',CURRENT_CO=null,CURRENT_CAB=null;
 
 // ══════════════════════════════════════
 // NAVIGATION — pile "retour" en mémoire, par contexte (app / cabinet)
@@ -2810,7 +2854,7 @@ function saDash(host){
   const cos=[];
   const trials=cos.filter(c=>c.plan==='trial').length;
   const paid=cos.filter(c=>c.plan!=='trial').length;
-  const rev=cos.filter(c=>c.plan==='Starter').length*15000+cos.filter(c=>c.plan==='Business').length*35000;
+  const rev=cos.filter(c=>c.plan==='Starter').length*50000+cos.filter(c=>c.plan==='Business').length*35000;
   host.innerHTML=`
   <div class="kgrid g4">
     <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Entreprises inscrites</p><div class="kpi-ico ib"><i class="ti ti-building"></i></div></div><p class="kpi-val">${cos.length}</p></div>
@@ -2860,19 +2904,29 @@ document.addEventListener('click',function(e){const p=document.getElementById('n
 // ══════════════════════════════════════
 // PRICING
 // ══════════════════════════════════════
-function selPlan(name,el){selPlanName=name;document.querySelectorAll('.doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function selPlan(name,el){selPlanName=name;document.querySelectorAll('#m-pricing .doctpl:not(.cycle-opt)').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
 async function subscribe(){
   if(!CU||CU.t!=='co'||!CURRENT_CO)return;
-  await initierPaiementAbonnement('company',selPlanName);
+  await initierPaiementAbonnement('company',selPlanName,selCycleName);
 }
-async function initierPaiementAbonnement(ownerType,plan){
+const CYCLES={mensuel:{months:1,disc:0},trimestriel:{months:3,disc:10},semestriel:{months:6,disc:15},annuel:{months:12,disc:20}};
+const PLAN_MONTHLY={Starter:50000,Business:35000,'Cabinet Starter':50000,'Cabinet Pro':120000};
+function selCycle(key,el){selCycleName=key;document.querySelectorAll('.cycle-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
+function updateCycleUI(){
+  const c=CYCLES[selCycleName];
+  const co=document.getElementById('cyc-total-co');
+  if(co){const m=PLAN_MONTHLY[selPlanName];co.textContent=m?(c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`):'Sur devis — nous contacter';}
+  const cab=document.getElementById('cyc-total-cab');
+  if(cab){const m=PLAN_MONTHLY[selCabPlanName];cab.textContent=m?(c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`):'Sur devis — nous contacter';}
+}
+async function initierPaiementAbonnement(ownerType,plan,cycle){
   const{data:{session}}=await sb.auth.getSession();
   if(!session){toast('Session expirée, reconnectez-vous.','err');return;}
   try{
     const resp=await fetch(`${SUPABASE_URL}/functions/v1/initier-paiement-abonnement`,{
       method:'POST',
       headers:{'Content-Type':'application/json','Authorization':`Bearer ${session.access_token}`},
-      body:JSON.stringify({ownerType,plan}),
+      body:JSON.stringify({ownerType,plan,cycle}),
     });
     const data=await resp.json();
     if(!resp.ok||data.erreur){toast('Erreur : '+(data.erreur||data.error||'inconnue'),'err');return;}
@@ -2909,7 +2963,7 @@ function expCSV(type){
 // ══════════════════════════════════════
 // MODALS & TOAST
 // ══════════════════════════════════════
-function openModal(id){document.getElementById(id).classList.remove('hidden');}
+function openModal(id){document.getElementById(id).classList.remove('hidden');if(id==='m-pricing'||id==='m-cab-pricing')updateCycleUI();}
 function closeModal(id){document.getElementById(id).classList.add('hidden');}
 document.querySelectorAll('.overlay').forEach(el=>{el.addEventListener('click',function(ev){if(ev.target===this)this.classList.add('hidden');});});
 let toastT;
@@ -3255,10 +3309,10 @@ function pDocsForCab(host,co){pDocs(host,co);}
 // ══════════════════════════════════════
 // CABINET — PRICING
 // ══════════════════════════════════════
-function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');}
+function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl:not(.cycle-opt)').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
 async function subscribeCab(){
   if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
-  await initierPaiementAbonnement('cabinet',selCabPlanName);
+  await initierPaiementAbonnement('cabinet',selCabPlanName,selCycleName);
 }
 
 // ══════════════════════════════════════
