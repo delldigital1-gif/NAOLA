@@ -823,8 +823,8 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           </div>
         </div>
       </div>
-      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
-        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement</p>
+      <div class="hidden" id="cyc-block-cab" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement — <span id="cyc-plan-label-cab" style="color:var(--purple)">Cabinet Starter</span></p>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
           <div class="doctpl cycle-opt sel" style="padding:.6rem" onclick="selCycle('mensuel',this)">
             <p style="font-weight:700;font-size:13px;margin:0">Mensuel</p>
@@ -1274,8 +1274,8 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           </div>
         </div>
       </div>
-      <div style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
-        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement</p>
+      <div class="hidden" id="cyc-block-co" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
+        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement — <span id="cyc-plan-label-co" style="color:var(--gold)">Starter</span></p>
         <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
           <div class="doctpl cycle-opt sel" style="padding:.6rem" onclick="selCycle('mensuel',this)">
             <p style="font-weight:700;font-size:13px;margin:0">Mensuel</p>
@@ -1727,10 +1727,26 @@ function initShell(co){
       tb.classList.add('hidden');
     }
   }
+  checkReturnFromPayment('company',co.id,co.name);
   updBadges();
 }
 function trialLeft(co){return Math.max(0,Math.ceil((new Date(co.trialStart).getTime()+7*864e5-nowServer())/864e5));}
 function planLeft(o){return o.planExpiresAt?Math.ceil((new Date(o.planExpiresAt).getTime()-nowServer())/864e5):null;}
+let transactionCheckDone=false;
+function checkReturnFromPayment(ownerType,ownerId,ownerName){
+  if(transactionCheckDone)return;
+  const params=new URLSearchParams(location.search);
+  const tid=params.get('transaction_id');
+  if(!tid)return;
+  transactionCheckDone=true;
+  const failed=params.get('status')==='failed';
+  history.replaceState(null,'',location.pathname);
+  if(failed){toast('Le paiement a échoué ou a été annulé.','err');return;}
+  setTimeout(async()=>{
+    const ok=await genFacture(ownerType,ownerId,ownerName,tid);
+    if(!ok)toast('Paiement en cours de confirmation — retrouvez votre facture depuis Paramètres dans un instant.','info');
+  },800);
+}
 function updBadges(){
   const co=gco();if(!co)return;
   const p=co.conges.filter(c=>c.statut==='En attente').length;
@@ -2842,6 +2858,7 @@ function pSettings(host,co){
       <div class="card"><div class="card-hd"><div><p class="card-title">Abonnement</p></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${planSub}</p></div><span class="badge ${co.plan==='trial'?'ba2':'bg2'}">${co.plan==='trial'?'Essai':co.plan}</span></div>
         ${planAction}
+        ${co.plan!=='trial'?`<button class="btn bo bsm" style="width:100%;justify-content:center;margin-top:.6rem" onclick="genFacture('company','${co.id}','${co.name.replace(/'/g,"\\'")}')"><i class="ti ti-receipt"></i> Télécharger ma facture</button>`:''}
       </div>
       <div class="card" style="margin-top:12px"><div class="card-hd"><div><p class="card-title">Sécurité</p></div></div>
         <div class="fg"><label>Nouveau mot de passe</label><input id="new-pw" type="password" placeholder="Min. 6 caractères"/></div>
@@ -2945,10 +2962,24 @@ const PLAN_MONTHLY={Starter:50000,Business:35000,'Cabinet Starter':50000,'Cabine
 function selCycle(key,el){selCycleName=key;document.querySelectorAll('.cycle-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
 function updateCycleUI(){
   const c=CYCLES[selCycleName];
-  const co=document.getElementById('cyc-total-co');
-  if(co){const m=PLAN_MONTHLY[selPlanName];co.textContent=m?(c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`):'Sur devis — nous contacter';}
-  const cab=document.getElementById('cyc-total-cab');
-  if(cab){const m=PLAN_MONTHLY[selCabPlanName];cab.textContent=m?(c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`):'Sur devis — nous contacter';}
+  const co=document.getElementById('cyc-total-co'),blockCo=document.getElementById('cyc-block-co');
+  if(co){
+    const m=PLAN_MONTHLY[selPlanName];
+    blockCo.classList.toggle('hidden',!m);
+    if(m){
+      document.getElementById('cyc-plan-label-co').textContent=selPlanName;
+      co.textContent=c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`;
+    }
+  }
+  const cab=document.getElementById('cyc-total-cab'),blockCab=document.getElementById('cyc-block-cab');
+  if(cab){
+    const m=PLAN_MONTHLY[selCabPlanName];
+    blockCab.classList.toggle('hidden',!m);
+    if(m){
+      document.getElementById('cyc-plan-label-cab').textContent=selCabPlanName;
+      cab.textContent=c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`;
+    }
+  }
 }
 async function initierPaiementAbonnement(ownerType,plan,cycle){
   const{data:{session}}=await sb.auth.getSession();
@@ -2964,6 +2995,19 @@ async function initierPaiementAbonnement(ownerType,plan,cycle){
     if(data.mode==='sandbox')toast(`🧪 Mode sandbox (CinetPay pas encore activé) — transaction ${data.transaction_id} créée.`,'info');
     window.location.href=data.url_paiement+(data.url_paiement.includes('?')?'&':'?')+'transaction_id='+data.transaction_id;
   }catch(e){toast('Impossible de contacter le service de paiement.','err');}
+}
+const CYCLE_LABELS={mensuel:'Mensuel',trimestriel:'Trimestriel',semestriel:'Semestriel',annuel:'Annuel'};
+async function genFacture(ownerType,ownerId,ownerName,transactionId){
+  let q=sb.from('subscription_payments').select('*').eq('owner_type',ownerType).eq('owner_id',ownerId).eq('statut','Confirmé');
+  q=transactionId?q.eq('transaction_id',transactionId):q.order('paid_at',{ascending:false}).limit(1);
+  const{data}=await q.maybeSingle();
+  if(!data){toast('Aucun paiement confirmé trouvé pour le moment.','err');return false;}
+  const date=data.paid_at?new Date(data.paid_at).toLocaleDateString('fr-FR',{year:'numeric',month:'long',day:'numeric'}):'—';
+  const content=`NAOLA DIGITAL RH — DELL DIGITAL\n${'═'.repeat(48)}\nFACTURE D'ABONNEMENT\n${'═'.repeat(48)}\n\nFacturé à : ${ownerName}\nTransaction : ${data.transaction_id}\nDate de paiement : ${date}\n\nPlan : ${data.plan}\nDurée d'engagement : ${CYCLE_LABELS[data.billing_cycle]||data.billing_cycle} (${data.billing_months} mois)\nMontant payé : ${fm(data.amount_fcfa)}\n\nStatut : PAIEMENT CONFIRMÉ\n\nDocument généré par NAOLA Digital RH — Dell Digital, Lomé, Togo.`;
+  document.getElementById('doc-title').textContent='Facture abonnement';
+  document.getElementById('doc-body').textContent=content;
+  openModal('m-doc');
+  return true;
 }
 
 // ══════════════════════════════════════
@@ -3124,6 +3168,7 @@ function initCabShell(cab){
   }
   const sb=document.getElementById('sb-clients');
   if(sb){sb.textContent=cab.clients.length;sb.style.display=cab.clients.length>0?'':'none';}
+  checkReturnFromPayment('cabinet',cab.id,cab.name);
 }
 function cabTrialLeft(cab){return Math.max(0,Math.ceil((new Date(cab.trialStart).getTime()+7*864e5-nowServer())/864e5));}
 
@@ -3302,6 +3347,7 @@ function cabSettings(host,cab){
       <div class="card"><div class="card-hd"><div><p class="card-title">Abonnement Cabinet</p></div></div>
         <div style="display:flex;align-items:center;justify-content:space-between;margin-bottom:1rem"><div><p style="font-size:13px;font-weight:700">Plan actuel</p><p style="font-size:12px;color:var(--text3);margin-top:2px">${cabPlanSub}</p></div><span class="badge ${cab.plan==='trial'?'ba2':''}" style="${cab.plan!=='trial'?'background:var(--purple-l);color:var(--purple)':''}">${cab.plan==='trial'?'Essai':cab.plan}</span></div>
         ${cabPlanAction}
+        ${cab.plan!=='trial'?`<button class="btn bo bsm" style="width:100%;justify-content:center;margin-top:.6rem" onclick="genFacture('cabinet','${cab.id}','${cab.name.replace(/'/g,"\\'")}')"><i class="ti ti-receipt"></i> Télécharger ma facture</button>`:''}
       </div>
       <div class="card" style="margin-top:1rem"><div class="card-hd"><div><p class="card-title">Modules actifs</p></div></div>
         <p style="font-size:12px;color:var(--text3);margin-bottom:.85rem">Active les modules disponibles pour vos entreprises clientes.</p>
