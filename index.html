@@ -192,6 +192,21 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .docgrid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
 .doctpl{background:var(--white);border:1.5px solid var(--border-s);border-radius:var(--radius);padding:1rem;text-align:center;cursor:pointer;transition:all .2s}
 .doctpl:hover,.doctpl.sel{border-color:var(--blue);background:var(--blue-l)}
+.cycle-row{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--border-s);border-radius:var(--radius-s);padding:.85rem 1.1rem;cursor:pointer;transition:all .15s}
+.cycle-row:hover{border-color:var(--gold)}
+.cycle-row.sel{border-color:var(--gold);background:rgba(212,175,55,.07)}
+#cyc-block-cab .cycle-row:hover{border-color:var(--purple)}
+#cyc-block-cab .cycle-row.sel{border-color:var(--purple);background:rgba(147,51,234,.07)}
+.cycle-row-left{display:flex;align-items:center;gap:.65rem}
+.cycle-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border-s);display:inline-block;position:relative;flex-shrink:0}
+.cycle-row.sel .cycle-radio{border-color:var(--gold)}
+.cycle-row.sel .cycle-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--gold)}
+#cyc-block-cab .cycle-row.sel .cycle-radio{border-color:var(--purple)}
+#cyc-block-cab .cycle-row.sel .cycle-radio::after{background:var(--purple)}
+.cycle-row-title{font-weight:700;font-size:14px}
+.cyc-badge{background:rgba(34,197,94,.15);color:var(--green);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:2px}
+.cyc-strike{text-decoration:line-through;color:var(--text3);font-size:12px;margin-right:8px}
+.cyc-permois{font-weight:400;font-size:11.5px;color:var(--text2)}
 .doctpl i{font-size:26px;color:var(--blue);display:block;margin-bottom:.5rem}
 .doctpl p{font-size:12.5px;font-weight:700;margin-bottom:3px}
 .doctpl span{font-size:11px;color:var(--text3)}
@@ -824,31 +839,22 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         </div>
       </div>
       <div class="hidden" id="cyc-block-cab" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
-        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement — <span id="cyc-plan-label-cab" style="color:var(--purple)">Cabinet Starter</span></p>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-          <div class="doctpl cycle-opt sel" style="padding:.6rem" onclick="selCycle('mensuel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Mensuel</p>
-            <span style="font-size:11px;color:var(--text2)">Sans engagement</span>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:.85rem">Choisissez une période de facturation pour <strong id="cyc-plan-label-cab" style="color:var(--purple)">Cabinet Starter</strong></p>
+        <div id="cyc-rows-cab" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="background:var(--steel);border-radius:var(--radius-s);padding:1rem 1.15rem;margin-top:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13px">
+            <span id="cyc-summary-label-cab">—</span>
+            <span id="cyc-summary-price-cab">—</span>
           </div>
-          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('trimestriel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Trimestriel</p>
-            <span style="font-size:11px;color:var(--green);font-weight:700">-10%</span>
-          </div>
-          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('semestriel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Semestriel</p>
-            <span style="font-size:11px;color:var(--green);font-weight:700">-15%</span>
-          </div>
-          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('annuel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Annuel</p>
-            <span style="font-size:11px;color:var(--green);font-weight:700">-20%</span>
+          <div style="font-size:11px;color:var(--text3);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-s);display:flex;align-items:center;gap:6px">
+            <i class="ti ti-device-mobile"></i> Paiement sécurisé par Mobile Money (MTN, Moov, Flooz…) via CinetPay
           </div>
         </div>
-        <div style="margin-top:.75rem;text-align:center;font-size:13px;color:var(--text)">Total à payer : <strong id="cyc-total-cab">—</strong></div>
       </div>
     </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-cab-pricing')">Annuler</button>
-      <button class="btn bsm hidden" id="pay-btn-cab" style="background:var(--purple);color:#fff" onclick="subscribeCab()"><i class="ti ti-credit-card"></i> Souscrire</button>
+      <button class="btn bsm hidden" id="pay-btn-cab" style="background:var(--purple);color:#fff" onclick="subscribeCab()"><i class="ti ti-credit-card"></i> Payer</button>
     </div>
   </div>
 </div>
@@ -1275,31 +1281,22 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         </div>
       </div>
       <div class="hidden" id="cyc-block-co" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
-        <p style="font-size:12px;color:var(--text2);margin-bottom:.6rem;font-weight:600">Durée d'engagement — <span id="cyc-plan-label-co" style="color:var(--gold)">Starter</span></p>
-        <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px">
-          <div class="doctpl cycle-opt sel" style="padding:.6rem" onclick="selCycle('mensuel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Mensuel</p>
-            <span style="font-size:11px;color:var(--text2)">Sans engagement</span>
+        <p style="font-size:13px;color:var(--text2);margin-bottom:.85rem">Choisissez une période de facturation pour <strong id="cyc-plan-label-co" style="color:var(--gold)">Starter</strong></p>
+        <div id="cyc-rows-co" style="display:flex;flex-direction:column;gap:8px"></div>
+        <div style="background:var(--steel);border-radius:var(--radius-s);padding:1rem 1.15rem;margin-top:1rem">
+          <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13px">
+            <span id="cyc-summary-label-co">—</span>
+            <span id="cyc-summary-price-co">—</span>
           </div>
-          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('trimestriel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Trimestriel</p>
-            <span style="font-size:11px;color:var(--green);font-weight:700">-10%</span>
-          </div>
-          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('semestriel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Semestriel</p>
-            <span style="font-size:11px;color:var(--green);font-weight:700">-15%</span>
-          </div>
-          <div class="doctpl cycle-opt" style="padding:.6rem" onclick="selCycle('annuel',this)">
-            <p style="font-weight:700;font-size:13px;margin:0">Annuel</p>
-            <span style="font-size:11px;color:var(--green);font-weight:700">-20%</span>
+          <div style="font-size:11px;color:var(--text3);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-s);display:flex;align-items:center;gap:6px">
+            <i class="ti ti-device-mobile"></i> Paiement sécurisé par Mobile Money (MTN, Moov, Flooz…) via CinetPay
           </div>
         </div>
-        <div style="margin-top:.75rem;text-align:center;font-size:13px;color:var(--text)">Total à payer : <strong id="cyc-total-co">—</strong></div>
       </div>
     </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-pricing')">Annuler</button>
-      <button class="btn bp bsm hidden" id="pay-btn-co" onclick="subscribe()"><i class="ti ti-credit-card"></i> Souscrire</button>
+      <button class="btn bp bsm hidden" id="pay-btn-co" onclick="subscribe()"><i class="ti ti-credit-card"></i> Payer</button>
     </div>
   </div>
 </div>
@@ -2952,36 +2949,37 @@ document.addEventListener('click',function(e){const p=document.getElementById('n
 // ══════════════════════════════════════
 // PRICING
 // ══════════════════════════════════════
-function selPlan(name,el){selPlanName=name;document.querySelectorAll('#m-pricing .doctpl:not(.cycle-opt)').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
+function selPlan(name,el){selPlanName=name;document.querySelectorAll('#m-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');renderCycleBlock('co');}
 async function subscribe(){
   if(!CU||CU.t!=='co'||!CURRENT_CO)return;
   await initierPaiementAbonnement('company',selPlanName,selCycleName);
 }
 const CYCLES={mensuel:{months:1,disc:0},trimestriel:{months:3,disc:10},semestriel:{months:6,disc:15},annuel:{months:12,disc:20}};
 const PLAN_MONTHLY={Starter:50000,Business:35000,'Cabinet Starter':50000,'Cabinet Pro':120000};
-function selCycle(key,el){selCycleName=key;document.querySelectorAll('.cycle-opt').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
-function updateCycleUI(){
-  const c=CYCLES[selCycleName];
-  const co=document.getElementById('cyc-total-co'),blockCo=document.getElementById('cyc-block-co'),payCo=document.getElementById('pay-btn-co');
-  if(co){
-    const m=PLAN_MONTHLY[selPlanName];
-    blockCo.classList.toggle('hidden',!m);
-    payCo.classList.toggle('hidden',!m);
-    if(m){
-      document.getElementById('cyc-plan-label-co').textContent=selPlanName;
-      co.textContent=c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`;
-    }
-  }
-  const cab=document.getElementById('cyc-total-cab'),blockCab=document.getElementById('cyc-block-cab'),payCab=document.getElementById('pay-btn-cab');
-  if(cab){
-    const m=PLAN_MONTHLY[selCabPlanName];
-    blockCab.classList.toggle('hidden',!m);
-    payCab.classList.toggle('hidden',!m);
-    if(m){
-      document.getElementById('cyc-plan-label-cab').textContent=selCabPlanName;
-      cab.textContent=c.months===1?`${fm(m)} / mois`:`${fm(Math.round(m*c.months*(1-c.disc/100)))} pour ${c.months} mois (-${c.disc}%)`;
-    }
-  }
+function selCycle(key){
+  selCycleName=key;
+  if(!document.getElementById('cyc-block-co').classList.contains('hidden'))renderCycleBlock('co');
+  if(!document.getElementById('cyc-block-cab').classList.contains('hidden'))renderCycleBlock('cab');
+}
+function renderCycleBlock(kind){
+  const planName=kind==='co'?selPlanName:selCabPlanName;
+  const monthly=PLAN_MONTHLY[planName];
+  const block=document.getElementById(`cyc-block-${kind}`),btn=document.getElementById(`pay-btn-${kind}`);
+  block.classList.toggle('hidden',!monthly);
+  btn.classList.toggle('hidden',!monthly);
+  if(!monthly)return;
+  document.getElementById(`cyc-plan-label-${kind}`).textContent=planName;
+  document.getElementById(`cyc-rows-${kind}`).innerHTML=Object.entries(CYCLES).map(([key,c])=>{
+    const total=Math.round(monthly*c.months*(1-c.disc/100));
+    const perMonth=Math.round(total/c.months);
+    return`<div class="cycle-row${key===selCycleName?' sel':''}" onclick="selCycle('${key}')">
+      <div class="cycle-row-left"><span class="cycle-radio"></span><span class="cycle-row-title">${c.months} mois</span>${c.disc?`<span class="cyc-badge">ÉCONOMISEZ ${c.disc}%</span>`:''}</div>
+      <div>${c.disc?`<span class="cyc-strike">${fm(monthly)}</span>`:''}<strong>${fm(perMonth)}<span class="cyc-permois">/mois</span></strong></div>
+    </div>`;
+  }).join('');
+  const c=CYCLES[selCycleName],total=Math.round(monthly*c.months*(1-c.disc/100));
+  document.getElementById(`cyc-summary-label-${kind}`).textContent=`${planName} (${c.months} mois)`;
+  document.getElementById(`cyc-summary-price-${kind}`).innerHTML=c.disc?`<span class="cyc-strike">${fm(monthly*c.months)}</span><strong>${fm(total)}</strong>`:`<strong>${fm(total)}</strong>`;
 }
 async function initierPaiementAbonnement(ownerType,plan,cycle){
   const{data:{session}}=await sb.auth.getSession();
@@ -3413,7 +3411,7 @@ function pDocsForCab(host,co){pDocs(host,co);}
 // ══════════════════════════════════════
 // CABINET — PRICING
 // ══════════════════════════════════════
-function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl:not(.cycle-opt)').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');updateCycleUI();}
+function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');renderCycleBlock('cab');}
 async function subscribeCab(){
   if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
   await initierPaiementAbonnement('cabinet',selCabPlanName,selCycleName);
