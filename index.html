@@ -1558,6 +1558,13 @@ async function submitApplicationForm(){
   if(!prenom||!nom||!email){toast('Prénom, nom et email requis.','err');return;}
   if(!cvFile){toast('Le CV (PDF) est requis.','err');return;}
   const btn=document.getElementById('ap-submit-btn');btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Envoi...';
+  // Le dépôt de candidature est toujours anonyme, mais le client Supabase est
+  // partagé avec les espaces recruteur/cabinet : une session (même expirée)
+  // laissée dans ce navigateur serait sinon attachée à tort à cet appel et le
+  // ferait échouer ("exp claim timestamp check failed"). On la purge d'abord,
+  // localement uniquement (pas d'appel réseau avec un jeton potentiellement déjà invalide).
+  const{data:{session}}=await sb.auth.getSession();
+  if(session)await sb.auth.signOut({scope:'local'});
   const id=crypto.randomUUID();
   const path=`public/${id}.pdf`;
   const{error:upErr}=await sb.storage.from('cvs').upload(path,cvFile,{contentType:'application/pdf'});
