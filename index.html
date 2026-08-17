@@ -207,17 +207,6 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .cyc-badge{background:rgba(34,197,94,.15);color:var(--green);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:2px}
 .cyc-strike{text-decoration:line-through;color:var(--text3);font-size:12px;margin-right:8px}
 .cyc-permois{font-weight:400;font-size:11.5px;color:var(--text2)}
-.cycle-tabs{display:grid;grid-template-columns:repeat(4,1fr);border:1.5px solid var(--border-s);border-radius:var(--radius-s);overflow:hidden}
-.cycle-tab{display:flex;flex-direction:column;align-items:center;gap:3px;padding:.7rem .4rem;cursor:pointer;border-right:1px solid var(--border-s);transition:all .15s}
-.cycle-tab:last-child{border-right:none}
-.cycle-tab:hover{background:rgba(212,175,55,.07)}
-.cycle-tab.sel{border-color:var(--gold);background:rgba(212,175,55,.12)}
-.cycle-tab-label{font-weight:700;font-size:12.5px}
-.cycle-tab-pct{font-size:10.5px;font-weight:700;color:var(--green)}
-.cycle-tab.sel .cycle-tab-label{color:var(--gold)}
-#cyc-block-cab .cycle-tab:hover{background:rgba(147,51,234,.07)}
-#cyc-block-cab .cycle-tab.sel{border-color:var(--purple);background:rgba(147,51,234,.12)}
-#cyc-block-cab .cycle-tab.sel .cycle-tab-label{color:var(--purple)}
 .doctpl i{font-size:26px;color:var(--blue);display:block;margin-bottom:.5rem}
 .doctpl p{font-size:12.5px;font-weight:700;margin-bottom:3px}
 .doctpl span{font-size:11px;color:var(--text3)}
@@ -1507,7 +1496,7 @@ async function refreshRealtime(companyId){
 // La persistance réelle se fait dans chaque fonction de sauvegarde via
 // des appels Supabase ciblés (voir sco() ci-dessous, devenu un no-op).
 // ══════════════════════════════════════
-let CU=null,selPlanName='Starter',selCycleName='mensuel',CURRENT_CO=null,CURRENT_CAB=null;
+let CU=null,selPlanName='Starter',selCycleName='annuel',CURRENT_CO=null,CURRENT_CAB=null;
 
 // ══════════════════════════════════════
 // NAVIGATION — pile "retour" en mémoire, par contexte (app / cabinet)
@@ -2968,6 +2957,7 @@ async function subscribe(){
   await initierPaiementAbonnement('company',selPlanName,selCycleName);
 }
 const CYCLES={mensuel:{months:1,disc:0,label:'Mensuel'},trimestriel:{months:3,disc:10,label:'Trimestriel'},semestriel:{months:6,disc:15,label:'Semestriel'},annuel:{months:12,disc:20,label:'Annuel'}};
+const CYCLE_ORDER=['annuel','semestriel','trimestriel','mensuel'];
 const PLAN_MONTHLY={Starter:70000,Business:175000,'Business Pro':250000,'Cabinet Starter':50000,'Cabinet Pro':120000};
 function selCycle(key){
   selCycleName=key;
@@ -2982,12 +2972,15 @@ function renderCycleBlock(kind){
   btn.classList.toggle('hidden',!monthly);
   if(!monthly)return;
   document.getElementById(`cyc-plan-label-${kind}`).textContent=planName;
-  document.getElementById(`cyc-rows-${kind}`).innerHTML=`<div class="cycle-tabs">${Object.entries(CYCLES).map(([key,c])=>
-    `<div class="cycle-tab${key===selCycleName?' sel':''}" onclick="selCycle('${key}')">
-      <span class="cycle-tab-label">${c.label}</span>
-      <span class="cycle-tab-pct">${c.disc?`-${c.disc}%`:'Sans engagement'}</span>
-    </div>`
-  ).join('')}</div>`;
+  document.getElementById(`cyc-rows-${kind}`).innerHTML=CYCLE_ORDER.map(key=>{
+    const c=CYCLES[key];
+    const total=Math.round(monthly*c.months*(1-c.disc/100));
+    const perMonth=Math.round(total/c.months);
+    return`<div class="cycle-row${key===selCycleName?' sel':''}" onclick="selCycle('${key}')">
+      <div class="cycle-row-left"><span class="cycle-radio"></span><span class="cycle-row-title">${c.months} mois</span>${c.disc?`<span class="cyc-badge">ÉCONOMISEZ ${c.disc}%</span>`:''}</div>
+      <div>${c.disc?`<span class="cyc-strike">${fm(monthly)}</span>`:''}<strong>${fm(perMonth)}<span class="cyc-permois">/mois</span></strong></div>
+    </div>`;
+  }).join('');
   const c=CYCLES[selCycleName],total=Math.round(monthly*c.months*(1-c.disc/100));
   document.getElementById(`cyc-summary-label-${kind}`).textContent=`${planName} (${c.months} mois)`;
   document.getElementById(`cyc-summary-price-${kind}`).innerHTML=c.disc?`<span class="cyc-strike">${fm(monthly*c.months)}</span><strong>${fm(total)}</strong>`:`<strong>${fm(total)}</strong>`;
