@@ -154,6 +154,10 @@ tr:hover td{background:var(--blue-l)}
 .modal-ft{padding:.9rem 1.5rem;border-top:1px solid var(--border);display:flex;justify-content:flex-end;gap:8px}
 .cx{background:none;border:none;cursor:pointer;font-size:20px;color:var(--text3);padding:4px;border-radius:var(--radius-s)}
 .cx:hover{background:var(--steel);color:var(--text)}
+/* Modale claire (2e étage, sélection de période au-dessus de la modale de plans) */
+.overlay-light{--white:#fff;--text:#181D17;--text2:#5B5648;--text3:#8A8574;--border:#E7E3D6;--border-s:#DDD8C8;--steel:#F7F5EF;background:rgba(15,17,13,.6);color:var(--text)}
+.modal-back{background:none;border:none;cursor:pointer;font-size:13px;font-weight:600;color:var(--text2);padding:4px 8px;border-radius:var(--radius-s);display:inline-flex;align-items:center;gap:5px}
+.modal-back:hover{background:var(--steel);color:var(--text)}
 /* TOAST */
 .toast{position:fixed;bottom:1.5rem;right:1.5rem;padding:11px 18px;border-radius:var(--radius);font-size:13px;font-weight:600;z-index:9999;display:flex;align-items:center;gap:8px;box-shadow:var(--shadow-m);transition:all .3s;color:#fff}
 .tok{background:var(--green)}.terr{background:var(--red)}.tinf{background:var(--blue)}
@@ -195,14 +199,14 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
 .cycle-row{display:flex;align-items:center;justify-content:space-between;border:1.5px solid var(--border-s);border-radius:var(--radius-s);padding:.85rem 1.1rem;cursor:pointer;transition:all .15s}
 .cycle-row:hover{border-color:var(--gold)}
 .cycle-row.sel{border-color:var(--gold);background:rgba(212,175,55,.07)}
-#cyc-block-cab .cycle-row:hover{border-color:var(--purple)}
-#cyc-block-cab .cycle-row.sel{border-color:var(--purple);background:rgba(147,51,234,.07)}
+#m-cycle-cab .cycle-row:hover{border-color:var(--purple)}
+#m-cycle-cab .cycle-row.sel{border-color:var(--purple);background:rgba(147,51,234,.07)}
 .cycle-row-left{display:flex;align-items:center;gap:.65rem}
 .cycle-radio{width:18px;height:18px;border-radius:50%;border:2px solid var(--border-s);display:inline-block;position:relative;flex-shrink:0}
 .cycle-row.sel .cycle-radio{border-color:var(--gold)}
 .cycle-row.sel .cycle-radio::after{content:'';position:absolute;inset:3px;border-radius:50%;background:var(--gold)}
-#cyc-block-cab .cycle-row.sel .cycle-radio{border-color:var(--purple)}
-#cyc-block-cab .cycle-row.sel .cycle-radio::after{background:var(--purple)}
+#m-cycle-cab .cycle-row.sel .cycle-radio{border-color:var(--purple)}
+#m-cycle-cab .cycle-row.sel .cycle-radio::after{background:var(--purple)}
 .cycle-row-title{font-weight:700;font-size:14px}
 .cyc-badge{background:rgba(34,197,94,.15);color:var(--green);font-size:10.5px;font-weight:700;padding:2px 8px;border-radius:999px;margin-left:2px}
 .cyc-strike{text-decoration:line-through;color:var(--text3);font-size:12px;margin-right:8px}
@@ -838,23 +842,35 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           </div>
         </div>
       </div>
-      <div class="hidden" id="cyc-block-cab" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
-        <p style="font-size:13px;color:var(--text2);margin-bottom:.85rem">Choisissez une période de facturation pour <strong id="cyc-plan-label-cab" style="color:var(--purple)">Cabinet Starter</strong></p>
-        <div id="cyc-rows-cab" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div style="background:var(--steel);border-radius:var(--radius-s);padding:1rem 1.15rem;margin-top:1rem">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13px">
-            <span id="cyc-summary-label-cab">—</span>
-            <span id="cyc-summary-price-cab">—</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-s);display:flex;align-items:center;gap:6px">
-            <i class="ti ti-device-mobile"></i> Paiement sécurisé par Mobile Money (MTN, Moov, Flooz…) via CinetPay
-          </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-cab-pricing')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay overlay-light hidden" id="m-cycle-cab">
+  <div class="modal">
+    <div class="modal-hd">
+      <button class="modal-back" onclick="closeModal('m-cycle-cab')"><i class="ti ti-arrow-left"></i> Changer de plan</button>
+      <button class="cx" onclick="closeModal('m-cycle-cab');closeModal('m-cab-pricing')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.85rem">Choisissez une période de facturation pour <strong id="cyc-plan-label-cab" style="color:var(--purple)">Cabinet Starter</strong></p>
+      <div id="cyc-rows-cab" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="background:var(--steel);border-radius:var(--radius-s);padding:1rem 1.15rem;margin-top:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13px">
+          <span id="cyc-summary-label-cab">—</span>
+          <span id="cyc-summary-price-cab">—</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-s);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-device-mobile"></i> Paiement sécurisé par Mobile Money (MTN, Moov, Flooz…) via CinetPay
         </div>
       </div>
     </div>
     <div class="modal-ft">
-      <button class="btn bo bsm" onclick="closeModal('m-cab-pricing')">Annuler</button>
-      <button class="btn bsm hidden" id="pay-btn-cab" style="background:var(--purple);color:#fff" onclick="subscribeCab()"><i class="ti ti-credit-card"></i> Payer</button>
+      <button class="btn bo bsm" onclick="closeModal('m-cycle-cab')">Retour</button>
+      <button class="btn bsm" id="pay-btn-cab" style="background:var(--purple);color:#fff" onclick="subscribeCab()"><i class="ti ti-credit-card"></i> Payer</button>
     </div>
   </div>
 </div>
@@ -1280,23 +1296,35 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
           </div>
         </div>
       </div>
-      <div class="hidden" id="cyc-block-co" style="margin-top:1.25rem;padding-top:1.25rem;border-top:1px solid var(--border-s)">
-        <p style="font-size:13px;color:var(--text2);margin-bottom:.85rem">Choisissez une période de facturation pour <strong id="cyc-plan-label-co" style="color:var(--gold)">Starter</strong></p>
-        <div id="cyc-rows-co" style="display:flex;flex-direction:column;gap:8px"></div>
-        <div style="background:var(--steel);border-radius:var(--radius-s);padding:1rem 1.15rem;margin-top:1rem">
-          <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13px">
-            <span id="cyc-summary-label-co">—</span>
-            <span id="cyc-summary-price-co">—</span>
-          </div>
-          <div style="font-size:11px;color:var(--text3);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-s);display:flex;align-items:center;gap:6px">
-            <i class="ti ti-device-mobile"></i> Paiement sécurisé par Mobile Money (MTN, Moov, Flooz…) via CinetPay
-          </div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-pricing')">Annuler</button>
+    </div>
+  </div>
+</div>
+
+<div class="overlay overlay-light hidden" id="m-cycle-co">
+  <div class="modal">
+    <div class="modal-hd">
+      <button class="modal-back" onclick="closeModal('m-cycle-co')"><i class="ti ti-arrow-left"></i> Changer de plan</button>
+      <button class="cx" onclick="closeModal('m-cycle-co');closeModal('m-pricing')"><i class="ti ti-x"></i></button>
+    </div>
+    <div class="modal-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.85rem">Choisissez une période de facturation pour <strong id="cyc-plan-label-co" style="color:var(--gold)">Starter</strong></p>
+      <div id="cyc-rows-co" style="display:flex;flex-direction:column;gap:8px"></div>
+      <div style="background:var(--steel);border-radius:var(--radius-s);padding:1rem 1.15rem;margin-top:1rem">
+        <div style="display:flex;justify-content:space-between;align-items:baseline;font-size:13px">
+          <span id="cyc-summary-label-co">—</span>
+          <span id="cyc-summary-price-co">—</span>
+        </div>
+        <div style="font-size:11px;color:var(--text3);margin-top:.75rem;padding-top:.75rem;border-top:1px solid var(--border-s);display:flex;align-items:center;gap:6px">
+          <i class="ti ti-device-mobile"></i> Paiement sécurisé par Mobile Money (MTN, Moov, Flooz…) via CinetPay
         </div>
       </div>
     </div>
     <div class="modal-ft">
-      <button class="btn bo bsm" onclick="closeModal('m-pricing')">Annuler</button>
-      <button class="btn bp bsm hidden" id="pay-btn-co" onclick="subscribe()"><i class="ti ti-credit-card"></i> Payer</button>
+      <button class="btn bo bsm" onclick="closeModal('m-cycle-co')">Retour</button>
+      <button class="btn bp bsm" id="pay-btn-co" onclick="subscribe()"><i class="ti ti-credit-card"></i> Payer</button>
     </div>
   </div>
 </div>
@@ -2951,7 +2979,7 @@ document.addEventListener('click',function(e){const p=document.getElementById('n
 // ══════════════════════════════════════
 // PRICING
 // ══════════════════════════════════════
-function selPlan(name,el){selPlanName=name;document.querySelectorAll('#m-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');renderCycleBlock('co');}
+function selPlan(name,el){selPlanName=name;document.querySelectorAll('#m-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');if(!PLAN_MONTHLY[name])return;renderCycleBlock('co');openModal('m-cycle-co');}
 async function subscribe(){
   if(!CU||CU.t!=='co'||!CURRENT_CO)return;
   await initierPaiementAbonnement('company',selPlanName,selCycleName);
@@ -2961,15 +2989,12 @@ const CYCLE_ORDER=['annuel','semestriel','trimestriel','mensuel'];
 const PLAN_MONTHLY={Starter:70000,Business:175000,'Business Pro':250000,'Cabinet Starter':50000,'Cabinet Pro':120000};
 function selCycle(key){
   selCycleName=key;
-  if(!document.getElementById('cyc-block-co').classList.contains('hidden'))renderCycleBlock('co');
-  if(!document.getElementById('cyc-block-cab').classList.contains('hidden'))renderCycleBlock('cab');
+  if(!document.getElementById('m-cycle-co').classList.contains('hidden'))renderCycleBlock('co');
+  if(!document.getElementById('m-cycle-cab').classList.contains('hidden'))renderCycleBlock('cab');
 }
 function renderCycleBlock(kind){
   const planName=kind==='co'?selPlanName:selCabPlanName;
   const monthly=PLAN_MONTHLY[planName];
-  const block=document.getElementById(`cyc-block-${kind}`),btn=document.getElementById(`pay-btn-${kind}`);
-  block.classList.toggle('hidden',!monthly);
-  btn.classList.toggle('hidden',!monthly);
   if(!monthly)return;
   document.getElementById(`cyc-plan-label-${kind}`).textContent=planName;
   document.getElementById(`cyc-rows-${kind}`).innerHTML=CYCLE_ORDER.map(key=>{
@@ -3415,7 +3440,7 @@ function pDocsForCab(host,co){pDocs(host,co);}
 // ══════════════════════════════════════
 // CABINET — PRICING
 // ══════════════════════════════════════
-function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');renderCycleBlock('cab');}
+function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');if(!PLAN_MONTHLY[name])return;renderCycleBlock('cab');openModal('m-cycle-cab');}
 async function subscribeCab(){
   if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
   await initierPaiementAbonnement('cabinet',selCabPlanName,selCycleName);
