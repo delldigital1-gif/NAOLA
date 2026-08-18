@@ -3404,6 +3404,10 @@ function toggleCabModule(key,enabled){
 // ══════════════════════════════════════
 // CABINET — GESTION CLIENTS (CRUD)
 // ══════════════════════════════════════
+// Quota d'entreprises clientes par plan (voir cartes de prix #pp-detail-cab / #m-cab-pricing) :
+// Starter 5, Pro 20, Enterprise illimité (sur devis) — trial aligné sur Starter.
+const CAB_PLAN_LIMITS={trial:5,'Cabinet Starter':5,'Cabinet Pro':20,'Cabinet Enterprise':Infinity};
+function cabClientLimit(cab){return CAB_PLAN_LIMITS[cab.plan]??5;}
 async function addClient(){
   const name=document.getElementById('ac-name').value.trim();
   const sector=document.getElementById('ac-sector').value;
@@ -3413,6 +3417,13 @@ async function addClient(){
   const contact=document.getElementById('ac-contact').value.trim();
   if(!name){toast('Le nom de l\'entreprise est requis.','err');return;}
   const cab=getCab();if(!cab)return;
+  const limit=cabClientLimit(cab);
+  if(cab.clients.length>=limit){
+    toast(`Limite de votre plan atteinte (${limit} entreprise${limit>1?'s':''} maximum). Passez à un plan supérieur pour ajouter d'autres clients.`,'err');
+    closeModal('m-add-client');
+    openModal('m-cab-pricing');
+    return;
+  }
   const row={cabinet_id:cab.id,name,sector,pays,contact_email:email,contact_tel:tel,contact_name:contact};
   const{error}=await sb.from('companies').insert(row);
   if(error){toast('Erreur : '+error.message,'err');return;}
