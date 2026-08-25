@@ -611,6 +611,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input id="cl-pw" type="password" placeholder="••••••••"/><button type="button" class="pw-toggle" onclick="togglePw('cl-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('cl-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff;margin-bottom:.75rem" onclick="doCabLogin()"><i class="ti ti-login"></i> Se connecter</button>
+        <button class="btn bo bsm" style="width:100%;margin-bottom:.75rem;border-color:var(--purple);color:var(--purple)" onclick="demoCab()"><i class="ti ti-flask"></i> Essayer avec un compte de démonstration</button>
         <div class="sl">Pas encore de compte ? <a onclick="show('s-cabinet-register')" style="color:var(--purple)">Créer un compte cabinet</a></div>
       </div>
     </div>
@@ -904,6 +905,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input id="l-pw" type="password" placeholder="••••••••"/><button type="button" class="pw-toggle" onclick="togglePw('l-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('l-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bp bb" onclick="doLogin()"><i class="ti ti-login"></i> Se connecter</button>
+        <button class="btn bo bsm" style="width:100%;margin-top:.6rem" onclick="demo('co')"><i class="ti ti-flask"></i> Essayer avec un compte de démonstration</button>
         <div class="sl">Pas encore de compte ? <a onclick="show('s-register')">Créer un compte</a></div>
         <div class="sl" style="margin-top:.5rem"><a onclick="show('s-landing')" style="color:var(--text3);font-size:12px"><i class="ti ti-arrow-left" style="font-size:11px"></i> Retour à l'accueil</a></div>
       </div>
