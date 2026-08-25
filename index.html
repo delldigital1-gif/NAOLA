@@ -611,7 +611,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input id="cl-pw" type="password" placeholder="••••••••"/><button type="button" class="pw-toggle" onclick="togglePw('cl-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('cl-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bb bsm" style="background:var(--purple);color:#fff;margin-bottom:.75rem" onclick="doCabLogin()"><i class="ti ti-login"></i> Se connecter</button>
-        <button class="btn bo bsm" style="width:100%;margin-bottom:.75rem;border-color:var(--purple);color:var(--purple)" onclick="demoCab()"><i class="ti ti-flask"></i> Essayer avec un compte de démonstration</button>
+        <button class="btn bo bsm" style="width:100%;margin-bottom:.75rem;border-color:var(--purple);color:var(--purple)" onclick="demoWalkthrough('cab')"><i class="ti ti-flask"></i> Essayer avec un compte de démonstration</button>
         <div class="sl">Pas encore de compte ? <a onclick="show('s-cabinet-register')" style="color:var(--purple)">Créer un compte cabinet</a></div>
       </div>
     </div>
@@ -905,7 +905,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="fg"><label>Mot de passe</label><div class="pw-wrap"><input id="l-pw" type="password" placeholder="••••••••"/><button type="button" class="pw-toggle" onclick="togglePw('l-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <div class="sl" style="margin-top:-.5rem;margin-bottom:.75rem;text-align:right"><a onclick="forgotPassword('l-email')" style="font-size:12px;color:var(--text3)">Mot de passe oublié ?</a></div>
         <button class="btn bp bb" onclick="doLogin()"><i class="ti ti-login"></i> Se connecter</button>
-        <button class="btn bo bsm" style="width:100%;margin-top:.6rem" onclick="demo('co')"><i class="ti ti-flask"></i> Essayer avec un compte de démonstration</button>
+        <button class="btn bo bsm" style="width:100%;margin-top:.6rem" onclick="demoWalkthrough('co')"><i class="ti ti-flask"></i> Essayer avec un compte de démonstration</button>
         <div class="sl">Pas encore de compte ? <a onclick="show('s-register')">Créer un compte</a></div>
         <div class="sl" style="margin-top:.5rem"><a onclick="show('s-landing')" style="color:var(--text3);font-size:12px"><i class="ti ti-arrow-left" style="font-size:11px"></i> Retour à l'accueil</a></div>
       </div>
@@ -3141,6 +3141,60 @@ async function demoCab(){
   document.getElementById('cl-email').value='demo@cabinet.tg';
   document.getElementById('cl-pw').value='Cabinet1234!';
   await doCabLogin();
+}
+
+function sleep(ms){return new Promise(r=>setTimeout(r,ms));}
+async function demoTypeInto(id,text,delay){
+  const el=document.getElementById(id);
+  el.value='';el.focus();
+  for(const ch of text){el.value+=ch;await sleep(delay||26);}
+}
+async function demoSelect(id,value){
+  const el=document.getElementById(id);
+  el.focus();await sleep(300);el.value=value;await sleep(150);
+}
+
+// Rejoue le parcours d'inscription à l'écran (champ par champ) avec les
+// infos du compte de démo déjà existant, puis connecte réellement sur le
+// compte pré-rempli — un vrai signUp() échouerait (email déjà utilisé).
+async function demoWalkthrough(type){
+  if(type==='co'){
+    show('s-register');
+    await sleep(400);
+    await demoTypeInto('r-prenom','Ama');
+    await demoTypeInto('r-nom','Kodjo');
+    await demoTypeInto('r-co','TechTogo SARL');
+    await demoSelect('r-pays','TG');
+    await demoSelect('r-sector','Technologie');
+    await demoTypeInto('r-email','demo@techtogo.tg');
+    await demoTypeInto('r-pw','Demo1234!');
+    const btn=document.querySelector('#s-register button[onclick="doRegister()"]');
+    const orig=btn.innerHTML;
+    btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Création de votre espace...';
+    await sleep(900);
+    document.getElementById('l-email').value='demo@techtogo.tg';
+    document.getElementById('l-pw').value='Demo1234!';
+    await doLogin();
+    btn.disabled=false;btn.innerHTML=orig;
+  }else{
+    show('s-cabinet-register');
+    await sleep(400);
+    await demoTypeInto('cr-prenom','Yawa');
+    await demoTypeInto('cr-nom','Adjovi');
+    await demoTypeInto('cr-name','Adjovi RH Conseil');
+    await demoSelect('cr-pays','TG');
+    await demoSelect('cr-type','both');
+    await demoTypeInto('cr-email','demo@cabinet.tg');
+    await demoTypeInto('cr-pw','Cabinet1234!');
+    const btn=document.querySelector('#s-cabinet-register button[onclick="doCabRegister()"]');
+    const orig=btn.innerHTML;
+    btn.disabled=true;btn.innerHTML='<i class="ti ti-loader"></i> Création de votre cabinet...';
+    await sleep(900);
+    document.getElementById('cl-email').value='demo@cabinet.tg';
+    document.getElementById('cl-pw').value='Cabinet1234!';
+    await doCabLogin();
+    btn.disabled=false;btn.innerHTML=orig;
+  }
 }
 
 async function doCabRegister(){
