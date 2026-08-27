@@ -850,6 +850,15 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
   </div>
 </div>
 
+<div class="overlay hidden" id="m-cab-enterprise">
+  <div class="modal">
+    <div class="modal-hd"><h3>Cabinet Enterprise — sur devis</h3><button class="cx" onclick="closeModal('m-cab-enterprise')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body" id="cab-ent-body">
+      <p style="text-align:center;color:var(--text3);padding:1rem 0">Chargement...</p>
+    </div>
+  </div>
+</div>
+
 <div class="overlay overlay-light hidden" id="m-cycle-cab">
   <div class="modal">
     <div class="modal-hd">
@@ -1055,6 +1064,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <p class="s-sec">Administration</p>
         <div class="s-item active" onclick="saGo('sa-dash')"><i class="ti ti-layout-dashboard"></i>Vue globale</div>
         <div class="s-item" onclick="saGo('sa-companies')"><i class="ti ti-building"></i>Entreprises</div>
+        <div class="s-item" onclick="saGo('sa-requests')"><i class="ti ti-crown"></i>Demandes Cabinet Enterprise</div>
         <div class="s-item" onclick="saGo('sa-legal')"><i class="ti ti-scale"></i>Référentiels légaux</div>
         <div class="s-item" onclick="saGo('sa-revenue')"><i class="ti ti-coins"></i>Revenus</div>
         <div class="s-item" onclick="doLogout()"><i class="ti ti-logout"></i>Déconnexion</div>
@@ -1435,11 +1445,17 @@ async function doResetPassword(){
   show('s-login');
 }
 
-// Le panneau superadmin (statistiques cross-cabinets) n'est pas migré :
-// une vue cross-tenant nécessiterait la clé service_role, qui ne doit
-// jamais être exposée côté client. Reste un login local factice, sans
-// données réelles.
-const SA_LOGIN={email:'admin@naola.tg',pw:'naola123'};
+// Le panneau superadmin (statistiques cross-cabinets) reste hors service_role
+// (jamais exposée côté client) mais l'accès lui-même est réel désormais :
+// table platform_admins + fonction is_platform_admin() (security definer),
+// vérifiée après une vraie connexion Supabase Auth — fait le 2026-08-27,
+// remplace l'ancien identifiant local factice admin@naola.tg/naola123
+// (visible en clair dans ce fichier, un vrai risque maintenant que ce
+// panneau donne accès aux demandes/devis Cabinet Enterprise).
+async function isPlatformAdmin(){
+  const{data}=await sb.from('platform_admins').select('id').limit(1).maybeSingle();
+  return!!data;
+}
 
 // ---- Mapping DB (snake_case) <-> JS (camelCase historique) ----
 function empFromRow(r){return{id:r.id,mat:r.mat,prenom:r.prenom,nom:r.nom,sx:r.sexe,ddn:r.date_naissance,nat:r.nationalite,sitMat:r.situation_matrimoniale,enf:r.nb_enfants,cni:r.cni,email:r.email,tel:r.tel,adr:r.adresse,poste:r.poste,dept:r.dept,cat:r.categorie,ct:r.type_contrat,emb:r.date_embauche,sal:r.salaire,cnss:r.cnss,statut:r.statut};}
@@ -1665,9 +1681,9 @@ async function doLogin(){
   await syncServerTime();
   const email=document.getElementById('l-email').value.trim().toLowerCase();
   const pw=document.getElementById('l-pw').value;
-  if(email===SA_LOGIN.email&&pw===SA_LOGIN.pw){CU={t:'super'};show('s-super');saGo('sa-dash');return;}
   const{data,error}=await sb.auth.signInWithPassword({email,password:pw});
   if(error||!data.session){toast('Email ou mot de passe incorrect.','err');return;}
+  if(await isPlatformAdmin()){CU={t:'super'};show('s-super');saGo('sa-dash');return;}
   let{data:company}=await sb.from('companies').select('id').eq('owner_auth_id',data.user.id).maybeSingle();
   if(!company){
     const pending=popPending('co',email);
@@ -1684,8 +1700,7 @@ async function doLogin(){
   subscribeCompanyRealtime(company.id);
 }
 async function demo(t){
-  if(t==='super'){document.getElementById('l-email').value='admin@naola.tg';document.getElementById('l-pw').value='naola123';}
-  else{document.getElementById('l-email').value='demo@techtogo.tg';document.getElementById('l-pw').value='Demo1234!';}
+  document.getElementById('l-email').value='demo@techtogo.tg';document.getElementById('l-pw').value='Demo1234!';
   await doLogin();
 }
 async function doRegister(){
@@ -2906,19 +2921,69 @@ async function chgPw(){
 // ══════════════════════════════════════
 // SUPER ADMIN
 // ══════════════════════════════════════
-const SAMETA={'sa-dash':{h:'Vue globale',p:'Toutes les entreprises sur NAOLA Digital RH'},'sa-companies':{h:'Entreprises',p:'Gestion des comptes clients'},'sa-legal':{h:'Référentiels légaux',p:'Paramètres légaux par pays'},'sa-revenue':{h:'Revenus',p:'Abonnements et chiffre d\'affaires'}};
+const SAMETA={'sa-dash':{h:'Vue globale',p:'Toutes les entreprises sur NAOLA Digital RH'},'sa-companies':{h:'Entreprises',p:'Gestion des comptes clients'},'sa-requests':{h:'Demandes Cabinet Enterprise',p:'Demandes de plan sur devis'},'sa-legal':{h:'Référentiels légaux',p:'Paramètres légaux par pays'},'sa-revenue':{h:'Revenus',p:'Abonnements et chiffre d\'affaires'}};
 function saGo(pid){
   document.querySelectorAll('#s-super .s-item').forEach(el=>el.classList.remove('active'));
   const items=document.querySelectorAll('#s-super .s-item');
-  const idx=['sa-dash','sa-companies','sa-legal','sa-revenue'].indexOf(pid);
+  const idx=['sa-dash','sa-companies','sa-requests','sa-legal','sa-revenue'].indexOf(pid);
   if(idx>=0&&items[idx])items[idx].classList.add('active');
   const m=SAMETA[pid]||{h:'',p:''};
   document.getElementById('sa-h').textContent=m.h;
   document.getElementById('sa-p').textContent=m.p;
   const host=document.getElementById('sa-host');
   if(pid==='sa-dash'||pid==='sa-companies')saDash(host);
+  else if(pid==='sa-requests')saRequests(host);
   else if(pid==='sa-legal')saLegal(host);
   else if(pid==='sa-revenue')saRevenue(host);
+}
+async function saRequests(host){
+  host.innerHTML='<p style="text-align:center;color:var(--text3);padding:2rem 0">Chargement...</p>';
+  const{data:reqs,error}=await sb.from('cabinet_enterprise_requests').select('*, cabinets(name,admin_name,admin_email,pays)').order('created_at',{ascending:false});
+  if(error){host.innerHTML=`<div class="card"><div class="card-body">Erreur : ${error.message}</div></div>`;return;}
+  if(!reqs||reqs.length===0){host.innerHTML='<div class="card"><div class="card-body" style="text-align:center;color:var(--text3);padding:2rem">Aucune demande Cabinet Enterprise.</div></div>';return;}
+  const SA_STATUT_LABEL={nouvelle:'Nouvelle',devis_envoye:'Devis envoyé',validee:'Activée'};
+  const SA_STATUT_BADGE={nouvelle:'ba2',devis_envoye:'bb2',validee:'bg2'};
+  host.innerHTML=reqs.map(r=>{
+    const cab=r.cabinets||{};
+    let actions='';
+    if(r.statut==='nouvelle'){
+      actions=`<div style="display:flex;gap:.5rem;margin-top:.75rem;flex-wrap:wrap;align-items:center">
+        <div class="fg" style="flex:1;min-width:220px;margin:0"><input type="number" id="sadevis-${r.id}" min="150000" max="750000" step="5000" placeholder="Montant du devis (150 000 – 750 000 FCFA)"/></div>
+        <button class="btn bp bsm" onclick="envoyerDevisCabinet('${r.id}')">Envoyer le devis</button>
+      </div>`;
+    }else if(r.statut==='devis_envoye'){
+      actions=`<div style="margin-top:.75rem"><button class="btn bp bsm" onclick="activerCabinetEnterprise('${r.id}','${r.cabinet_id}')"><i class="ti ti-check"></i> Activer Cabinet Enterprise</button></div>`;
+    }
+    return `<div class="card" style="margin-bottom:1rem"><div class="card-body">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;gap:1rem">
+        <div><div class="fw7">${cab.name||'—'}</div><div style="font-size:12px;color:var(--text3)">${cab.admin_name||''} · ${cab.admin_email||'—'} · ${cab.pays||'—'}</div></div>
+        <span class="badge ${SA_STATUT_BADGE[r.statut]||'bn2'}">${SA_STATUT_LABEL[r.statut]||r.statut}</span>
+      </div>
+      <div style="margin-top:.6rem;font-size:13px;color:var(--text2)">
+        <div><strong>Entreprises clientes estimées :</strong> ${r.effectif_estime??'—'}</div>
+        <div><strong>Besoins :</strong> ${r.besoins_description||'—'}</div>
+        ${r.devis_montant?`<div><strong>Devis :</strong> ${fm(r.devis_montant)}${r.devis_envoye_le?' — '+new Date(r.devis_envoye_le).toLocaleDateString('fr-FR'):''}</div>`:''}
+      </div>
+      ${actions}
+    </div></div>`;
+  }).join('');
+}
+async function envoyerDevisCabinet(requestId){
+  const input=document.getElementById('sadevis-'+requestId);
+  const montant=parseFloat(input.value);
+  if(!montant||montant<150000||montant>750000){toast('Le montant doit être entre 150 000 et 750 000 FCFA.','err');return;}
+  const{data,error}=await sb.functions.invoke('send-devis-cabinet-enterprise',{body:{request_id:requestId,montant}});
+  if(error||data?.error){toast('Erreur : '+(data?.error||error.message),'err');return;}
+  toast(data.email_sent?'Devis envoyé par email.':'Devis enregistré (email non envoyé — vérifier la config Resend).');
+  saGo('sa-requests');
+}
+async function activerCabinetEnterprise(requestId,cabinetId){
+  const{error:e1}=await sb.from('cabinets').update({plan:'Cabinet Enterprise'}).eq('id',cabinetId);
+  if(e1){toast('Erreur : '+e1.message,'err');return;}
+  const{error:e2}=await sb.from('cabinet_enterprise_requests').update({statut:'validee',updated_at:new Date().toISOString()}).eq('id',requestId);
+  if(e2){toast('Erreur : '+e2.message,'err');return;}
+  toast('Cabinet Enterprise activé.');
+  saGo('sa-requests');
 }
 function saDash(host){
   // Panneau superadmin non migré : une vue cross-tenant nécessiterait la
@@ -3506,10 +3571,66 @@ function pDocsForCab(host,co){pDocs(host,co);}
 // ══════════════════════════════════════
 // CABINET — PRICING
 // ══════════════════════════════════════
-function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');if(!PLAN_MONTHLY[name])return;renderCycleBlock('cab');openModal('m-cycle-cab');}
+function selCabPlan(name,el){selCabPlanName=name;document.querySelectorAll('#m-cab-pricing .doctpl').forEach(c=>c.classList.remove('sel'));el.classList.add('sel');if(name==='Cabinet Enterprise'){openCabEnterpriseRequest();return;}if(!PLAN_MONTHLY[name])return;renderCycleBlock('cab');openModal('m-cycle-cab');}
 async function subscribeCab(){
   if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
   await initierPaiementAbonnement('cabinet',selCabPlanName,selCycleName);
+}
+
+// ══════════════════════════════════════
+// CABINET ENTERPRISE — demande + devis (pas de checkout self-service,
+// plan négocié/sur devis — décision explicite du 2026-08-27, même
+// principe que le parcours de configuration assistée sur UniManage,
+// scope limité à Cabinet Enterprise, les autres plans restent self-serve)
+// ══════════════════════════════════════
+async function openCabEnterpriseRequest(){
+  if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
+  openModal('m-cab-enterprise');
+  const body=document.getElementById('cab-ent-body');
+  body.innerHTML='<p style="text-align:center;color:var(--text3);padding:1rem 0">Chargement...</p>';
+  const{data:req}=await sb.from('cabinet_enterprise_requests').select('*').eq('cabinet_id',CURRENT_CAB.id).order('created_at',{ascending:false}).limit(1).maybeSingle();
+  renderCabEnterpriseModal(req);
+}
+function renderCabEnterpriseModal(req){
+  const body=document.getElementById('cab-ent-body');
+  if(!req||req.statut==='validee'){
+    body.innerHTML=`
+      <p style="color:var(--text2);font-size:13px;margin-bottom:1rem">Le plan Cabinet Enterprise (entreprises illimitées, API & intégrations, account manager dédié) est mis en place sur mesure avec notre équipe. Décrivez votre besoin, nous vous envoyons un devis par email.</p>
+      <div class="fg"><label>Nombre d'entreprises clientes estimé *</label><input id="cabent-effectif" type="number" min="1" placeholder="Ex: 30"/></div>
+      <div class="fg"><label>Vos besoins *</label><textarea id="cabent-besoins" rows="3" placeholder="Volume actuel, intégrations souhaitées, urgence..."></textarea></div>
+      <div id="cabent-status" style="font-size:12px;color:var(--text3);min-height:1.2rem;margin:.5rem 0"></div>
+      <div class="modal-ft" style="padding:0"><button class="btn bo bsm" onclick="closeModal('m-cab-enterprise')">Annuler</button><button class="btn bp bsm" id="cabent-submitBtn" onclick="submitCabEnterpriseRequest()">Envoyer ma demande</button></div>`;
+  }else if(req.statut==='nouvelle'){
+    body.innerHTML=`
+      <div style="text-align:center;padding:1rem 0">
+        <i class="ti ti-clock" style="font-size:32px;color:var(--amber)"></i>
+        <p style="font-weight:700;margin-top:.75rem">Votre demande est en cours de traitement</p>
+        <p style="color:var(--text3);font-size:13px;margin-top:.4rem">Notre équipe vous enverra un devis par email très prochainement.</p>
+      </div>
+      <div class="modal-ft" style="padding:0"><button class="btn bo bsm" onclick="closeModal('m-cab-enterprise')">Fermer</button></div>`;
+  }else{
+    body.innerHTML=`
+      <div style="text-align:center;padding:1rem 0">
+        <i class="ti ti-file-invoice" style="font-size:32px;color:var(--purple)"></i>
+        <p style="font-weight:700;margin-top:.75rem">Votre devis est prêt</p>
+        <p style="font-size:22px;font-weight:800;margin:.5rem 0">${fm(req.devis_montant)}</p>
+        <p style="color:var(--text3);font-size:13px">Ce devis vous a été envoyé par email. Répondez-y ou contactez-nous pour finaliser l'activation de votre espace Cabinet Enterprise.</p>
+      </div>
+      <div class="modal-ft" style="padding:0"><button class="btn bp bsm" onclick="closeModal('m-cab-enterprise')">Fermer</button></div>`;
+  }
+}
+async function submitCabEnterpriseRequest(){
+  const effectif=document.getElementById('cabent-effectif').value;
+  const besoins=document.getElementById('cabent-besoins').value.trim();
+  const statusEl=document.getElementById('cabent-status');
+  if(!effectif||!besoins){statusEl.style.color='var(--red)';statusEl.textContent='Champs requis.';return;}
+  const btn=document.getElementById('cabent-submitBtn');
+  btn.disabled=true;
+  statusEl.style.color='var(--text3)';statusEl.textContent='Envoi en cours...';
+  const{data:created,error}=await sb.from('cabinet_enterprise_requests').insert({cabinet_id:CURRENT_CAB.id,effectif_estime:parseInt(effectif,10),besoins_description:besoins}).select().single();
+  if(error){statusEl.style.color='var(--red)';statusEl.textContent='Erreur : '+error.message;btn.disabled=false;return;}
+  sb.functions.invoke('notify-new-cabinet-enterprise-request',{body:{request_id:created.id}}).catch(()=>{});
+  renderCabEnterpriseModal(created);
 }
 
 // ══════════════════════════════════════
