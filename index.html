@@ -462,7 +462,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
               <div><i class="ti ti-check" style="color:var(--green)"></i> Support prioritaire</div>
             </div>
           </div>
-          <div class="doctpl" onclick="show('s-cabinet-register')">
+          <div class="doctpl" onclick="requestCabEnterpriseFromPublic()">
             <i class="ti ti-crown" style="color:var(--gold)"></i><p>Cabinet Enterprise</p>
             <span style="font-size:19px;font-weight:800;color:var(--text);display:block;margin:.4rem 0">Sur devis</span>
             <div style="text-align:left;font-size:12px;color:var(--text2);display:flex;flex-direction:column;gap:4px;margin-top:.5rem">
@@ -3200,6 +3200,7 @@ async function doCabLogin(){
   initCabShell(CURRENT_CAB);
   show('s-cabinet');
   cabGo('cab-dash');
+  checkPendingCabEnterpriseIntent();
 }
 
 async function demoCab(){
@@ -3283,6 +3284,7 @@ async function doCabRegister(){
   CU={t:'cab',id:cabRow.id};activeCabClient=null;
   initCabShell(CURRENT_CAB);show('s-cabinet');cabGo('cab-dash');
   toast(`Bienvenue ${prenom} ! Votre cabinet est prêt.`,'info');
+  checkPendingCabEnterpriseIntent();
 }
 
 function initCabShell(cab){
@@ -3583,6 +3585,22 @@ async function subscribeCab(){
 // principe que le parcours de configuration assistée sur UniManage,
 // scope limité à Cabinet Enterprise, les autres plans restent self-serve)
 // ══════════════════════════════════════
+// Clic "Cabinet Enterprise" depuis la page publique (avant inscription) :
+// mémorise l'intention (l'inscription mène toujours à un essai gratuit 7j,
+// le choix de plan se fait normalement seulement après coup dans l'app) et
+// rouvre automatiquement la demande une fois le cabinet créé/connecté —
+// sinon l'utilisateur atterrit sur un tableau de bord d'essai standard sans
+// jamais voir l'écran de demande de devis (bug rapporté le 2026-08-27).
+function requestCabEnterpriseFromPublic(){
+  localStorage.setItem('naola_pending_cab_enterprise','1');
+  show('s-cabinet-register');
+}
+function checkPendingCabEnterpriseIntent(){
+  if(localStorage.getItem('naola_pending_cab_enterprise')){
+    localStorage.removeItem('naola_pending_cab_enterprise');
+    openCabEnterpriseRequest();
+  }
+}
 async function openCabEnterpriseRequest(){
   if(!CU||CU.t!=='cab'||!CURRENT_CAB)return;
   openModal('m-cab-enterprise');
