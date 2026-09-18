@@ -1391,7 +1391,7 @@ const LEGAL={
     irpp:[{min:0,max:600000,t:0},{min:600000,max:1500000,t:3},{min:1500000,max:Infinity,t:20}],
     indem:[{an:5,pct:25},{an:5,pct:30},{an:Infinity,pct:35}],
     preavis:{h:'8 jours',e:'1 mois',c:'3 mois'}},
-  BF:{pays:'Burkina Faso',devise:'FCFA',caisse:'CNSS-BF',cotSal:5.5,cotPat:16,smig:34664,hSem:40,retNorm:60,retAnti:55,cAnnuel:22,cMat:98,jFeries:11,code:'Code du travail burkinabè',
+  BF:{pays:'Burkina Faso',devise:'FCFA',caisse:'CNSS-BF',cotSal:5.5,cotPat:16,smig:45000,hSem:40,retNorm:60,retAnti:55,cAnnuel:22,cMat:98,jFeries:11,code:'Code du travail burkinabè',
     irpp:[{min:0,max:300000,t:0},{min:300000,max:600000,t:12},{min:600000,max:1500000,t:18},{min:1500000,max:Infinity,t:27.5}],
     indem:[{an:5,pct:30},{an:5,pct:35},{an:Infinity,pct:40}],
     preavis:{h:'8 jours',e:'1 mois',c:'3 mois'}},
@@ -1421,7 +1421,7 @@ async function addNewDept(sel){
   toast(`Département "${name}" ajouté.`);
 }
 // UNLOCK_FEE : placeholder, non finalisé, en attente d'un vrai paiement CinetPay
-const UNLOCK_FEE=3000;
+const UNLOCK_FEE=15000;
 const DCOLS=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
 
 function lgl(co){return LEGAL[co?.pays||'TG']||LEGAL.TG;}
