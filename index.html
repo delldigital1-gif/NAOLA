@@ -1067,6 +1067,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="s-item" onclick="saGo('sa-requests')"><i class="ti ti-crown"></i>Demandes Cabinet Enterprise</div>
         <div class="s-item" onclick="saGo('sa-legal')"><i class="ti ti-scale"></i>Référentiels légaux</div>
         <div class="s-item" onclick="saGo('sa-revenue')"><i class="ti ti-coins"></i>Revenus</div>
+        <div class="s-item" onclick="saGo('sa-demo')"><i class="ti ti-presentation"></i>Démo</div>
         <div class="s-item" onclick="doLogout()"><i class="ti ti-logout"></i>Déconnexion</div>
         <div class="s-foot"><div class="s-user"><div class="sav" style="background:var(--purple)">SA</div><div><div class="s-nm">Super Admin</div><div class="s-role">NAOLA Digital RH</div></div></div></div>
       </aside>
@@ -2921,11 +2922,11 @@ async function chgPw(){
 // ══════════════════════════════════════
 // SUPER ADMIN
 // ══════════════════════════════════════
-const SAMETA={'sa-dash':{h:'Vue globale',p:'Toutes les entreprises sur NAOLA Digital RH'},'sa-companies':{h:'Entreprises',p:'Gestion des comptes clients'},'sa-requests':{h:'Demandes Cabinet Enterprise',p:'Demandes de plan sur devis'},'sa-legal':{h:'Référentiels légaux',p:'Paramètres légaux par pays'},'sa-revenue':{h:'Revenus',p:'Abonnements et chiffre d\'affaires'}};
+const SAMETA={'sa-dash':{h:'Vue globale',p:'Toutes les entreprises sur NAOLA Digital RH'},'sa-companies':{h:'Entreprises',p:'Gestion des comptes clients'},'sa-requests':{h:'Demandes Cabinet Enterprise',p:'Demandes de plan sur devis'},'sa-legal':{h:'Référentiels légaux',p:'Paramètres légaux par pays'},'sa-revenue':{h:'Revenus',p:'Abonnements et chiffre d\'affaires'},'sa-demo':{h:'Démo',p:'Comptes de démonstration prêts pour vos présentations commerciales'}};
 function saGo(pid){
   document.querySelectorAll('#s-super .s-item').forEach(el=>el.classList.remove('active'));
   const items=document.querySelectorAll('#s-super .s-item');
-  const idx=['sa-dash','sa-companies','sa-requests','sa-legal','sa-revenue'].indexOf(pid);
+  const idx=['sa-dash','sa-companies','sa-requests','sa-legal','sa-revenue','sa-demo'].indexOf(pid);
   if(idx>=0&&items[idx])items[idx].classList.add('active');
   const m=SAMETA[pid]||{h:'',p:''};
   document.getElementById('sa-h').textContent=m.h;
@@ -2935,6 +2936,7 @@ function saGo(pid){
   else if(pid==='sa-requests')saRequests(host);
   else if(pid==='sa-legal')saLegal(host);
   else if(pid==='sa-revenue')saRevenue(host);
+  else if(pid==='sa-demo')saDemoPage(host);
 }
 async function saRequests(host){
   host.innerHTML='<p style="text-align:center;color:var(--text3);padding:2rem 0">Chargement...</p>';
@@ -3011,6 +3013,30 @@ function saLegal(host){
   <tbody>${Object.entries(LEGAL).map(([code,ref])=>`<tr><td><div class="fw7">${ref.pays}</div><div style="font-size:11px;color:var(--text3)">${code}</div></td><td>${ref.caisse}</td><td><span class="badge bb2">${ref.cotSal}%</span></td><td><span class="badge ba2">${ref.cotPat}%</span></td><td>${fm(ref.smig)}</td><td>${ref.cAnnuel}j</td><td>${ref.retNorm} ans</td><td style="font-size:11px;color:var(--text3)">${ref.code}</td></tr>`).join('')}</tbody></table></div></div>`;
 }
 function saRevenue(host){saDash(host);}
+function saDemoPage(host){
+  host.innerHTML=`
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-hd"><div><p class="card-title"><i class="ti ti-building" style="vertical-align:-2px;margin-right:6px"></i>Démo — Entreprise directe</p><p class="card-sub">TechTogo SARL · plan Business</p></div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.75rem">Compte entièrement peuplé pour présenter le parcours entreprise directe : 6 employés, contrats, congés, absences, discipline + rupture, évaluations, recrutement (offres et candidats à tous les statuts) et paie.</p>
+      <button class="btn bp bsm" onclick="openDemoAccount('co')"><i class="ti ti-presentation"></i> Ouvrir la démo Entreprise</button>
+    </div>
+  </div>
+  <div class="card" style="margin-bottom:1rem">
+    <div class="card-hd"><div><p class="card-title"><i class="ti ti-shield-check" style="vertical-align:-2px;margin-right:6px"></i>Démo — Cabinet RH</p><p class="card-sub">Adjovi RH Conseil · plan Cabinet Pro</p></div></div>
+    <div class="card-body">
+      <p style="font-size:13px;color:var(--text2);margin-bottom:.75rem">Compte pensé pour l'angle agence de placement/sécurité : une entreprise cliente gérée (Sahel Sécurité SARL, 5 agents), une mission active avec 3 agents déployés et une mission à venir, en plus de toutes les fonctionnalités RH classiques.</p>
+      <button class="btn bp bsm" onclick="openDemoAccount('cab')"><i class="ti ti-presentation"></i> Ouvrir la démo Cabinet</button>
+    </div>
+  </div>
+  <div class="card"><div class="card-body" style="font-size:12px;color:var(--text3)">
+    <i class="ti ti-info-circle" style="vertical-align:-2px;margin-right:4px"></i>Ouvrir une démo vous déconnecte de la Console Admin et vous connecte sur le compte de démonstration correspondant — reconnectez-vous avec vos identifiants Super Admin pour revenir ici.
+  </div></div>`;
+}
+async function openDemoAccount(type){
+  toast('Ouverture du compte de démonstration...','info');
+  if(type==='co')await demo('co');else await demoCab();
+}
 
 // ══════════════════════════════════════
 // NOTIFICATIONS
