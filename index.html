@@ -626,7 +626,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div><div class="a-brand-name">NAOLA Digital RH</div><div class="a-brand-sub">Espace Cabinet RH</div></div>
       </div>
       <h2>Créez votre compte Cabinet</h2>
-      <p>7 jours d'essai gratuit. Ajoutez autant d'entreprises clientes que vous souhaitez pendant la période d'essai.</p>
+      <p>Votre espace est prêt en quelques secondes. Ajoutez autant d'entreprises clientes que vous le souhaitez dès l'activation de votre formule.</p>
       <div style="margin-top:auto;padding-top:2rem">
         <button class="btn bo bsm" style="border-color:rgba(255,255,255,.2);color:rgba(255,255,255,.6);background:transparent" onclick="show('s-cabinet-login')"><i class="ti ti-arrow-left"></i> Déjà un compte ?</button>
       </div>
@@ -639,6 +639,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         </div>
         <h3>Créer votre cabinet</h3>
         <p class="asub">Votre espace est prêt en quelques secondes.</p>
+        <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+          <button type="button" class="btn bo bsm" style="flex:1" onclick="show('s-register')">Entreprise</button>
+          <button type="button" class="btn bb bsm" style="background:var(--purple);color:#fff;flex:1;cursor:default;pointer-events:none">Cabinet</button>
+        </div>
         <div class="g2">
           <div class="fg"><label>Prénom *</label><input id="cr-prenom" placeholder="Kofi"/></div>
           <div class="fg"><label>Nom *</label><input id="cr-nom" placeholder="Mensah"/></div>
@@ -951,10 +955,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="a-brand-ico"><i class="ti ti-chart-dots-3"></i></div>
         <div><div class="a-brand-name">NAOLA Digital RH</div><div class="a-brand-sub">SIRH multi-tenant</div></div>
       </div>
-      <h2>7 jours d'essai gratuit — sans carte bancaire</h2>
-      <p>Votre espace est créé instantanément, cloisonné et conforme à la législation de votre pays.</p>
+      <h2>Votre espace RH, prêt en quelques secondes</h2>
+      <p>Créez votre compte, choisissez votre formule, et votre espace est instantanément cloisonné et conforme à la législation de votre pays.</p>
       <div class="auth-feats" style="margin-top:2rem">
-        <div class="af"><div class="af-ico"><i class="ti ti-check"></i></div><div><p>Employés illimités pendant l'essai</p><span>Testez toutes les fonctionnalités</span></div></div>
+        <div class="af"><div class="af-ico"><i class="ti ti-check"></i></div><div><p>Employés illimités</p><span>Toutes les fonctionnalités incluses</span></div></div>
         <div class="af"><div class="af-ico"><i class="ti ti-check"></i></div><div><p>Référentiel légal préconfiguré</p><span>Selon le pays sélectionné</span></div></div>
         <div class="af"><div class="af-ico"><i class="ti ti-check"></i></div><div><p>Support expert NAOLA inclus</p><span>Email et WhatsApp</span></div></div>
       </div>
@@ -963,6 +967,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="auth-box" style="max-width:450px">
         <h3>Créer votre espace</h3>
         <p class="asub">Quelques secondes pour démarrer.</p>
+        <div style="display:flex;gap:8px;margin-bottom:1.25rem">
+          <button type="button" class="btn bp bsm" style="flex:1;cursor:default;pointer-events:none">Entreprise</button>
+          <button type="button" class="btn bo bsm" style="flex:1" onclick="show('s-cabinet-register')">Cabinet</button>
+        </div>
         <div class="g2">
           <div class="fg"><label>Prénom *</label><input id="r-prenom" placeholder="Kofi"/></div>
           <div class="fg"><label>Nom *</label><input id="r-nom" placeholder="Mensah"/></div>
@@ -1743,7 +1751,8 @@ async function doRegister(){
   CURRENT_CO=await loadCompanyFull(company.id);
   CU={t:'co',id:company.id};initShell(CURRENT_CO);show('s-app');go('p-dash');
   subscribeCompanyRealtime(company.id);
-  toast(`Bienvenue ${p} ! Votre essai de 7 jours a démarré.`,'info');
+  toast(`Bienvenue ${p} ! Choisissez votre formule pour activer votre espace.`,'info');
+  openModal('m-pricing');
 }
 async function doLogout(){if(RT_CHANNEL){sb.removeChannel(RT_CHANNEL);RT_CHANNEL=null;}CU=null;CURRENT_CO=null;CURRENT_CAB=null;activeCabClient=null;await sb.auth.signOut();show('s-login',true);navHistory=[];navHistoryFwd=[];updNavArrows();['l-email','l-pw'].forEach(i=>{const el=document.getElementById(i);if(el)el.value='';});}
 
@@ -3329,8 +3338,10 @@ async function doCabRegister(){
   CURRENT_CAB=await loadCabinetShell(cabRow.id);
   CU={t:'cab',id:cabRow.id};activeCabClient=null;
   initCabShell(CURRENT_CAB);show('s-cabinet');cabGo('cab-dash');
-  toast(`Bienvenue ${prenom} ! Votre cabinet est prêt.`,'info');
+  const hadPendingEnterprise=!!localStorage.getItem('naola_pending_cab_enterprise');
+  toast(`Bienvenue ${prenom} ! Choisissez votre formule pour activer votre cabinet.`,'info');
   checkPendingCabEnterpriseIntent();
+  if(!hadPendingEnterprise)openModal('m-cab-pricing');
 }
 
 function initCabShell(cab){
