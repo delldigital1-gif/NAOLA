@@ -1163,8 +1163,9 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
         <div class="fg"><label>Type d'absence *</label>
           <select id="ab-type"><option>Maladie ordinaire</option><option>Accident du travail</option><option>Accident de trajet</option><option>Maladie professionnelle</option><option>Décès d'un proche</option><option>Convocation judiciaire</option><option>Mission professionnelle</option><option>Formation</option><option>Grève légale</option><option>Mise à pied conservatoire</option><option>Absence injustifiée</option><option>Abandon de poste</option></select>
         </div>
-        <div class="fg"><label>Date début *</label><input id="ab-start" type="date"/></div>
-        <div class="fg"><label>Date fin</label><input id="ab-end" type="date"/></div>
+        <div class="fg"><label>Date début *</label><input id="ab-start" type="date" onchange="autoCalcAbsEnd()"/></div>
+        <div class="fg"><label>Durée (jours)</label><input id="ab-days" type="number" min="1" step="1" placeholder="Ex: 3" oninput="autoCalcAbsEnd()"/></div>
+        <div class="fg"><label>Date fin</label><input id="ab-end" type="date"/><span style="display:block;font-size:11.5px;color:var(--text3);margin-top:4px">Calculée automatiquement à partir de la durée — modifiable si besoin.</span></div>
         <div class="fg"><label>Justifiée ?</label><select id="ab-just"><option>Oui</option><option>Non</option></select></div>
         <div class="fg"><label>Impact paie</label><select id="ab-paie"><option>Rémunérée</option><option>Non rémunérée</option><option>Partiellement</option></select></div>
       </div>
@@ -1838,15 +1839,17 @@ function avc(i){return AVC[i%AVC.length];}
 function fd(d){if(!d)return'—';return new Date(d).toLocaleDateString('fr-FR',{day:'2-digit',month:'short',year:'numeric'});}
 function fm(n){return Number(n||0).toLocaleString('fr-FR')+' FCFA';}
 function ddays(a,b){return Math.max(1,Math.round((new Date(b)-new Date(a))/864e5)+1);}
-function autoCalcCongeEnd(){
-  const start=document.getElementById('cg-start').value;
-  const days=parseInt(document.getElementById('cg-days').value,10);
+function calcEndFromDuration(startId,daysId,endId){
+  const start=document.getElementById(startId).value;
+  const days=parseInt(document.getElementById(daysId).value,10);
   if(!start||!days||days<1)return;
   const end=new Date(start+'T00:00:00');
   end.setDate(end.getDate()+days-1);
   const y=end.getFullYear(),m=String(end.getMonth()+1).padStart(2,'0'),d=String(end.getDate()).padStart(2,'0');
-  document.getElementById('cg-end').value=`${y}-${m}-${d}`;
+  document.getElementById(endId).value=`${y}-${m}-${d}`;
 }
+function autoCalcCongeEnd(){calcEndFromDuration('cg-start','cg-days','cg-end');}
+function autoCalcAbsEnd(){calcEndFromDuration('ab-start','ab-days','ab-end');}
 function anc(d){return Math.max(0,new Date().getFullYear()-new Date(d||Date.now()).getFullYear());}
 function bCg(s){const m={'En attente':['ba2','ti-clock'],'Approuvé':['bg2','ti-check'],'Refusé':['br2','ti-x']};const[c,i]=m[s]||['bs2','ti-help'];return`<span class="badge ${c}"><i class="ti ${i}" style="font-size:10px"></i>${s}</span>`;}
 function bEmp(s){return s==='Actif'?'<span class="badge bg2"><i class="ti ti-check" style="font-size:10px"></i>Actif</span>':'<span class="badge bs2">Inactif</span>';}
@@ -2216,7 +2219,7 @@ async function saveAbsence(){
   if(error){toast('Erreur : '+error.message,'err');return;}
   co.absences.push(abFromRow(data));
   closeModal('m-absence');toast('Absence enregistrée.');
-  ['ab-start','ab-end','ab-com'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['ab-start','ab-days','ab-end','ab-com'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
   if(document.getElementById('ab-tbl'))rAb();
 }
 
