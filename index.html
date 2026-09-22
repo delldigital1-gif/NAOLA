@@ -1367,6 +1367,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
     </div>
     <div class="modal-ft">
       <button class="btn bo bsm" onclick="closeModal('m-doc')">Fermer</button>
+      <button class="btn bo bsm" id="doc-email-btn" style="display:none" onclick="sendDocByEmail()"><i class="ti ti-mail"></i> Envoyer par email</button>
       <button class="btn bp bsm" onclick="printDoc()"><i class="ti ti-printer"></i> Imprimer / PDF</button>
     </div>
   </div>
@@ -2354,7 +2355,7 @@ function pPaie(host,co){
   const tPat=paies.reduce((s,{p})=>s+p.cotPat,0);
   host.innerHTML=`
   <div style="background:linear-gradient(135deg,var(--navy),#1c2119);color:#fff;border-radius:var(--radius);padding:1.25rem 1.5rem;display:flex;justify-content:space-between;align-items:center;margin-bottom:1.25rem;box-shadow:var(--shadow-m)">
-    <div><p style="font-size:11.5px;opacity:.6">Masse salariale brute — Juin 2026 · ${lg.pays}</p><p style="font-size:28px;font-weight:800;margin-top:3px">${fm(tBrut)}</p><p style="font-size:12px;opacity:.5;margin-top:3px">${act.length} employés actifs · ${lg.caisse}</p></div>
+    <div><p style="font-size:11.5px;opacity:.6">Masse salariale brute — ${moisCourantLabel()} · ${lg.pays}</p><p style="font-size:28px;font-weight:800;margin-top:3px">${fm(tBrut)}</p><p style="font-size:12px;opacity:.5;margin-top:3px">${act.length} employés actifs · ${lg.caisse}</p></div>
     <div style="text-align:right"><p style="font-size:11.5px;opacity:.6">Net total à payer</p><p style="font-size:22px;font-weight:700;margin-top:2px">${fm(tNet)}</p></div>
   </div>
   <div class="kgrid g4" style="margin-bottom:1.25rem">
@@ -2364,7 +2365,7 @@ function pPaie(host,co){
     <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Charge patronale</p><div class="kpi-ico ir"><i class="ti ti-building"></i></div></div><p class="kpi-val" style="font-size:17px;margin-top:3px">${fm(tPat)}</p><p class="kpi-sub">${lg.cotPat}% employeur</p></div>
   </div>
   <div class="card">
-    <div class="card-hd"><div><p class="card-title">Bulletins de salaire — Juin 2026</p><p class="card-sub">${lg.code}</p></div></div>
+    <div class="card-hd"><div><p class="card-title">Bulletins de salaire — ${moisCourantLabel()}</p><p class="card-sub">${lg.code}</p></div><button class="btn bo bsm" id="sendPayslipsBtn" onclick="envoyerBulletinsEmail()"><i class="ti ti-mail"></i> Envoyer les bulletins par email</button></div>
     <div class="tw"><table><thead><tr><th>Employé</th><th>Catégorie</th><th>Ancienneté</th><th>Base</th><th>P. Ancienneté</th><th>Brut total</th><th>${lg.caisse}</th><th>IRPP</th><th>Net</th></tr></thead>
     <tbody>${paies.map(({e,p})=>{const a=anc(e.emb);const idx=co.employees.indexOf(e);return`<tr><td><div class="ec"><div class="avsm" style="background:${avc(idx)}">${ini(e.prenom,e.nom)}</div><div><div class="fw7">${e.prenom} ${e.nom}</div><div style="font-size:11px;color:var(--text3)">${e.dept}</div></div></div></td><td><span class="badge bb2" style="font-size:10px">${e.cat}</span></td><td>${a}an${a>1?'s':''}</td><td>${fm(p.brut)}</td><td>${p.pAnc>0?`<span style="color:var(--green)">+${fm(p.pAnc)}</span>`:'—'}</td><td class="fw7">${fm(p.brutT)}</td><td style="color:var(--amber)">−${fm(p.cnss)}</td><td style="color:var(--purple)">−${fm(p.irpp)}</td><td class="fw7" style="color:var(--green)">${fm(p.net)}</td></tr>`;}).join('')}</tbody>
     </table></div>
@@ -2899,7 +2900,7 @@ function pDocs(host,co){
   host.innerHTML=`
   <div class="card">
     <div class="card-hd"><div><p class="card-title">Modèles de documents RH</p><p class="card-sub">Générés avec les données réelles de l'employé</p></div></div>
-    <div class="docgrid">${[['ti-file-certificate','Contrat CDI','CDI standard','cdi'],['ti-file-time','Contrat CDD','CDD avec échéance','cdd'],['ti-certificate','Attestation de travail','Confirme l\'emploi','attestation'],['ti-receipt','Fiche de paie','Bulletin mensuel','payslip'],['ti-file-check','Attestation de salaire','Certifie brut/net','salaire'],['ti-door-exit','Certificat de travail','Document de sortie','certificat'],['ti-user-x','Lettre de licenciement','Notification formelle','licenciement'],['ti-hand-stop','Reçu solde tout compte','Clôture financière','solde'],['ti-award','Lettre de recommandation','Référence pro','recommandation']].map(([ico,n,d,t])=>`<div class="doctpl" onclick="genDoc('${t}')"><i class="ti ${ico}"></i><p>${n}</p><span>${d}</span></div>`).join('')}
+    <div class="docgrid">${[['ti-file-certificate','Contrat CDI','CDI standard','cdi'],['ti-file-time','Contrat CDD','CDD avec échéance','cdd'],['ti-certificate','Attestation de travail','Confirme l\'emploi','attestation'],['ti-receipt','Bulletin de paie','Bulletin mensuel','payslip'],['ti-report-money','État de salaire','Relevé détaillé','etat'],['ti-file-check','Attestation de salaire','Certifie brut/net','salaire'],['ti-door-exit','Certificat de travail','Document de sortie','certificat'],['ti-user-x','Lettre de licenciement','Notification formelle','licenciement'],['ti-hand-stop','Reçu solde tout compte','Clôture financière','solde'],['ti-award','Lettre de recommandation','Référence pro','recommandation']].map(([ico,n,d,t])=>`<div class="doctpl" onclick="genDoc('${t}')"><i class="ti ${ico}"></i><p>${n}</p><span>${d}</span></div>`).join('')}
     </div>
   </div>
   <div class="card">
@@ -2908,18 +2909,60 @@ function pDocs(host,co){
     </div>
   </div>`;
 }
+function buildPayslipText(co,e){
+  const lg=lgl(co);const p=calcPaie(co,e);
+  const moisCourant=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const finMois=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  return `${co.name.toUpperCase()}\n${'═'.repeat(48)}\nBULLETIN DE PAIE — ${moisCourant.toUpperCase()}\n${'═'.repeat(48)}\n\nEmployé : ${e.prenom} ${e.nom} (${e.mat})\nPoste : ${e.poste} · ${e.cat}\nDép. : ${e.dept} · Embauche : ${fd(e.emb)}\n${lg.caisse} : ${e.cnss}\n\n${'─'.repeat(48)}\nSalaire de base              ${fm(p.brut)}\n${p.pAnc>0?`Prime ancienneté (${p.txAnc}%)    ${fm(p.pAnc)}\n`:''}${'─'.repeat(48)}\nSALAIRE BRUT TOTAL          ${fm(p.brutT)}\n\n${lg.caisse} salariale (${lg.cotSal}%)  − ${fm(p.cnss)}\nIRPP progressif              − ${fm(p.irpp)}\n${'─'.repeat(48)}\nNET À PAYER                 ${fm(p.net)}\n${'─'.repeat(48)}\n\nCharge patronale (${lg.cotPat}%) : ${fm(p.cotPat)}\nBase : ${lg.code}\n\nDate virement : ${finMois}\n${co.adminName} · ${co.name}`;
+}
+async function envoyerBulletinsEmail(){
+  const co=gco();if(!co)return;
+  const act=co.employees.filter(e=>e.statut==='Actif');
+  const avecEmail=act.filter(e=>e.email);
+  if(avecEmail.length===0){toast('Aucun employé actif avec un email enregistré.','err');return;}
+  if(!confirm(`Envoyer le bulletin de paie de ${moisCourantLabel()} à ${avecEmail.length} employé(s) par email ?`))return;
+  const btn=document.getElementById('sendPayslipsBtn');
+  if(btn){btn.disabled=true;btn.innerHTML='Envoi en cours…';}
+  let ok=0,fail=0;
+  for(const e of avecEmail){
+    const{data,error}=await sb.rpc('send_payslip_email',{p_employee_id:e.id,p_subject:'BULLETIN DE PAIE',p_body_text:buildPayslipText(co,e)});
+    if(error||!data?.email_sent)fail++;else ok++;
+  }
+  if(btn){btn.disabled=false;btn.innerHTML='<i class="ti ti-mail"></i> Envoyer les bulletins par email';}
+  toast(fail===0?`✅ ${ok} bulletin(s) envoyé(s) par email.`:`${ok} envoyé(s), ${fail} échec(s).`,fail>0?'err':undefined);
+}
+function moisCourantLabel(){return new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});}
+let currentDocEmployee=null;
+async function sendDocByEmail(){
+  if(!currentDocEmployee||!currentDocEmployee.email){toast('Cet employé n\'a pas d\'email enregistré.','err');return;}
+  const btn=document.getElementById('doc-email-btn');
+  btn.disabled=true;const orig=btn.innerHTML;btn.innerHTML='Envoi…';
+  const{data,error}=await sb.rpc('send_payslip_email',{
+    p_employee_id:currentDocEmployee.id,
+    p_subject:document.getElementById('doc-title').textContent,
+    p_body_text:document.getElementById('doc-body').textContent,
+  });
+  btn.disabled=false;btn.innerHTML=orig;
+  if(error){toast('Erreur : '+error.message,'err');return;}
+  if(data?.email_sent)toast(`✅ Document envoyé à ${currentDocEmployee.email}`);
+  else toast('⚠️ '+(data?.error||'Échec de l\'envoi de l\'email.'),'err');
+}
 function genDoc(type){
   const co=gco();if(!co)return;
   const nom=prompt('Nom de l\'employé :');if(!nom)return;
   const e=co.employees.find(x=>(`${x.prenom} ${x.nom}`).toLowerCase().includes(nom.toLowerCase()));
   if(!e){toast('Employé introuvable.','err');return;}
   const lg=lgl(co);const p=calcPaie(co,e);const a=anc(e.emb);const today=new Date().toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
-  const titles={cdi:'CONTRAT CDI',cdd:'CONTRAT CDD',attestation:'ATTESTATION DE TRAVAIL',payslip:'BULLETIN DE PAIE',salaire:'ATTESTATION DE SALAIRE',certificat:'CERTIFICAT DE TRAVAIL',licenciement:'LETTRE DE LICENCIEMENT',solde:'REÇU SOLDE DE TOUT COMPTE',recommandation:'LETTRE DE RECOMMANDATION'};
+  const moisCourant=new Date().toLocaleDateString('fr-FR',{month:'long',year:'numeric'});
+  const finMois=new Date(new Date().getFullYear(),new Date().getMonth()+1,0).toLocaleDateString('fr-FR',{day:'2-digit',month:'long',year:'numeric'});
+  const titles={cdi:'CONTRAT CDI',cdd:'CONTRAT CDD',attestation:'ATTESTATION DE TRAVAIL',payslip:'BULLETIN DE PAIE',etat:'ÉTAT DE SALAIRE',salaire:'ATTESTATION DE SALAIRE',certificat:'CERTIFICAT DE TRAVAIL',licenciement:'LETTRE DE LICENCIEMENT',solde:'REÇU SOLDE DE TOUT COMPTE',recommandation:'LETTRE DE RECOMMANDATION'};
   let content='';
   if(type==='attestation'){
     content=`${co.name.toUpperCase()}\n${'═'.repeat(48)}\nATTESTATION DE TRAVAIL\n${'═'.repeat(48)}\n\nJe soussigné(e), ${co.adminName},\nreprésentant légal de ${co.name},\ncertifie que :\n\nM./Mme ${e.prenom.toUpperCase()} ${e.nom.toUpperCase()}\nMatricule : ${e.mat} · ${lg.caisse} : ${e.cnss}\n\nest employé(e) en qualité de ${e.poste},\ndépartement ${e.dept}, catégorie ${e.cat},\ndepuis le ${fd(e.emb)} — ${a} an(s) d'ancienneté.\n\nPour servir et valoir ce que de droit.\n\nFait à ${lg.pays}, le ${today}.\n\n${co.adminName}\n${co.name}\n[Cachet et signature]`;
   } else if(type==='payslip'){
-    content=`${co.name.toUpperCase()}\n${'═'.repeat(48)}\nBULLETIN DE PAIE — JUIN 2026\n${'═'.repeat(48)}\n\nEmployé : ${e.prenom} ${e.nom} (${e.mat})\nPoste : ${e.poste} · ${e.cat}\nDép. : ${e.dept} · Embauche : ${fd(e.emb)}\n${lg.caisse} : ${e.cnss}\n\n${'─'.repeat(48)}\nSalaire de base              ${fm(p.brut)}\n${p.pAnc>0?`Prime ancienneté (${p.txAnc}%)    ${fm(p.pAnc)}\n`:''}${'─'.repeat(48)}\nSALAIRE BRUT TOTAL          ${fm(p.brutT)}\n\n${lg.caisse} salariale (${lg.cotSal}%)  − ${fm(p.cnss)}\nIRPP progressif              − ${fm(p.irpp)}\n${'─'.repeat(48)}\nNET À PAYER                 ${fm(p.net)}\n${'─'.repeat(48)}\n\nCharge patronale (${lg.cotPat}%) : ${fm(p.cotPat)}\nBase : ${lg.code}\n\nDate virement : 30 Juin 2026\n${co.adminName} · ${co.name}`;
+    content=buildPayslipText(co,e);
+  } else if(type==='etat'){
+    content=`${co.name.toUpperCase()}\n${'═'.repeat(48)}\nÉTAT DE SALAIRE\n${'═'.repeat(48)}\n\nJe soussigné(e), ${co.adminName},\nreprésentant légal de ${co.name},\nétablis l'état de salaire suivant pour :\n\nM./Mme ${e.prenom.toUpperCase()} ${e.nom.toUpperCase()}\nMatricule : ${e.mat} · ${lg.caisse} : ${e.cnss}\nPoste : ${e.poste} · Catégorie : ${e.cat}\nDépartement : ${e.dept} · Embauche : ${fd(e.emb)} (${a} an(s) d'ancienneté)\n\n${'─'.repeat(48)}\nSituation au ${today}\n${'─'.repeat(48)}\nSalaire de base              ${fm(p.brut)}\n${p.pAnc>0?`Prime ancienneté (${p.txAnc}%)    ${fm(p.pAnc)}\n`:''}Salaire brut mensuel        ${fm(p.brutT)}\n${lg.caisse} salariale (${lg.cotSal}%)  − ${fm(p.cnss)}\nIRPP progressif              − ${fm(p.irpp)}\nNet mensuel                  ${fm(p.net)}\n${'─'.repeat(48)}\nEstimation annuelle (net × 12) ${fm(p.net*12)}\n${'─'.repeat(48)}\n\nCe document atteste de la situation salariale de l'intéressé(e)\nà la date d'émission et peut être remis à toute administration\nou organisme le nécessitant (banque, ambassade, bailleur...).\n\nFait à ${lg.pays}, le ${today}.\n\n${co.adminName}\n${co.name}\n[Cachet et signature]`;
   } else if(type==='cdi'){
     content=`${co.name.toUpperCase()}\n${'═'.repeat(48)}\nCONTRAT DE TRAVAIL À DURÉE INDÉTERMINÉE\n${'═'.repeat(48)}\n\nEntre :\nEMPLOYEUR : ${co.name} — ${co.adminName}\n\nET\n\nEMPLOYÉ(E) : ${e.prenom} ${e.nom}\n${lg.caisse} : ${e.cnss}\n\nART. 1 — ENGAGEMENT\n${e.prenom} ${e.nom} est engagé(e) en qualité de\n${e.poste}, dép. ${e.dept}, catégorie ${e.cat},\nà compter du ${fd(e.emb)}.\n\nART. 2 — RÉMUNÉRATION\nSalaire de base : ${fm(e.sal)}\nBrut total : ${fm(p.brutT)} · Net : ${fm(p.net)}\n\nART. 3 — DURÉE DU TRAVAIL\n${lg.hSem}h/semaine — du lundi au vendredi.\n\nART. 4 — PÉRIODE D'ESSAI\n3 mois renouvelable une fois.\n\nART. 5 — PRÉAVIS\n${e.cat.includes('Cadre')?lg.preavis.c:lg.preavis.e} (${lg.pays}).\n\nBase légale : ${lg.code}\n\nFait le ${today}\n\nEmployeur :          Employé(e) :\n____________         ____________\n${co.adminName}       ${e.prenom} ${e.nom}`;
   } else if(type==='licenciement'){
@@ -2932,6 +2975,9 @@ function genDoc(type){
   }
   document.getElementById('doc-title').textContent=titles[type]||type.toUpperCase();
   document.getElementById('doc-body').textContent=content;
+  currentDocEmployee=e;
+  const emailBtn=document.getElementById('doc-email-btn');
+  if(emailBtn)emailBtn.style.display=e.email?'':'none';
   openModal('m-doc');
 }
 function printDoc(){
