@@ -725,9 +725,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="infoblock"><i class="ti ti-info-circle"></i><span>Cette entreprise sera gérée exclusivement par votre cabinet. Elle n'aura aucun accès direct à la plateforme.</span></div>
       <div class="fg"><label>Nom de l'entreprise *</label><input id="ac-name" placeholder="Société X SARL"/></div>
       <div class="g2">
-        <div class="fg"><label>Secteur *</label><select id="ac-sector"><option>Commerce</option><option>Services</option><option>Industrie</option><option>Technologie</option><option>Agriculture</option><option>BTP</option><option>Santé</option><option>Éducation</option><option>ONG</option></select></div>
+        <div class="fg"><label>Secteur *</label><select id="ac-sector" onchange="toggleSectorAutre('ac-sector')"><option>Commerce</option><option>Services</option><option>Industrie</option><option>Technologie</option><option>Agriculture</option><option>BTP</option><option>Santé</option><option>Éducation</option><option>ONG</option><option value="__autre__">Autre…</option></select></div>
         <div class="fg"><label>Pays *</label><select id="ac-pays"><option value="TG">🇹🇬 Togo</option><option value="SN">🇸🇳 Sénégal</option><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="BJ">🇧🇯 Bénin</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option></select></div>
       </div>
+      <div class="fg hidden" id="ac-sector-autre-wrap"><label>Précisez le secteur *</label><input id="ac-sector-autre" placeholder="Ex: Transport"/></div>
       <div class="g2">
         <div class="fg"><label>Email de contact</label><input id="ac-email" type="email" placeholder="direction@entreprise.tg"/></div>
         <div class="fg"><label>Téléphone</label><input id="ac-tel" placeholder="+228 xx xx xx xx"/></div>
@@ -980,9 +981,10 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
             <select id="r-pays"><option value="TG">🇹🇬 Togo</option><option value="SN">🇸🇳 Sénégal</option><option value="CI">🇨🇮 Côte d'Ivoire</option><option value="BJ">🇧🇯 Bénin</option><option value="ML">🇲🇱 Mali</option><option value="BF">🇧🇫 Burkina Faso</option></select>
           </div>
           <div class="fg"><label>Secteur *</label>
-            <select id="r-sector"><option>Commerce</option><option>Services</option><option>Industrie</option><option>Technologie</option><option>Agriculture</option><option>BTP</option><option>Santé</option><option>Éducation</option><option>ONG</option></select>
+            <select id="r-sector" onchange="toggleSectorAutre('r-sector')"><option>Commerce</option><option>Services</option><option>Industrie</option><option>Technologie</option><option>Agriculture</option><option>BTP</option><option>Santé</option><option>Éducation</option><option>ONG</option><option value="__autre__">Autre…</option></select>
           </div>
         </div>
+        <div class="fg hidden" id="r-sector-autre-wrap"><label>Précisez votre secteur *</label><input id="r-sector-autre" placeholder="Ex: Transport"/></div>
         <div class="fg"><label>Email professionnel *</label><input id="r-email" type="email" placeholder="vous@entreprise.tg"/></div>
         <div class="fg"><label>Mot de passe *</label><div class="pw-wrap"><input id="r-pw" type="password" placeholder="Min. 8 car., 1 chiffre, 1 spécial"/><button type="button" class="pw-toggle" onclick="togglePw('r-pw',this)" tabindex="-1"><i class="ti ti-eye"></i></button></div></div>
         <button class="btn bp bb" onclick="doRegister()"><i class="ti ti-rocket"></i> Créer mon espace</button>
@@ -1733,15 +1735,29 @@ async function demo(t){
   document.getElementById('l-email').value='demo@techtogo.tg';document.getElementById('l-pw').value='Demo1234!';
   await doLogin();
 }
+function toggleSectorAutre(selectId){
+  const sel=document.getElementById(selectId);
+  const wrap=document.getElementById(selectId+'-autre-wrap');
+  if(!wrap)return;
+  wrap.classList.toggle('hidden',sel.value!=='__autre__');
+}
+function resolveSector(selectId){
+  const sel=document.getElementById(selectId);
+  if(sel.value==='__autre__'){
+    const autre=document.getElementById(selectId+'-autre');
+    return autre?autre.value.trim():'';
+  }
+  return sel.value;
+}
 async function doRegister(){
   const p=document.getElementById('r-prenom').value.trim();
   const n=document.getElementById('r-nom').value.trim();
   const nm=document.getElementById('r-co').value.trim();
   const pays=document.getElementById('r-pays').value;
-  const sector=document.getElementById('r-sector').value;
+  const sector=resolveSector('r-sector');
   const email=document.getElementById('r-email').value.trim().toLowerCase();
   const pw=document.getElementById('r-pw').value;
-  if(!p||!n||!nm||!email||!pw){toast('Tous les champs sont requis.','err');return;}
+  if(!p||!n||!nm||!sector||!email||!pw){toast('Tous les champs sont requis.','err');return;}
   if(!pwOk(pw)){toast(PW_HINT,'err');return;}
   const{data,error}=await sb.auth.signUp({email,password:pw});
   if(error){toast(error.message==='User already registered'?'Email déjà utilisé.':error.message,'err');return;}
@@ -3602,12 +3618,13 @@ const CAB_PLAN_LIMITS={trial:5,'Cabinet Starter':5,'Cabinet Pro':20,'Cabinet Ent
 function cabClientLimit(cab){return CAB_PLAN_LIMITS[cab.plan]??5;}
 async function addClient(){
   const name=document.getElementById('ac-name').value.trim();
-  const sector=document.getElementById('ac-sector').value;
+  const sector=resolveSector('ac-sector');
   const pays=document.getElementById('ac-pays').value;
   const email=document.getElementById('ac-email').value.trim();
   const tel=document.getElementById('ac-tel').value.trim();
   const contact=document.getElementById('ac-contact').value.trim();
   if(!name){toast('Le nom de l\'entreprise est requis.','err');return;}
+  if(!sector){toast('Précisez le secteur de l\'entreprise.','err');return;}
   const cab=getCab();if(!cab)return;
   const limit=cabClientLimit(cab);
   if(cab.clients.length>=limit){
@@ -3620,7 +3637,9 @@ async function addClient(){
   const{error}=await sb.from('companies').insert(row);
   if(error){toast('Erreur : '+error.message,'err');return;}
   closeModal('m-add-client');
-  ['ac-name','ac-email','ac-tel','ac-contact'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  ['ac-name','ac-email','ac-tel','ac-contact','ac-sector-autre'].forEach(id=>{const el=document.getElementById(id);if(el)el.value='';});
+  document.getElementById('ac-sector').selectedIndex=0;
+  toggleSectorAutre('ac-sector');
   CURRENT_CAB=await loadCabinetShell(cab.id);
   initCabShell(CURRENT_CAB);toast(`"${name}" ajouté comme client.`);
   cabGo('cab-clients');
