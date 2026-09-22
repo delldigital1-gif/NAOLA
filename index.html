@@ -3114,13 +3114,22 @@ async function activerCabinetEnterprise(requestId,cabinetId){
   toast('Cabinet Enterprise activé.');
   saGo('sa-requests');
 }
-function saDash(host){
-  // Panneau superadmin non migré : une vue cross-tenant nécessiterait la
-  // clé service_role, jamais exposée côté client. Voir mémoire du projet.
-  const cos=[];
+async function saDash(host){
+  host.innerHTML='<p style="text-align:center;color:rgba(255,255,255,0.4);padding:2rem 0">Chargement...</p>';
+  const[companiesRes,employeesRes]=await Promise.all([
+    sb.from('companies').select('id,name,sector,pays,contact_email,plan,trial_start').order('created_at',{ascending:false}),
+    sb.from('employees').select('company_id'),
+  ]);
+  if(companiesRes.error){host.innerHTML=`<div class="card"><div class="card-body">Erreur : ${companiesRes.error.message}</div></div>`;return;}
+  const empCountByCo={};
+  (employeesRes.data||[]).forEach(e=>{empCountByCo[e.company_id]=(empCountByCo[e.company_id]||0)+1;});
+  const cos=(companiesRes.data||[]).map(c=>({
+    id:c.id,name:c.name,sector:c.sector,pays:c.pays,adminEmail:c.contact_email,
+    plan:c.plan,trialStart:c.trial_start,empCount:empCountByCo[c.id]||0,
+  }));
   const trials=cos.filter(c=>c.plan==='trial').length;
   const paid=cos.filter(c=>c.plan!=='trial').length;
-  const rev=cos.filter(c=>c.plan==='Starter').length*70000+cos.filter(c=>c.plan==='Business').length*175000;
+  const rev=cos.reduce((s,c)=>s+(PLAN_MONTHLY[c.plan]||0),0);
   host.innerHTML=`
   <div class="kgrid g4">
     <div class="kpi"><div class="kpi-top"><p class="kpi-lbl">Entreprises inscrites</p><div class="kpi-ico ib"><i class="ti ti-building"></i></div></div><p class="kpi-val">${cos.length}</p></div>
@@ -3131,7 +3140,7 @@ function saDash(host){
   <div class="card">
     <div class="card-hd"><div><p class="card-title">Toutes les entreprises</p></div></div>
     <div class="tw"><table><thead><tr><th>Entreprise</th><th>Pays</th><th>Secteur</th><th>Employés</th><th>Plan</th><th>Essai restant</th></tr></thead>
-    <tbody>${cos.map(co=>{const lg=lgl(co);const d=trialLeft(co);return`<tr><td><div class="ec"><div class="avsm" style="background:var(--blue);width:26px;height:26px;font-size:10px">${co.name[0].toUpperCase()}</div><div><div class="fw7">${co.name}</div><div style="font-size:11px;color:var(--text3)">${co.adminEmail}</div></div></div></td><td><span class="badge bn2">${lg.pays}</span></td><td>${co.sector}</td><td>${co.employees.length}</td><td><span class="badge ${co.plan==='trial'?'ba2':'bg2'}">${co.plan==='trial'?'Essai':co.plan}</span></td><td>${co.plan==='trial'?`<span style="font-weight:700;color:${d<=3?'var(--red)':d<=7?'var(--amber)':'var(--green)'}">${d}j</span>`:'—'}</td></tr>`;}).join('')}</tbody></table>
+    <tbody>${cos.length===0?'<tr><td colspan="6" style="text-align:center;color:rgba(255,255,255,0.4);padding:2rem">Aucune entreprise inscrite.</td></tr>':cos.map(co=>{const lg=lgl(co);const d=trialLeft(co);return`<tr><td><div class="ec"><div class="avsm" style="background:var(--blue);width:26px;height:26px;font-size:10px">${co.name[0].toUpperCase()}</div><div><div class="fw7">${co.name}</div><div style="font-size:11px;color:var(--text3)">${co.adminEmail||'—'}</div></div></div></td><td><span class="badge bn2">${lg.pays}</span></td><td>${co.sector||'—'}</td><td>${co.empCount}</td><td><span class="badge ${co.plan==='trial'?'ba2':'bg2'}">${co.plan==='trial'?'Essai':co.plan}</span></td><td>${co.plan==='trial'?`<span style="font-weight:700;color:${d<=3?'var(--red)':d<=7?'var(--amber)':'var(--green)'}">${d}j</span>`:'—'}</td></tr>`;}).join('')}</tbody></table>
   </div></div>`;
 }
 function saLegal(host){
