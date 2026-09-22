@@ -1117,7 +1117,7 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
       <div class="two-col">
         <div class="fg"><label>Poste *</label><input id="ep-poste" placeholder="ex: Chargé de compte"/></div>
         <div class="fg"><label>Département *</label><select id="ep-dept" onchange="handleDeptSelectChange(this)"></select></div>
-        <div class="fg"><label>Catégorie professionnelle</label><select id="ep-cat"><option>Manœuvre</option><option>Ouvrier</option><option>Employé</option><option>Agent de maîtrise</option><option>Cadre</option><option>Cadre supérieur</option><option>Hors catégorie</option></select></div>
+        <div class="fg"><label>Catégorie professionnelle</label><select id="ep-cat" onchange="handleCatSelectChange(this)"></select></div>
         <div class="fg"><label>Type de contrat</label><select id="ep-ct"><option>CDI</option><option>CDD</option><option>Stage</option><option>Apprentissage</option><option>Temps partiel</option></select></div>
         <div class="fg"><label>Date d'embauche *</label><input id="ep-emb" type="date"/></div>
         <div class="fg"><label>Salaire de base (FCFA)</label><input id="ep-sal" type="number" placeholder="250000"/></div>
@@ -1431,6 +1431,29 @@ async function addNewDept(sel){
   populateDeptSelect(sel,co,name);
   toast(`Département "${name}" ajouté.`);
 }
+const CATS=['Manœuvre','Ouvrier','Employé','Agent de maîtrise','Cadre','Cadre supérieur','Hors catégorie'];
+function populateCatSelect(sel,co,selected){
+  sel.innerHTML=(co.cats||CATS).map(c=>`<option ${c===selected?'selected':''}>${c}</option>`).join('')+'<option value="__add__">+ Ajouter une catégorie…</option>';
+}
+function handleCatSelectChange(sel){
+  if(sel.value==='__add__')addNewCat(sel);
+}
+async function addNewCat(sel){
+  const co=gco();if(!co){populateCatSelect(sel,{});return;}
+  const name=(prompt('Nom de la nouvelle catégorie :')||'').trim();
+  if(!name){populateCatSelect(sel,co);return;}
+  const list=co.cats||[...CATS];
+  if(list.some(c=>c.toLowerCase()===name.toLowerCase())){
+    toast('Cette catégorie existe déjà.','err');
+    populateCatSelect(sel,co,name);
+    return;
+  }
+  co.cats=[...list,name];
+  const{error}=await sb.from('companies').update({cats:co.cats}).eq('id',co.id);
+  if(error){toast('Erreur : '+error.message,'err');co.cats=list;populateCatSelect(sel,co);return;}
+  populateCatSelect(sel,co,name);
+  toast(`Catégorie "${name}" ajoutée.`);
+}
 // UNLOCK_FEE : placeholder, non finalisé, en attente d'un vrai paiement CinetPay
 const UNLOCK_FEE=15000;
 const DCOLS=['#D4AF37','#16A673','#1D8A8A','#B8703D','#A8375A','#8B6DB0','#4A7FA5','#C4693A'];
@@ -1524,7 +1547,7 @@ async function loadCompanyFull(companyId){
   return{
     id:c.id,name:c.name,sector:c.sector,pays:c.pays,adminName:c.admin_name,adminEmail:c.contact_email,
     contact:c.contact_name,email:c.contact_email,tel:c.contact_tel,
-    plan:c.plan,trialStart:c.trial_start,planExpiresAt:c.plan_expires_at,depts:(c.depts&&c.depts.length?c.depts:[...DEPTS]),
+    plan:c.plan,trialStart:c.trial_start,planExpiresAt:c.plan_expires_at,depts:(c.depts&&c.depts.length?c.depts:[...DEPTS]),cats:(c.cats&&c.cats.length?c.cats:[...CATS]),
     addedAt:c.created_at?.slice(0,10),
     employees:(employees.data||[]).map(empFromRow),
     contrats:(contracts.data||[]).map(ctFromRow),
@@ -2052,6 +2075,7 @@ function openEmpModal(){
   const co=gco();if(!co)return;
   document.getElementById('m-emp-t').textContent=CU?.t==='cab'?`Ajouter un employé — ${co.name}`:'Ajouter un employé';
   populateDeptSelect(document.getElementById('ep-dept'),co);
+  populateCatSelect(document.getElementById('ep-cat'),co);
   openModal('m-emp');
 }
 async function saveEmp(){
@@ -2659,6 +2683,7 @@ function convertCandToEmp(candId){
   const off=(co.offers||[]).find(o=>o.id===ca.offerId);
   document.getElementById('m-emp-t').textContent='Recrutement — créer la fiche employé';
   populateDeptSelect(document.getElementById('ep-dept'),co,off?off.dept:undefined);
+  populateCatSelect(document.getElementById('ep-cat'),co,'Employé');
   document.getElementById('ep-p').value=ca.prenom;
   document.getElementById('ep-n').value=ca.nom;
   document.getElementById('ep-email').value=ca.email;
@@ -2674,7 +2699,6 @@ function convertCandToEmp(candId){
   document.getElementById('ep-cni').value='';
   document.getElementById('ep-adr').value='';
   document.getElementById('ep-cnss').value='';
-  document.getElementById('ep-cat').value='Employé';
   openModal('m-emp');
   toast(`Vérifiez les informations de ${ca.prenom} ${ca.nom} avant de créer sa fiche.`);
 }
