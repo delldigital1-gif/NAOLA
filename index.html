@@ -1373,6 +1373,19 @@ select.flt{padding:7px 10px;border:1.5px solid var(--border-s);border-radius:var
   </div>
 </div>
 
+<div class="overlay hidden" id="m-cand-preview">
+  <div class="modal">
+    <div class="modal-hd"><h3 id="cp-title">Aperçu du candidat</h3><button class="cx" onclick="closeModal('m-cand-preview')"><i class="ti ti-x"></i></button></div>
+    <div class="modal-body">
+      <div class="infoblock" style="margin-bottom:1rem"><i class="ti ti-eye-off"></i><span>Aperçu limité — coordonnées et CV masqués tant que le profil n'est pas débloqué.</span></div>
+      <div id="cp-body"></div>
+    </div>
+    <div class="modal-ft">
+      <button class="btn bo bsm" onclick="closeModal('m-cand-preview')">Fermer</button>
+    </div>
+  </div>
+</div>
+
 <div class="toast hidden" id="toast"><i class="ti ti-check" id="toast-ico"></i><span id="toast-msg"></span></div>
 <div id="nav-arrows-wrap" style="position:fixed;bottom:18px;left:18px;display:flex;gap:8px;z-index:600">
   <button id="nav-prev-btn" onclick="goPrevScreen()" title="Page précédente" disabled style="width:38px;height:38px;border-radius:50%;border:1.5px solid rgba(255,255,255,.18);background:rgba(15,15,15,.85);color:#fff;cursor:pointer;display:flex;align-items:center;justify-content:center;font-size:16px"><i class="ti ti-chevron-left"></i></button>
@@ -2465,16 +2478,18 @@ async function pCvBank(host,co){
   host.innerHTML=`<div class="infoblock" style="margin-bottom:1.25rem"><i class="ti ti-info-circle"></i><span>Ces profils viennent du dépôt de CV public sur naoladigital-rh.com. Le nom, l'email, le téléphone et le CV restent masqués tant que vous n'avez pas débloqué le profil (${fm(UNLOCK_FEE)}).</span></div><div class="card"><div class="card-hd"><div><p class="card-title">Candidatures publiques</p></div></div><div id="cvbank-list"><p style="text-align:center;color:var(--text3);padding:2rem 0">Chargement...</p></div></div>`;
   await rCvBank(co);
 }
+let cvBankData=[];
 async function rCvBank(co){
   const el=document.getElementById('cvbank-list');if(!el)return;
   const{data,error}=await sb.rpc('list_public_candidates',{p_company_id:co.id});
   if(error){el.innerHTML=`<div class="empty"><i class="ti ti-alert-triangle"></i><p>Erreur : ${error.message}</p></div>`;return;}
+  cvBankData=data||[];
   if(!data||data.length===0){el.innerHTML=`<div class="empty"><i class="ti ti-address-book"></i><p>Aucune candidature publique pour le moment.</p></div>`;return;}
   el.innerHTML=data.map(c=>{
     const aiBadge=c.ai_score!=null?`<span class="badge" style="background:${scoreColor(c.ai_score)}22;color:${scoreColor(c.ai_score)};font-weight:700">${c.ai_score}%</span>`:'';
     return`<div style="display:flex;align-items:flex-start;justify-content:space-between;gap:14px;padding:12px 0;border-bottom:1px solid var(--border)">
       <div>
-        <p style="font-size:13.5px;font-weight:700">${c.prenom} ${c.nom} ${aiBadge}</p>
+        <p style="font-size:13.5px;font-weight:700"><button class="btn bo bxs" style="padding:2px 7px;margin-right:6px" title="Aperçu du profil" onclick="previewCvBankCandidate('${c.id}')"><i class="ti ti-eye"></i></button>${c.prenom} ${c.nom} ${aiBadge}</p>
         <p style="font-size:12px;color:var(--text3);margin-top:2px">${c.offer_title||'Candidature spontanée'} · déposée le ${(c.created_at||'').slice(0,10)}</p>
         ${c.unlocked?`<p style="font-size:12.5px;color:var(--text2);margin-top:6px"><i class="ti ti-mail"></i> ${c.email||'—'} &nbsp; <i class="ti ti-phone"></i> ${c.tel||'—'}</p>`:''}
         ${c.note?`<p style="font-size:12px;color:var(--text3);margin-top:4px">${c.note}</p>`:''}
@@ -2484,6 +2499,21 @@ async function rCvBank(co){
       </div>
     </div>`;
   }).join('');
+}
+function previewCvBankCandidate(candId){
+  const c=cvBankData.find(x=>x.id===candId);if(!c)return;
+  document.getElementById('cp-title').textContent=`${c.prenom} ${c.nom} — Aperçu`;
+  const aiBadge=c.ai_score!=null?`<span class="badge" style="background:${scoreColor(c.ai_score)}22;color:${scoreColor(c.ai_score)};font-weight:700;margin-left:8px">${c.ai_score}%</span>`:'';
+  document.getElementById('cp-body').innerHTML=`
+    <div style="margin-bottom:1rem">
+      <p style="font-size:15px;font-weight:700">${c.prenom} ${c.nom}${aiBadge}</p>
+      <p style="font-size:12px;color:var(--text3);margin-top:2px">${c.offer_title||'Candidature spontanée'} · déposée le ${(c.created_at||'').slice(0,10)}</p>
+    </div>
+    ${c.ai_summary?`<div style="margin-bottom:1rem"><p class="slbl">Résumé IA</p><p style="font-size:13px;color:var(--text2);line-height:1.6">${c.ai_summary}</p></div>`:''}
+    ${c.note?`<div><p class="slbl">Message de motivation</p><p style="font-size:13px;color:var(--text2);line-height:1.6;white-space:pre-wrap">${c.note}</p></div>`:''}
+    ${!c.ai_summary&&!c.note?'<p style="font-size:13px;color:var(--text3)">Aucune information supplémentaire fournie par ce candidat.</p>':''}
+  `;
+  openModal('m-cand-preview');
 }
 async function unlockCandidate(candId,btn){
   const co=gco();if(!co)return;
